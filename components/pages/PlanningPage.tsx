@@ -214,6 +214,18 @@ export default function PlanningPage() {
     return counts;
   }, [allVisits]);
 
+  // Calculate completed visit count per store (using all visits, not just current week)
+  const storeCompletedCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allVisits.forEach((v) => {
+      if (v.status === "done") {
+        const key = v.storeId || v.storeName;
+        counts[key] = (counts[key] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [allVisits]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {!isReady || state.weeks.length === 0 || state.selectedWeekId === "" ? (
@@ -348,7 +360,7 @@ export default function PlanningPage() {
                   </div>
                   <span className="text-xs text-slate-400 dark:text-slate-500">{day.visits.length} visite{day.visits.length > 1 ? "s" : ""}</span>
                 </div>
-                {day.visits.map((v) => <VisitCard key={v.id} visit={v} visitCount={storeVisitCount[v.storeId || v.storeName] || 0} />)}
+                {day.visits.map((v) => <VisitCard key={v.id} visit={v} totalVisits={storeVisitCount[v.storeId || v.storeName] || 0} completedVisits={storeCompletedCount[v.storeId || v.storeName] || 0} />)}
               </div>
             ))
           )}
@@ -358,7 +370,7 @@ export default function PlanningPage() {
   );
 }
 
-function VisitCard({ visit, visitCount }: { visit: Visit; visitCount?: number }) {
+function VisitCard({ visit, totalVisits, completedVisits }: { visit: Visit; totalVisits?: number; completedVisits?: number }) {
   const router = useRouter();
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
@@ -382,8 +394,8 @@ function VisitCard({ visit, visitCount }: { visit: Visit; visitCount?: number })
               <div className="flex items-center gap-1 mt-1">
                 <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                 <p className="text-xs text-slate-500 dark:text-slate-400">{visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}</p>
-                {visitCount !== undefined && visitCount > 1 && (
-                  <span className="text-xs text-slate-400 ml-1">· {visitCount} visites</span>
+                {totalVisits !== undefined && totalVisits > 1 && (
+                  <span className="text-xs text-slate-400 ml-1">· {completedVisits || 0}/{totalVisits} visites</span>
                 )}
               </div>
               {visit.salesRep && (
