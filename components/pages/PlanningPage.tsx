@@ -192,7 +192,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {state.loading ? (
+      {state.loading || state.weeks.length === 0 || state.selectedWeekId === "" ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
