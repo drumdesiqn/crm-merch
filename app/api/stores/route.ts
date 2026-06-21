@@ -18,6 +18,11 @@ export async function GET(req: NextRequest) {
         visitDate: true,
         status: true,
         materialType: true,
+        photos: {
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: { visitDate: "desc" },
     });
@@ -37,6 +42,7 @@ export async function GET(req: NextRequest) {
           completedVisits: 0,
           lastVisit: visit.visitDate,
           materialTypes: new Set<string>(),
+          totalPhotos: 0,
         });
       }
 
@@ -47,6 +53,9 @@ export async function GET(req: NextRequest) {
       }
       if (visit.materialType) {
         store.materialTypes.add(visit.materialType);
+      }
+      if (visit.photos && visit.photos.length > 0) {
+        store.totalPhotos += visit.photos.length;
       }
     }
 

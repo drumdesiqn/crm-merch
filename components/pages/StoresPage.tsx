@@ -18,6 +18,7 @@ interface StoreData {
   completedVisits: number;
   lastVisit: string;
   materialTypes: string[];
+  totalPhotos: number;
 }
 
 export default function StoresPage() {
@@ -188,16 +189,23 @@ export default function StoresPage() {
                             {store.completedVisits}/{store.totalVisits} terminées
                           </span>
                         </div>
+                        {store.totalPhotos > 0 && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-red-600 dark:text-red-400 font-medium">
+                              {store.totalPhotos} photo{store.totalPhotos !== 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       {store.materialTypes.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {store.materialTypes.slice(0, 3).map((type) => (
-                            <Badge key={type} variant="outline" className="text-xs">
+                            <Badge key={type} className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800">
                               {type}
                             </Badge>
                           ))}
                           {store.materialTypes.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800">
                               +{store.materialTypes.length - 3}
                             </Badge>
                           )}
