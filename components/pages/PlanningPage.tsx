@@ -273,11 +273,7 @@ export default function PlanningPage() {
       )}
 
       {/* Visits — list or map view */}
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : sortedDays.length === 0 ? (
+      {sortedDays.length === 0 ? (
         <div className="text-center py-12 text-slate-500">
           <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
           <p>Aucune visite. Importe ton planning Excel.</p>
