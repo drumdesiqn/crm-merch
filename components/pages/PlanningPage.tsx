@@ -85,7 +85,7 @@ export default function PlanningPage() {
           const visits = await visitsRes.json();
           if (!isMounted) return;
           
-          // Single state update with all data
+          // Single state update with all data and loading=false
           setState({
             weeks: weeksArray,
             selectedWeekId: weeksArray[0].id,
@@ -192,7 +192,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {state.loading || state.weeks.length === 0 || state.selectedWeekId === "" ? (
+      {state.loading ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
