@@ -221,24 +221,22 @@ export default function DashboardPage() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white/20 text-white border border-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   aria-label="Filtrer par type"
                 >
                   <option value="all">Tous types</option>
                   <option value="Maintenance">Maintenance</option>
                   <option value="Ad Hoc">Ad Hoc</option>
-                  <option value="Routinière">Routinière</option>
                 </select>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white/20 text-white border border-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   aria-label="Filtrer par statut"
                 >
                   <option value="all">Tous statuts</option>
                   <option value="pending">À faire</option>
                   <option value="done">Terminé</option>
-                  <option value="skipped">Sauté</option>
                 </select>
               </div>
             </CardContent>

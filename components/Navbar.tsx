@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Mail, Settings, Package, Sun, Moon, Users, BookOpen, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, Calendar, Mail, Settings, Package, Sun, Moon, Users, BookOpen, MoreHorizontal, Store } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/planning", icon: Calendar, label: "Planning" },
   { href: "/mails", icon: Mail, label: "Mails" },
   { href: "/contacts", icon: Users, label: "Contacts" },
+  { href: "/stores", icon: Store, label: "Magasins" },
 ];
 
 // Items dans le menu "Plus" (mobile)
