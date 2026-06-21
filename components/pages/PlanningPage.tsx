@@ -53,6 +53,7 @@ export default function PlanningPage() {
   const [selectedWeekId, setSelectedWeekId] = useState<string>("");
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visitsLoaded, setVisitsLoaded] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -79,6 +80,7 @@ export default function PlanningPage() {
           const visits = await visitsRes.json();
           if (!isMounted) return;
           setVisits(Array.isArray(visits) ? visits : []);
+          setVisitsLoaded(true);
         }
       } catch (error) {
         showToast("error", "Erreur lors du chargement");
@@ -98,14 +100,17 @@ export default function PlanningPage() {
 
   const handleWeekChange = (weekId: string) => {
     setSelectedWeekId(weekId);
+    setVisitsLoaded(false);
     setGeocodedCache({});
     fetch(`/api/visits?weekId=${weekId}`)
       .then((r) => r.json())
       .then((data) => {
         setVisits(Array.isArray(data) ? data : []);
+        setVisitsLoaded(true);
       })
       .catch(() => {
         showToast("error", "Erreur lors du chargement des visites");
+        setVisitsLoaded(true);
       });
   };
 
@@ -230,7 +235,7 @@ export default function PlanningPage() {
       )}
 
       {/* Drop zone — hidden when visits are already loaded or still loading */}
-      {visits.length === 0 && !loading && (
+      {visits.length === 0 && visitsLoaded && (
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -287,7 +292,11 @@ export default function PlanningPage() {
       )}
 
       {/* Visits — list or map view */}
-      {sortedDays.length === 0 ? (
+      {!visitsLoaded ? (
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : sortedDays.length === 0 ? (
         <div className="text-center py-12 text-slate-500">
           <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
           <p>Aucune visite. Importe ton planning Excel.</p>
