@@ -84,25 +84,24 @@ export default function PlanningPage() {
           const visits = await visitsRes.json();
           if (!isMounted) return;
           
-          // Set all data, then mark as ready in next tick
-          setState({
-            weeks: weeksArray,
-            selectedWeekId: weeksArray[0].id,
-            visits: Array.isArray(visits) ? visits : [],
+          // Use flushSync to ensure state is applied before marking ready
+          flushSync(() => {
+            setState({
+              weeks: weeksArray,
+              selectedWeekId: weeksArray[0].id,
+              visits: Array.isArray(visits) ? visits : [],
+            });
           });
-          // Use setTimeout to ensure state is set before marking ready
-          setTimeout(() => {
-            if (isMounted) setIsReady(true);
-          }, 0);
+          setIsReady(true);
         } else {
-          setState({
-            weeks: weeksArray,
-            selectedWeekId: "",
-            visits: [],
+          flushSync(() => {
+            setState({
+              weeks: weeksArray,
+              selectedWeekId: "",
+              visits: [],
+            });
           });
-          setTimeout(() => {
-            if (isMounted) setIsReady(true);
-          }, 0);
+          setIsReady(true);
         }
       } catch (error) {
         showToast("error", "Erreur lors du chargement");
@@ -198,7 +197,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {!isReady ? (
+      {!isReady || state.weeks.length === 0 || state.selectedWeekId === "" ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -308,7 +307,7 @@ export default function PlanningPage() {
           )}
 
           {/* Visits — list or map view */}
-          {sortedDays.length === 0 ? (
+          {state.visits.length === 0 ? (
             <div className="text-center py-12 text-slate-500">
               <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
               <p>Aucune visite. Importe ton planning Excel.</p>
