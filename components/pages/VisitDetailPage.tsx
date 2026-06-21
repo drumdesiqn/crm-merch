@@ -171,16 +171,17 @@ export default function VisitDetailPage() {
         setLoading(false);
       });
 
-    // Load notes & photos eagerly
-    fetch(`/api/visits/${visitId}/notes`)
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) setNotes(d); })
-      .catch(() => showToast("error", "Erreur lors du chargement des notes"));
-
-    fetch(`/api/visits/${visitId}/photos`)
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) setPhotos(d); })
-      .catch(() => showToast("error", "Erreur lors du chargement des photos"));
+    // Load notes & photos eagerly in parallel
+    Promise.all([
+      fetch(`/api/visits/${visitId}/notes`)
+        .then((r) => r.json())
+        .then((d) => { if (Array.isArray(d)) setNotes(d); })
+        .catch(() => showToast("error", "Erreur lors du chargement des notes")),
+      fetch(`/api/visits/${visitId}/photos`)
+        .then((r) => r.json())
+        .then((d) => { if (Array.isArray(d)) setPhotos(d); })
+        .catch(() => showToast("error", "Erreur lors du chargement des photos")),
+    ]);
   }, [visitId]);
 
   // Load history eagerly in background once visit is known (for badge count)

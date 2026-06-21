@@ -40,17 +40,16 @@ export default function DashboardPage() {
       setWeeks(Array.isArray(weeksData) ? weeksData : []);
       if (settingsData.userName) setUserName(settingsData.userName);
       if (Array.isArray(weeksData) && weeksData.length > 0) {
-        fetch(`/api/visits?weekId=${weeksData[0].id}`)
-          .then((r) => r.json())
-          .then((v) => {
-            setVisits(Array.isArray(v) ? v : []);
-            setLoading(false);
-          })
-          .catch((err) => {
-            console.error("Visits fetch error:", err);
-            showToast("error", "Erreur lors du chargement des visites");
-            setLoading(false);
-          });
+        // Load visits in parallel with week selection
+        Promise.all([
+          fetch(`/api/visits?weekId=${weeksData[0].id}`)
+            .then((r) => r.json())
+            .then((v) => setVisits(Array.isArray(v) ? v : []))
+            .catch((err) => {
+              console.error("Visits fetch error:", err);
+              showToast("error", "Erreur lors du chargement des visites");
+            }),
+        ]).finally(() => setLoading(false));
       } else {
         setLoading(false);
       }
