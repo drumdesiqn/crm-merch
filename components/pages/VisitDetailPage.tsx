@@ -845,14 +845,14 @@ export default function VisitDetailPage() {
           {/* Notes list */}
           {notes.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Notes ({notes.length})</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Notes ({notes.length})</p>
               {[...notes]
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .map((note) => (
                 <Card key={note.id} className="border-slate-200">
                   <CardContent className="py-3 px-4">
                     <div className="flex items-start gap-2">
-                      <p className="flex-1 text-sm text-slate-800 whitespace-pre-wrap">{note.content}</p>
+                      <p className="flex-1 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{note.content}</p>
                       <button
                         onClick={() => deleteNote(note.id)}
                         className="text-slate-300 hover:text-red-500 transition-colors shrink-0 mt-0.5"
@@ -1116,7 +1116,7 @@ export default function VisitDetailPage() {
                         </div>
                         {/* Preview first note */}
                         {v.notes?.[0] && (
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-1 italic">"{v.notes[0].content}"</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 italic">"{v.notes[0].content}"</p>
                         )}
                         {/* Preview photos thumbnails */}
                         {(v.photos?.length || 0) > 0 && (
