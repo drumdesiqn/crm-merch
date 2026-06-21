@@ -39,15 +39,12 @@ model Visit {
   materialType  String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  deletedAt     DateTime?
   notes         VisitNote[]
   photos        VisitPhoto[]
-  auditLogs     AuditLog[]
 
   @@index([storeId])
   @@index([visitDate])
   @@index([weekId, visitDate])
-  @@index([deletedAt])
 }
 
 model VisitNote {
@@ -165,19 +162,4 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  visitId   String
-  visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
-  action    String
-  field     String?
-  oldValue  String?
-  newValue  String?
-  userId    String?
-  createdAt DateTime @default(now())
-
-  @@index([visitId])
-  @@index([createdAt])
 }
