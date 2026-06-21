@@ -62,37 +62,52 @@ export default function PlanningPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/weeks")
-      .then((r) => r.json())
-      .then((data) => {
-        const weeks = Array.isArray(data) ? data : [];
-        setWeeks(weeks);
-        if (weeks.length > 0) {
-          setSelectedWeekId(weeks[0].id);
-        } else {
+    let isMounted = true;
+    
+    const loadData = async () => {
+      try {
+        const weeksRes = await fetch("/api/weeks");
+        const weeks = await weeksRes.json();
+        if (!isMounted) return;
+        
+        const weeksArray = Array.isArray(weeks) ? weeks : [];
+        setWeeks(weeksArray);
+        
+        if (weeksArray.length > 0) {
+          setSelectedWeekId(weeksArray[0].id);
+          const visitsRes = await fetch(`/api/visits?weekId=${weeksArray[0].id}`);
+          const visits = await visitsRes.json();
+          if (!isMounted) return;
+          setVisits(Array.isArray(visits) ? visits : []);
+        }
+      } catch (error) {
+        showToast("error", "Erreur lors du chargement");
+      } finally {
+        if (isMounted) {
           setLoading(false);
         }
-      })
-      .catch(() => {
-        showToast("error", "Erreur lors du chargement des semaines");
-        setLoading(false);
-      });
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  useEffect(() => {
-    if (!selectedWeekId) return;
+  const handleWeekChange = (weekId: string) => {
+    setSelectedWeekId(weekId);
     setGeocodedCache({});
-    fetch(`/api/visits?weekId=${selectedWeekId}`)
+    fetch(`/api/visits?weekId=${weekId}`)
       .then((r) => r.json())
       .then((data) => {
         setVisits(Array.isArray(data) ? data : []);
-        setLoading(false);
       })
       .catch(() => {
         showToast("error", "Erreur lors du chargement des visites");
-        setLoading(false);
       });
-  }, [selectedWeekId]);
+  };
 
   const handleFile = async (file: File, mode: "check" | "replace" | "merge" = "check") => {
     const formData = new FormData();
@@ -262,7 +277,7 @@ export default function PlanningPage() {
           {weeks.map((w) => (
             <button
               key={w.id}
-              onClick={() => setSelectedWeekId(w.id)}
+              onClick={() => handleWeekChange(w.id)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${selectedWeekId === w.id ? "bg-red-600 text-white border-red-600" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
             >
               {w.label} · {w._count.visits} visites
