@@ -54,13 +54,12 @@ export default function PlanningPage() {
     weeks: Week[];
     selectedWeekId: string;
     visits: Visit[];
-    loading: boolean;
   }>({
     weeks: [],
     selectedWeekId: "",
     visits: [],
-    loading: true,
   });
+  const [isReady, setIsReady] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -85,24 +84,31 @@ export default function PlanningPage() {
           const visits = await visitsRes.json();
           if (!isMounted) return;
           
-          // Single state update with all data and loading=false
+          // Set all data, then mark as ready in next tick
           setState({
             weeks: weeksArray,
             selectedWeekId: weeksArray[0].id,
             visits: Array.isArray(visits) ? visits : [],
-            loading: false,
           });
+          // Use setTimeout to ensure state is set before marking ready
+          setTimeout(() => {
+            if (isMounted) setIsReady(true);
+          }, 0);
         } else {
           setState({
             weeks: weeksArray,
             selectedWeekId: "",
             visits: [],
-            loading: false,
           });
+          setTimeout(() => {
+            if (isMounted) setIsReady(true);
+          }, 0);
         }
       } catch (error) {
         showToast("error", "Erreur lors du chargement");
-        setState(prev => ({ ...prev, loading: false }));
+        setTimeout(() => {
+          if (isMounted) setIsReady(true);
+        }, 0);
       }
     };
     
@@ -192,7 +198,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {state.loading ? (
+      {!isReady ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -247,7 +253,7 @@ export default function PlanningPage() {
       )}
 
       {/* Drop zone — hidden when visits are already loaded or still loading */}
-      {state.visits.length === 0 && !state.loading && (
+      {state.visits.length === 0 && isReady && (
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -289,7 +295,7 @@ export default function PlanningPage() {
       )}
 
       {/* Week selector */}
-      {state.weeks.length > 1 && !state.loading && (
+      {state.weeks.length > 1 && isReady && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {state.weeks.map((w) => (
             <button
