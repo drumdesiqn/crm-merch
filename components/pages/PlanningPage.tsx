@@ -249,92 +249,92 @@ export default function PlanningPage() {
               e.target.value = "";
             }}
           />
-        </>
-      )}
 
-      {/* Drop zone — hidden when visits are already loaded or still loading */}
-      {state.visits.length === 0 && isReady && (
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragging(false);
-            const f = e.dataTransfer.files[0];
-            if (f) handleFile(f, "check");
-          }}
-          className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${dragging ? "border-red-400 bg-red-50 dark:bg-red-950" : "border-slate-200 dark:border-slate-600 hover:border-slate-300"}`}
-          onClick={() => fileRef.current?.click()}
-        >
-          <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">Glisse ton fichier Excel ici ou clique pour choisir</p>
-        </div>
-      )}
-
-      {/* Import feedback */}
-      {importMsg && (
-        <div className={`flex items-center gap-3 rounded-lg p-3 text-sm ${importMsg.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
-          {importMsg.type === "success" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
-          <span>{importMsg.text}</span>
-          <button onClick={() => setImportMsg(null)} className="ml-auto"><X className="w-4 h-4" /></button>
-        </div>
-      )}
-
-      {/* Confirm overwrite dialog */}
-      {pendingImport && (
-        <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-4 space-y-3">
-          <p className="text-sm font-medium text-yellow-900">
-            La semaine <strong>{pendingImport.label}</strong> existe déjà ({pendingImport.count} visites détectées).
-          </p>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={() => handleFile(pendingImport.file, "replace")}>Remplacer</Button>
-            <Button size="sm" variant="outline" onClick={() => handleFile(pendingImport.file, "merge")}>Fusionner</Button>
-            <Button size="sm" variant="ghost" onClick={() => setPendingImport(null)}>Annuler</Button>
-          </div>
-        </div>
-      )}
-
-      {/* Week selector */}
-      {state.weeks.length > 1 && isReady && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {state.weeks.map((w) => (
-            <button
-              key={w.id}
-              onClick={() => handleWeekChange(w.id)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${state.selectedWeekId === w.id ? "bg-red-600 text-white border-red-600" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
+          {/* Drop zone — hidden when visits are already loaded */}
+          {state.visits.length === 0 && (
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                const f = e.dataTransfer.files[0];
+                if (f) handleFile(f, "check");
+              }}
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${dragging ? "border-red-400 bg-red-50 dark:bg-red-950" : "border-slate-200 dark:border-slate-600 hover:border-slate-300"}`}
+              onClick={() => fileRef.current?.click()}
             >
-              {w.label} · {w._count.visits} visites
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Visits — list or map view */}
-      {sortedDays.length === 0 ? (
-        <div className="text-center py-12 text-slate-500">
-          <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-          <p>Aucune visite. Importe ton planning Excel.</p>
-        </div>
-      ) : viewMode === "map" ? (
-        <RouteMapView
-          visits={state.visits}
-          geocodedCache={geocodedCache}
-          onGeocodedCacheUpdate={setGeocodedCache}
-          onOrderSaved={(reordered) => setState(prev => ({ ...prev, visits: reordered }))}
-        />
-      ) : (
-        sortedDays.map((day) => (
-          <div key={day.date} className="space-y-2">
-            <div className="flex items-center gap-2 py-1">
-              <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                <h2 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">{day.label}</h2>
-              </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500">{day.visits.length} visite{day.visits.length > 1 ? "s" : ""}</span>
+              <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">Glisse ton fichier Excel ici ou clique pour choisir</p>
             </div>
-            {day.visits.map((v) => <VisitCard key={v.id} visit={v} />)}
-          </div>
-        ))
+          )}
+
+          {/* Import feedback */}
+          {importMsg && (
+            <div className={`flex items-center gap-3 rounded-lg p-3 text-sm ${importMsg.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+              {importMsg.type === "success" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+              <span>{importMsg.text}</span>
+              <button onClick={() => setImportMsg(null)} className="ml-auto"><X className="w-4 h-4" /></button>
+            </div>
+          )}
+
+          {/* Confirm overwrite dialog */}
+          {pendingImport && (
+            <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-4 space-y-3">
+              <p className="text-sm font-medium text-yellow-900">
+                La semaine <strong>{pendingImport.label}</strong> existe déjà ({pendingImport.count} visites détectées).
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleFile(pendingImport.file, "replace")}>Remplacer</Button>
+                <Button size="sm" variant="outline" onClick={() => handleFile(pendingImport.file, "merge")}>Fusionner</Button>
+                <Button size="sm" variant="ghost" onClick={() => setPendingImport(null)}>Annuler</Button>
+              </div>
+            </div>
+          )}
+
+          {/* Week selector */}
+          {state.weeks.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {state.weeks.map((w) => (
+                <button
+                  key={w.id}
+                  onClick={() => handleWeekChange(w.id)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${state.selectedWeekId === w.id ? "bg-red-600 text-white border-red-600" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
+                >
+                  {w.label} · {w._count.visits} visites
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Visits — list or map view */}
+          {sortedDays.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">
+              <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+              <p>Aucune visite. Importe ton planning Excel.</p>
+            </div>
+          ) : viewMode === "map" ? (
+            <RouteMapView
+              visits={state.visits}
+              geocodedCache={geocodedCache}
+              onGeocodedCacheUpdate={setGeocodedCache}
+              onOrderSaved={(reordered) => setState(prev => ({ ...prev, visits: reordered }))}
+            />
+          ) : (
+            sortedDays.map((day) => (
+              <div key={day.date} className="space-y-2">
+                <div className="flex items-center gap-2 py-1">
+                  <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1">
+                    <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <h2 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">{day.label}</h2>
+                  </div>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{day.visits.length} visite{day.visits.length > 1 ? "s" : ""}</span>
+                </div>
+                {day.visits.map((v) => <VisitCard key={v.id} visit={v} />)}
+              </div>
+            ))
+          )}
+        </>
       )}
     </div>
   );
