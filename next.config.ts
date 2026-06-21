@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://*.vercel.app https://*.public.blob.vercel-storage.com",
+              "img-src 'self' data: blob: https://*.vercel.app https://*.public.blob.vercel-storage.com https://*.tile.openstreetmap.org",
               "font-src 'self' data:",
               "connect-src 'self' https://*.openai.com https://*.vercel.app https://nominatim.openstreetmap.org",
               "frame-src 'none'",
