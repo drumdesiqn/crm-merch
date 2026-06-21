@@ -307,7 +307,7 @@ export default function PlanningPage() {
           )}
 
           {/* Visits — list or map view */}
-          {state.visits.length === 0 ? (
+          {state.visits.length === 0 && state.weeks.length > 0 && state.selectedWeekId !== "" ? (
             <div className="text-center py-12 text-slate-500">
               <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
               <p>Aucune visite. Importe ton planning Excel.</p>
