@@ -81,9 +81,12 @@ export default function PlanningPage() {
           if (!isMounted) return;
           setVisits(Array.isArray(visits) ? visits : []);
           setVisitsLoaded(true);
+        } else {
+          setVisitsLoaded(true);
         }
       } catch (error) {
         showToast("error", "Erreur lors du chargement");
+        setVisitsLoaded(true);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -180,7 +183,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {loading ? (
+      {loading || !visitsLoaded ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -292,11 +295,7 @@ export default function PlanningPage() {
       )}
 
       {/* Visits — list or map view */}
-      {!visitsLoaded ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : sortedDays.length === 0 ? (
+      {sortedDays.length === 0 ? (
         <div className="text-center py-12 text-slate-500">
           <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
           <p>Aucune visite. Importe ton planning Excel.</p>
