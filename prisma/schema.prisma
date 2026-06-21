@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Week {
+  id        String   @id @default(cuid())
+  weekNum   Int
+  year      Int
+  label     String
+  createdAt DateTime @default(now())
+  visits    Visit[]
+
+  @@unique([weekNum, year])
+}
+
+model Visit {
+  id            String   @id @default(cuid())
+  weekId        String
+  week          Week     @relation(fields: [weekId], references: [id])
+  assortment    String
+  storeId       String
+  storeName     String
+  storeAddress  String
+  storeZipcode  String
+  storeCity     String
+  visitType     String
+  visitFrequence String?
+  visitDate     DateTime
+  merchandiser  String?
+  remarks       String?
+  salesRep      String?
+  materials     String?
+  sortOrder     Int      @default(0)
+  status        String   @default("pending")
+  materialType  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  notes         VisitNote[]
+  photos        VisitPhoto[]
+}
+
+model VisitNote {
+  id        String   @id @default(cuid())
+  visitId   String
+  visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  storeId   String?
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model VisitPhoto {
+  id        String   @id @default(cuid())
+  visitId   String
+  visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  storeId   String?
+  url       String
+  blobKey   String
+  caption   String?
+  createdAt DateTime @default(now())
+}
+
+model MailLog {
+  id            String         @id @default(cuid())
+  rawContent    String
+  summary       String?
+  replyDraft    String?
+  status        String         @default("pending")
+  createdAt     DateTime       @default(now())
+  modifications Modification[]
+}
+
+model Modification {
+  id          String   @id @default(cuid())
+  mailLogId   String?
+  mailLog     MailLog? @relation(fields: [mailLogId], references: [id])
+  action      String
+  target      String
+  field       String?
+  oldValue    String?
+  newValue    String?
+  description String
+  applied     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model MaterialGuide {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String
+  photoUrl  String?
+  blobKey   String?
+  updatedAt DateTime @updatedAt
+}
+
+model GlossaryTerm {
+  id         String   @id @default(cuid())
+  term       String   @unique
+  definition String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Settings {
+  id          String   @id @default("singleton")
+  openaiKey   String?
+  userName    String?
+  userZone    String?
+  userEmail   String?
+  homeAddress String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

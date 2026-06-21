@@ -1,0 +1,127 @@
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { content } = await req.json();
+
+    if (!content?.trim()) {
+      return NextResponse.json({ error: "No mail content provided" }, { status: 400 });
+    }
+
+    const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });
+    const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json({ error: "OpenAI API key not configured. Go to Settings." }, { status: 400 });
+    }
+
+    const currentWeek = await prisma.week.findFirst({
+      orderBy: [{ year: "desc" }, { weekNum: "desc" }],
+    });
+    
+    const currentWeekVisits = currentWeek
+      ? await prisma.visit.findMany({
+          where: { weekId: currentWeek.id },
+          orderBy: [{ sortOrder: "asc" }, { visitDate: "asc" }],
+        })
+      : [];
+
+    const glossary = await prisma.glossaryTerm.findMany({ orderBy: { term: "asc" } });
+    const glossaryText = glossary.map((g) => `- ${g.term}: ${g.definition}`).join("\n");
+
+    const visitsContext = currentWeekVisits.length > 0
+      ? currentWeekVisits
+          .map(
+            (v) =>
+              `[${v.id}] ${v.storeName} (${v.storeCity}) - ${v.visitDate.toISOString().split("T")[0]} - ${v.visitType}${v.remarks ? ` - Remarque: ${v.remarks}` : ""} - Sales rep: ${v.salesRep || "N/A"}`
+          )
+          .join("\n")
+      : "Aucune semaine importée";
+
+    const systemPrompt = `Tu es un assistant pour un merchandiser de chez Mars (chocolats, petfood, snacking) en Belgique.
+Tu analyses les emails reçus par le merchandiser et tu identifies les modifications à apporter à son planning.
+
+GLOSSAIRE MÉTIER:
+${glossaryText}
+
+PLANNING EN COURS (${currentWeek?.label || "aucun"}):
+${visitsContext}
+
+Tu dois retourner un JSON avec cette structure exacte:
+{
+  "summary": "Résumé court du mail en 1-2 phrases",
+  "actions": [
+    {
+      "action": "modify" | "add" | "delete" | "add_remark",
+      "target": "nom du magasin ou store_id",
+      "visitId": "id de la visite si connue, sinon null",
+      "field": "champ à modifier (remarks, salesRep, visitDate, visitType, materials, etc.)",
+      "oldValue": "valeur actuelle si connue",
+      "newValue": "nouvelle valeur",
+      "description": "Description lisible de l'action en français"
+    }
+  ],
+  "replyDraft": "Brouillon de réponse au mail en français, ton professionnel, en 3-5 phrases"
+}
+
+Ne retourne QUE le JSON, sans markdown, sans explication.`;
+
+    const openai = new OpenAI({ apiKey });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Voici l'email à analyser:\n\n${content}` },
+      ],
+      temperature: 0.2,
+    });
+
+    const raw = completion.choices[0].message.content || "{}";
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { summary: raw, actions: [], replyDraft: "" };
+    }
+
+    const mailLog = await prisma.mailLog.create({
+      data: {
+        rawContent: content.slice(0, 10000),
+        summary: parsed.summary || "",
+        replyDraft: parsed.replyDraft || "",
+        status: "analyzed",
+      },
+    });
+
+    if (parsed.actions?.length > 0) {
+      await prisma.modification.createMany({
+        data: parsed.actions.map((a: Record<string, string>) => ({
+          mailLogId: mailLog.id,
+          action: a.action || "modify",
+          target: a.target || "",
+          field: a.field || null,
+          oldValue: a.oldValue || null,
+          newValue: a.newValue || null,
+          description: a.description || "",
+          applied: false,
+        })),
+      });
+    }
+
+    const modifications = await prisma.modification.findMany({
+      where: { mailLogId: mailLog.id },
+    });
+
+    return NextResponse.json({
+      mailLogId: mailLog.id,
+      summary: parsed.summary,
+      replyDraft: parsed.replyDraft,
+      modifications,
+    });
+  } catch (error) {
+    console.error("Mail analyze error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
