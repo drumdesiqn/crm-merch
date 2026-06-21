@@ -7,17 +7,17 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
 
-// Navigation principale (5 items max pour mobile)
+// Navigation principale (3 items max pour mobile)
 const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/planning", icon: Calendar, label: "Planning" },
-  { href: "/mails", icon: Mail, label: "Mails" },
   { href: "/contacts", icon: Users, label: "Contacts" },
-  { href: "/stores", icon: Store, label: "Magasins" },
 ];
 
 // Items dans le menu "Plus" (mobile)
 const MORE_ITEMS = [
+  { href: "/mails", icon: Mail, label: "Mails" },
+  { href: "/stores", icon: Store, label: "Magasins" },
   { href: "/guide", icon: BookOpen, label: "Guide" },
   { href: "/settings", icon: Settings, label: "Réglages" },
 ];
