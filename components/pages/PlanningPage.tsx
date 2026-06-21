@@ -50,10 +50,17 @@ interface DayGroup {
 }
 
 export default function PlanningPage() {
-  const [weeks, setWeeks] = useState<Week[]>([]);
-  const [selectedWeekId, setSelectedWeekId] = useState<string>("");
-  const [visits, setVisits] = useState<Visit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<{
+    weeks: Week[];
+    selectedWeekId: string;
+    visits: Visit[];
+    loading: boolean;
+  }>({
+    weeks: [],
+    selectedWeekId: "",
+    visits: [],
+    loading: true,
+  });
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -78,22 +85,24 @@ export default function PlanningPage() {
           const visits = await visitsRes.json();
           if (!isMounted) return;
           
-          // Use flushSync to force synchronous updates - prevents intermediate renders
-          flushSync(() => {
-            setWeeks(weeksArray);
-            setSelectedWeekId(weeksArray[0].id);
-            setVisits(Array.isArray(visits) ? visits : []);
-            setLoading(false);
+          // Single state update with all data
+          setState({
+            weeks: weeksArray,
+            selectedWeekId: weeksArray[0].id,
+            visits: Array.isArray(visits) ? visits : [],
+            loading: false,
           });
         } else {
-          flushSync(() => {
-            setWeeks(weeksArray);
-            setLoading(false);
+          setState({
+            weeks: weeksArray,
+            selectedWeekId: "",
+            visits: [],
+            loading: false,
           });
         }
       } catch (error) {
         showToast("error", "Erreur lors du chargement");
-        setLoading(false);
+        setState(prev => ({ ...prev, loading: false }));
       }
     };
     
@@ -105,12 +114,12 @@ export default function PlanningPage() {
   }, []);
 
   const handleWeekChange = (weekId: string) => {
-    setSelectedWeekId(weekId);
+    setState(prev => ({ ...prev, selectedWeekId: weekId }));
     setGeocodedCache({});
     fetch(`/api/visits?weekId=${weekId}`)
       .then((r) => r.json())
       .then((data) => {
-        setVisits(Array.isArray(data) ? data : []);
+        setState(prev => ({ ...prev, visits: Array.isArray(data) ? data : [] }));
       })
       .catch(() => {
         showToast("error", "Erreur lors du chargement des visites");
@@ -153,20 +162,20 @@ export default function PlanningPage() {
     try {
       const weeksRes = await fetch("/api/weeks");
       const newWeeks = await weeksRes.json();
-      setWeeks(newWeeks);
+      setState(prev => ({ ...prev, weeks: newWeeks }));
       const imported = newWeeks.find((w: Week) => w.label === data.label);
-      if (imported) setSelectedWeekId(imported.id);
+      if (imported) setState(prev => ({ ...prev, selectedWeekId: imported.id }));
     } catch {
       // weeks refresh failed, ignore
     }
   };
 
-  const dayGroups = useMemo(() => visits.reduce((acc, v) => {
+  const dayGroups = useMemo(() => state.visits.reduce((acc, v) => {
     const day = v.visitDate.split("T")[0];
     if (!acc[day]) acc[day] = [];
     acc[day].push(v);
     return acc;
-  }, {} as Record<string, Visit[]>), [visits]);
+  }, {} as Record<string, Visit[]>), [state.visits]);
 
   const sortedDays: DayGroup[] = useMemo(() => Object.entries(dayGroups)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -183,7 +192,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {loading ? (
+      {state.loading ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -193,7 +202,7 @@ export default function PlanningPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Planning</h1>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
-              {visits.length > 0 && (
+              {state.visits.length > 0 && (
                 <div className="flex rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                   <button
                     onClick={() => setViewMode("list")}
@@ -238,7 +247,7 @@ export default function PlanningPage() {
       )}
 
       {/* Drop zone — hidden when visits are already loaded or still loading */}
-      {visits.length === 0 && !loading && (
+      {state.visits.length === 0 && !state.loading && (
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -280,13 +289,13 @@ export default function PlanningPage() {
       )}
 
       {/* Week selector */}
-      {weeks.length > 1 && !loading && (
+      {state.weeks.length > 1 && !state.loading && (
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {weeks.map((w) => (
+          {state.weeks.map((w) => (
             <button
               key={w.id}
               onClick={() => handleWeekChange(w.id)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${selectedWeekId === w.id ? "bg-red-600 text-white border-red-600" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${state.selectedWeekId === w.id ? "bg-red-600 text-white border-red-600" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
             >
               {w.label} · {w._count.visits} visites
             </button>
@@ -302,10 +311,10 @@ export default function PlanningPage() {
         </div>
       ) : viewMode === "map" ? (
         <RouteMapView
-          visits={visits}
+          visits={state.visits}
           geocodedCache={geocodedCache}
           onGeocodedCacheUpdate={setGeocodedCache}
-          onOrderSaved={(reordered) => setVisits(reordered)}
+          onOrderSaved={(reordered) => setState(prev => ({ ...prev, visits: reordered }))}
         />
       ) : (
         sortedDays.map((day) => (
