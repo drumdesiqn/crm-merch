@@ -107,7 +107,7 @@ export default function Navbar() {
       </header>
 
       {/* Bottom nav mobile — 4 items + menu Plus */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex px-2 pb-safe-extra">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex px-2 pb-safe-extra">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           return (
@@ -141,12 +141,12 @@ export default function Navbar() {
           {/* Overlay pour capturer les clics à l'extérieur */}
           {showMore && (
             <div 
-              className="fixed inset-0 z-[100] bg-transparent"
+              className="fixed inset-0 z-[9999] bg-transparent"
               onClick={closeMore}
             />
           )}
           {showMore && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 min-w-[160px] z-[200]">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 min-w-[160px] z-[10000]">
               {MORE_ITEMS.map((item) => {
                 const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                 return (

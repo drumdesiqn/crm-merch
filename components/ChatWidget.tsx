@@ -44,7 +44,7 @@ export default function ChatWidget() {
     <>
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100 bg-white shrink-0">
             <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
@@ -184,7 +184,7 @@ export default function ChatWidget() {
       {/* Floating button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
+        className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
           open
             ? "bg-slate-700 hover:bg-slate-800 rotate-0"
             : "bg-red-600 hover:bg-red-700"

@@ -51,11 +51,11 @@ export default function RootLayout({
         <ThemeProvider>
           <OfflineIndicator />
           <ToastContainer />
+          <ChatWidget />
           <Navbar />
           <main className="md:pt-14 pb-20 md:pb-4 min-h-screen">
             {children}
           </main>
-          <ChatWidget />
         </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
