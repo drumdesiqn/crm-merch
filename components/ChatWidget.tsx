@@ -60,6 +60,7 @@ export default function ChatWidget() {
                   onClick={handleReset}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                   title="Effacer la conversation"
+                  aria-label="Effacer la conversation"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
@@ -67,6 +68,7 @@ export default function ChatWidget() {
               <button
                 onClick={() => setOpen(false)}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Fermer le chat"
               >
                 <X className="w-4 h-4" />
               </button>

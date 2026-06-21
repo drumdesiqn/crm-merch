@@ -200,22 +200,38 @@ export default function VisitDetailPage() {
 
   const addNote = async () => {
     if (!noteInput.trim()) return;
+    const tempNote = {
+      id: `temp-${Date.now()}`,
+      content: noteInput.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    
+    // Optimistic update
+    setNotes((prev) => [tempNote, ...prev]);
+    setNoteInput("");
     setAddingNote(true);
+    
     try {
       const res = await fetch(`/api/visits/${visitId}/notes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: noteInput.trim() }),
+        body: JSON.stringify({ content: tempNote.content }),
       });
       const data = await res.json();
       if (res.ok) {
-        setNotes((prev) => [data, ...prev]);
-        setNoteInput("");
+        // Replace temp note with real one
+        setNotes((prev) => prev.map((n) => n.id === tempNote.id ? data : n));
         showToast("success", "Note ajoutée");
       } else {
+        // Revert on error
+        setNotes((prev) => prev.filter((n) => n.id !== tempNote.id));
+        setNoteInput(tempNote.content);
         showToast("error", "Erreur lors de l'ajout de la note");
       }
     } catch {
+      // Revert on error
+      setNotes((prev) => prev.filter((n) => n.id !== tempNote.id));
+      setNoteInput(tempNote.content);
       showToast("error", "Erreur réseau");
     } finally {
       setAddingNote(false);
@@ -223,21 +239,39 @@ export default function VisitDetailPage() {
   };
 
   const deleteNote = async (noteId: string) => {
+    const previousNotes = [...notes];
+    
+    // Optimistic update
+    setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    
     try {
       await fetch(`/api/visits/${visitId}/notes`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ noteId }),
       });
-      setNotes((prev) => prev.filter((n) => n.id !== noteId));
       showToast("success", "Note supprimée");
     } catch {
+      // Revert on error
+      setNotes(previousNotes);
       showToast("error", "Erreur lors de la suppression");
     }
   };
 
   const handleFileSelect = async (file: File) => {
+    const tempPhoto = {
+      id: `temp-${Date.now()}`,
+      url: URL.createObjectURL(file),
+      caption: null,
+      createdAt: new Date().toISOString(),
+      visitId,
+      blobKey: "",
+    };
+    
+    // Optimistic update
+    setPhotos((prev) => [tempPhoto, ...prev]);
     setUploadingPhoto(true);
+    
     try {
       const compressed = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
       const formData = new FormData();
@@ -245,12 +279,21 @@ export default function VisitDetailPage() {
       const res = await fetch(`/api/visits/${visitId}/photos`, { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
-        setPhotos((prev) => [data, ...prev]);
+        // Replace temp photo with real one
+        setPhotos((prev) => prev.map((p) => p.id === tempPhoto.id ? data : p));
+        // Revoke temp URL
+        URL.revokeObjectURL(tempPhoto.url);
         showToast("success", "Photo ajoutée");
       } else {
+        // Revert on error
+        setPhotos((prev) => prev.filter((p) => p.id !== tempPhoto.id));
+        URL.revokeObjectURL(tempPhoto.url);
         showToast("error", "Erreur lors de l'ajout de la photo");
       }
     } catch {
+      // Revert on error
+      setPhotos((prev) => prev.filter((p) => p.id === tempPhoto.id));
+      URL.revokeObjectURL(tempPhoto.url);
       showToast("error", "Erreur réseau");
     } finally {
       setUploadingPhoto(false);
@@ -586,6 +629,7 @@ export default function VisitDetailPage() {
               className="h-8 px-2"
               onClick={exportVisitPDF}
               disabled={exportingPdf}
+              aria-label="Exporter en PDF"
             >
               {exportingPdf ? (
                 <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
@@ -840,6 +884,7 @@ export default function VisitDetailPage() {
                   onClick={() => photoRef.current?.click()}
                   disabled={uploadingPhoto}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-red-300 hover:bg-red-50 transition-colors text-sm text-slate-500 hover:text-red-600 disabled:opacity-50"
+                  aria-label="Prendre une photo"
                 >
                   {uploadingPhoto ? (
                     <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
@@ -852,6 +897,7 @@ export default function VisitDetailPage() {
                   onClick={() => galleryRef.current?.click()}
                   disabled={uploadingPhoto}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-red-300 hover:bg-red-50 transition-colors text-sm text-slate-500 hover:text-red-600 disabled:opacity-50"
+                  aria-label="Choisir depuis la galerie"
                 >
                   {uploadingPhoto ? (
                     <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />

@@ -355,12 +355,14 @@ export default function SettingsPage() {
                     <button
                       onClick={() => deleteTerm(term.id)}
                       className="text-xs px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                      aria-label="Confirmer la suppression du terme"
                     >
                       Oui
                     </button>
                     <button
                       onClick={() => setConfirmDeleteTermId(null)}
                       className="text-xs px-2 py-0.5 border border-slate-200 rounded hover:bg-slate-50 transition-colors"
+                      aria-label="Annuler la suppression"
                     >
                       Non
                     </button>
@@ -369,6 +371,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => setConfirmDeleteTermId(term.id)}
                     className="shrink-0 text-slate-300 hover:text-red-500 transition-colors mt-0.5"
+                    aria-label={`Supprimer le terme ${term.term}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

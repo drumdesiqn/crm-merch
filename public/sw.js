@@ -1,5 +1,6 @@
-const CACHE_NAME = "mars-merch-v4";
-const DATA_CACHE = "mars-merch-data-v2";
+const CACHE_VERSION = new Date().toISOString().split('T')[0]; // YYYY-MM-DD for daily cache busting
+const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
+const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
 const PRECACHE_URLS = ["/", "/planning", "/mails", "/settings", "/export", "/guide"];
 
 // Install - precache critical pages

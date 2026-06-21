@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
       where: weekId ? { weekId } : undefined,
       orderBy: [{ sortOrder: "asc" }, { visitDate: "asc" }],
       include: { week: true },
+      take: 100, // Limit to prevent performance issues
     });
 
     return NextResponse.json(visits);

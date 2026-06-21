@@ -7,6 +7,7 @@ export async function GET() {
     const weeks = await prisma.week.findMany({
       orderBy: [{ year: "desc" }, { weekNum: "desc" }],
       include: { _count: { select: { visits: true } } },
+      take: 50, // Limit to prevent performance issues
     });
     return NextResponse.json(weeks);
   } catch (error) {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Calendar, Mail, Settings, Package, Sun, Moon, Users, BookOpen, MoreHorizontal } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -27,22 +27,25 @@ export default function Navbar() {
   const [showMore, setShowMore] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
+  const toggleMore = useCallback(() => setShowMore((v) => !v), []);
+  const closeMore = useCallback(() => setShowMore(false), []);
+
   // Fermer le menu Plus quand on clique à l'extérieur
   useEffect(() => {
     if (!showMore) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
-        setShowMore(false);
+        closeMore();
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showMore]);
+  }, [showMore, closeMore]);
 
   // Fermer le menu Plus quand on change de route
   useEffect(() => {
-    setShowMore(false);
-  }, [pathname]);
+    closeMore();
+  }, [pathname, closeMore]);
 
   return (
     <>
@@ -95,6 +98,7 @@ export default function Navbar() {
             onClick={toggleTheme}
             className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title={theme === "dark" ? "Mode clair" : "Mode sombre"}
+            aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
           >
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -122,11 +126,13 @@ export default function Navbar() {
         {/* Menu Plus */}
         <div className="flex-1 relative" ref={moreMenuRef}>
           <button
-            onClick={() => setShowMore(!showMore)}
+            onClick={toggleMore}
             className={cn(
               "w-full flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors rounded-xl",
               showMore ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"
             )}
+            aria-label="Menu supplémentaire"
+            aria-expanded={showMore}
           >
             <MoreHorizontal className={cn("w-5 h-5", showMore && "stroke-red-600 dark:stroke-red-400")} />
             <span className="truncate">Plus</span>
@@ -135,7 +141,7 @@ export default function Navbar() {
           {showMore && (
             <div 
               className="fixed inset-0 z-[55] bg-transparent"
-              onClick={() => setShowMore(false)}
+              onClick={closeMore}
             />
           )}
           {showMore && (
@@ -146,7 +152,7 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setShowMore(false)}
+                    onClick={closeMore}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       active ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"

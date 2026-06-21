@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import ChatWidget from "@/components/ChatWidget";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import ToastContainer from "@/components/Toast";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import dynamic from "next/dynamic";
+
+const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
+  loading: () => null,
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

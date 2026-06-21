@@ -5,13 +5,19 @@ import { GlossaryTermSchema, GlossaryIdSchema, validate } from "@/lib/validation
 
 export async function GET() {
   try {
-    let terms = await prisma.glossaryTerm.findMany({ orderBy: { term: "asc" } });
+    let terms = await prisma.glossaryTerm.findMany({ 
+      orderBy: { term: "asc" },
+      take: 100, // Limit to prevent performance issues
+    });
     if (terms.length === 0) {
       await prisma.glossaryTerm.createMany({
         data: DEFAULT_GLOSSARY,
         skipDuplicates: true,
       });
-      terms = await prisma.glossaryTerm.findMany({ orderBy: { term: "asc" } });
+      terms = await prisma.glossaryTerm.findMany({ 
+        orderBy: { term: "asc" },
+        take: 100,
+      });
     }
     return NextResponse.json(terms);
   } catch (error) {

@@ -5,6 +5,7 @@ export async function GET() {
   try {
     const logs = await prisma.mailLog.findMany({
       orderBy: { createdAt: "desc" },
+      take: 100, // Limit to prevent performance issues
       select: {
         id: true,
         summary: true,

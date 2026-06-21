@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Calendar, MapPin, Store, Loader2, Printer } from "lucide-react";
+import { ArrowLeft, FileText, Calendar, MapPin, Store, Loader2, Printer, Download, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import * as XLSX from "xlsx";
 
 interface Week {
   id: string;
@@ -199,6 +200,62 @@ export default function ExportPage() {
     setGenerating(false);
   };
 
+  const exportToExcel = () => {
+    if (visits.length === 0) return;
+
+    const exportData = visits.map((visit) => ({
+      Date: formatDate(visit.visitDate),
+      Magasin: visit.storeName,
+      Adresse: `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`,
+      Type: visit.visitType,
+      Statut: visit.status,
+      Remarques: visit.remarks || "",
+      Matériel: visit.materials || "",
+      "Type Matériel": visit.materialType || "",
+      Notes: visit.notes.map((n) => n.content).join("; "),
+      "Nombre Photos": visit.photos.length,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Visites");
+    
+    const weekLabel = weeks.find((w) => w.id === selectedWeek)?.label || "export";
+    XLSX.writeFile(wb, `visites-${weekLabel}.xlsx`);
+  };
+
+  const exportToCSV = () => {
+    if (visits.length === 0) return;
+
+    const exportData = visits.map((visit) => ({
+      Date: formatDate(visit.visitDate),
+      Magasin: visit.storeName,
+      Adresse: `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`,
+      Type: visit.visitType,
+      Statut: visit.status,
+      Remarques: visit.remarks || "",
+      Matériel: visit.materials || "",
+      "Type Matériel": visit.materialType || "",
+      Notes: visit.notes.map((n) => n.content).join("; "),
+      "Nombre Photos": visit.photos.length,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    const weekLabel = weeks.find((w) => w.id === selectedWeek)?.label || "export";
+    link.setAttribute("href", url);
+    link.setAttribute("download", `visites-${weekLabel}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       {/* Header */}
@@ -326,6 +383,41 @@ export default function ExportPage() {
                 </>
               )}
             </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Export Excel/CSV */}
+      {selectedWeek && visits.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FileSpreadsheet className="w-4 h-4 text-red-600" />
+              Exporter toutes les visites
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Exporter toutes les visites de la semaine sélectionnée au format Excel ou CSV.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={exportToExcel}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Excel (.xlsx)
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={exportToCSV}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                CSV (.csv)
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

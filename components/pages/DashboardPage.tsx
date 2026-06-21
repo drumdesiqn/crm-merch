@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench } from "lucide-react";
@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Skeleton, StatsCardSkeleton, VisitRowSkeleton } from "@/components/Skeleton";
 import type { Visit, Week } from "@/types/visit";
+import { Search } from "lucide-react";
 
 export default function DashboardPage() {
   const [weeks, setWeeks] = useState<Week[]>([]);
@@ -18,14 +20,19 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("Guillaume");
   const [showPast, setShowPast] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/weeks").then((r) => r.json()).catch(() => {
+      fetch("/api/weeks").then((r) => r.json()).catch((err) => {
+        console.error("Weeks fetch error:", err);
         showToast("error", "Erreur lors du chargement des semaines");
         return [];
       }),
-      fetch("/api/settings").then((r) => r.json()).catch(() => {
+      fetch("/api/settings").then((r) => r.json()).catch((err) => {
+        console.error("Settings fetch error:", err);
         showToast("error", "Erreur lors du chargement des paramètres");
         return {};
       }),
@@ -39,14 +46,16 @@ export default function DashboardPage() {
             setVisits(Array.isArray(v) ? v : []);
             setLoading(false);
           })
-          .catch(() => {
+          .catch((err) => {
+            console.error("Visits fetch error:", err);
             showToast("error", "Erreur lors du chargement des visites");
             setLoading(false);
           });
       } else {
         setLoading(false);
       }
-    }).catch(() => {
+    }).catch((err) => {
+      console.error("Dashboard load error:", err);
       showToast("error", "Erreur lors du chargement des données");
       setLoading(false);
     });
@@ -56,35 +65,94 @@ export default function DashboardPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const todayVisits = visits
-    .filter((v) => parseLocalDate(v.visitDate).getTime() === today.getTime())
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  // Filter visits based on search query and filters
+  const filteredVisits = useMemo(() => {
+    let result = visits;
 
-  const upcomingVisits = visits
-    .filter((v) => parseLocalDate(v.visitDate).getTime() > today.getTime())
-    .sort((a, b) => {
-      const dateDiff = parseLocalDate(a.visitDate).getTime() - parseLocalDate(b.visitDate).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-    });
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((v) =>
+        v.storeName?.toLowerCase().includes(query) ||
+        v.storeCity?.toLowerCase().includes(query) ||
+        v.storeAddress?.toLowerCase().includes(query) ||
+        v.storeZipcode?.toLowerCase().includes(query)
+      );
+    }
 
-  const pastVisits = visits
-    .filter((v) => parseLocalDate(v.visitDate).getTime() < today.getTime())
-    .sort((a, b) => {
-      const dateDiff = parseLocalDate(b.visitDate).getTime() - parseLocalDate(a.visitDate).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-    });
+    // Type filter
+    if (filterType !== "all") {
+      result = result.filter((v) => v.visitType === filterType);
+    }
 
-  const withRemarks = visits.filter((v) => v.remarks?.trim());
-  const maintenanceCount = visits.filter((v) => v.visitType === "Maintenance").length;
-  const adHocCount = visits.filter((v) => v.visitType === "Ad Hoc").length;
-  const doneCount = visits.filter((v) => v.status === "done").length;
+    // Status filter
+    if (filterStatus !== "all") {
+      result = result.filter((v) => v.status === filterStatus);
+    }
+
+    return result;
+  }, [visits, searchQuery, filterType, filterStatus]);
+
+  const todayVisits = useMemo(() => 
+    filteredVisits
+      .filter((v) => parseLocalDate(v.visitDate).getTime() === today.getTime())
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+    [filteredVisits, today]
+  );
+
+  const upcomingVisits = useMemo(() => 
+    filteredVisits
+      .filter((v) => parseLocalDate(v.visitDate).getTime() > today.getTime())
+      .sort((a, b) => {
+        const dateDiff = parseLocalDate(a.visitDate).getTime() - parseLocalDate(b.visitDate).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      }),
+    [filteredVisits, today]
+  );
+
+  const pastVisits = useMemo(() => 
+    filteredVisits
+      .filter((v) => parseLocalDate(v.visitDate).getTime() < today.getTime())
+      .sort((a, b) => {
+        const dateDiff = parseLocalDate(b.visitDate).getTime() - parseLocalDate(a.visitDate).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      }),
+    [filteredVisits, today]
+  );
+
+  const withRemarks = useMemo(() => filteredVisits.filter((v) => v.remarks?.trim()), [filteredVisits]);
+  const maintenanceCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Maintenance").length, [filteredVisits]);
+  const adHocCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Ad Hoc").length, [filteredVisits]);
+  const doneCount = useMemo(() => filteredVisits.filter((v) => v.status === "done").length, [filteredVisits]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Header skeleton */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        
+        {/* Stats cards skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+          <StatsCardSkeleton />
+        </div>
+        
+        {/* Visits skeleton */}
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-32" />
+          <div className="space-y-2">
+            <VisitRowSkeleton />
+            <VisitRowSkeleton />
+            <VisitRowSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
@@ -92,11 +160,35 @@ export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Bonjour, {userName} 👋</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          {today.toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Bonjour, {userName} 👋</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            {today.toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+        </div>
+        {currentWeek && (
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Rechercher un magasin..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              aria-label="Rechercher un magasin"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                aria-label="Effacer la recherche"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* No week imported */}
@@ -125,11 +217,30 @@ export default function DashboardPage() {
                 <p className="text-xl font-bold">{currentWeek.label}</p>
                 <p className="text-red-100 text-sm">{currentWeek._count.visits} visites</p>
               </div>
-              <Link href="/planning">
-                <Button variant="outline" size="sm" className="bg-white/10 border-white/30 text-white hover:bg-white/20">
-                  Voir planning <ChevronRight className="w-4 h-4" />
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-white/20 text-white border border-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  aria-label="Filtrer par type"
+                >
+                  <option value="all">Tous types</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Ad Hoc">Ad Hoc</option>
+                  <option value="Routinière">Routinière</option>
+                </select>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-white/20 text-white border border-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  aria-label="Filtrer par statut"
+                >
+                  <option value="all">Tous statuts</option>
+                  <option value="pending">À faire</option>
+                  <option value="done">Terminé</option>
+                  <option value="skipped">Sauté</option>
+                </select>
+              </div>
             </CardContent>
           </Card>
 
@@ -223,12 +334,14 @@ export default function DashboardPage() {
               <button
                 onClick={() => setShowPast((v) => !v)}
                 className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium"
+                aria-expanded={showPast}
+                aria-controls="past-visits"
               >
                 <ChevronRight className={`w-4 h-4 transition-transform ${showPast ? "rotate-90" : ""}`} />
                 Visites effectuées ({pastVisits.length})
               </button>
               {showPast && (
-                <div className="mt-2 space-y-2">
+                <div id="past-visits" className="mt-2 space-y-2">
                   {pastVisits.slice(0, 10).map((v) => (
                     <VisitRow key={v.id} visit={v} showDate />
                   ))}
@@ -254,7 +367,13 @@ function VisitRow({ visit, showDate }: { visit: Visit; showDate?: boolean }) {
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeCity}`)}&navigate=yes`;
   return (
-    <div onClick={() => router.push(`/planning/${visit.id}`)} className="block cursor-pointer">
+    <div 
+      onClick={() => router.push(`/planning/${visit.id}`)} 
+      onKeyDown={(e) => e.key === 'Enter' && router.push(`/planning/${visit.id}`)}
+      role="button"
+      tabIndex={0}
+      className="block cursor-pointer"
+    >
       <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

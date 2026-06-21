@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, VisitStatus } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
 import { showToast } from "@/components/Toast";
+import { Skeleton, VisitRowSkeleton } from "@/components/Skeleton";
 
 const RouteMapView = dynamic(() => import("@/components/pages/RouteMapView"), { ssr: false, loading: () => (
   <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" /></div>
@@ -138,14 +139,14 @@ export default function PlanningPage() {
     }
   };
 
-  const dayGroups = visits.reduce((acc, v) => {
+  const dayGroups = useMemo(() => visits.reduce((acc, v) => {
     const day = v.visitDate.split("T")[0];
     if (!acc[day]) acc[day] = [];
     acc[day].push(v);
     return acc;
-  }, {} as Record<string, Visit[]>);
+  }, {} as Record<string, Visit[]>), [visits]);
 
-  const sortedDays: DayGroup[] = Object.entries(dayGroups)
+  const sortedDays: DayGroup[] = useMemo(() => Object.entries(dayGroups)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, dayVisits]) => ({
       date,
@@ -156,54 +157,83 @@ export default function PlanningPage() {
         });
       })(),
       visits: dayVisits,
-    }));
+    })), [dayGroups]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Planning</h1>
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
-          {visits.length > 0 && (
-            <div className="flex rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === "list" ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
-              >
-                <List className="w-4 h-4" /> Liste
-              </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-slate-600 whitespace-nowrap ${viewMode === "map" ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
-              >
-                <Map className="w-4 h-4" /> Carte
-              </button>
+      {loading ? (
+        // Loading skeleton
+        <div className="space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <Skeleton className="h-8 w-32" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-24" />
             </div>
-          )}
-          <Link href="/export" className="shrink-0">
-            <Button size="sm" variant="outline">
-              <FileDown className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Export PDF</span>
-              <span className="sm:hidden">PDF</span>
-            </Button>
-          </Link>
-          <Button size="sm" onClick={() => fileRef.current?.click()} disabled={importing} className="shrink-0 whitespace-nowrap">
-            <Upload className="w-4 h-4 mr-1" />
-            {importing ? "..." : <span className="hidden sm:inline">Importer Excel</span>}
-            {importing ? "" : <span className="sm:hidden">Import</span>}
-          </Button>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-40" />
+            <div className="space-y-2">
+              <VisitRowSkeleton />
+              <VisitRowSkeleton />
+              <VisitRowSkeleton />
+            </div>
+          </div>
         </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".xlsx,.xls"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) handleFile(f, "check");
-            e.target.value = "";
-          }}
-        />
-      </div>
+      ) : (
+        // Actual content
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Planning</h1>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
+              {visits.length > 0 && (
+                <div className="flex rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === "list" ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
+                  >
+                    <List className="w-4 h-4" /> Liste
+                  </button>
+                  <button
+                    onClick={() => setViewMode("map")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-slate-600 whitespace-nowrap ${viewMode === "map" ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
+                  >
+                    <Map className="w-4 h-4" /> Carte
+                  </button>
+                </div>
+              )}
+              <Link href="/export" className="shrink-0">
+                <Button size="sm" variant="outline" aria-label="Exporter en PDF">
+                  <FileDown className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Export PDF</span>
+                  <span className="sm:hidden">PDF</span>
+                </Button>
+              </Link>
+              <Button size="sm" onClick={() => fileRef.current?.click()} disabled={importing} className="shrink-0 whitespace-nowrap" aria-label="Importer un fichier Excel">
+                <Upload className="w-4 h-4 mr-1" />
+                {importing ? "..." : <span className="hidden sm:inline">Importer Excel</span>}
+                {importing ? "" : <span className="sm:hidden">Import</span>}
+              </Button>
+            </div>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f, "check");
+              e.target.value = "";
+            }}
+          />
+        </>
+      )}
 
       {/* Drop zone — hidden when visits are already loaded or still loading */}
       {visits.length === 0 && !loading && (
