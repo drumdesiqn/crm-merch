@@ -17,6 +17,7 @@ import { Search } from "lucide-react";
 export default function DashboardPage() {
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [allVisits, setAllVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("Guillaume");
   const [showPast, setShowPast] = useState(false);
@@ -36,9 +37,14 @@ export default function DashboardPage() {
         showToast("error", "Erreur lors du chargement des paramètres");
         return {};
       }),
-    ]).then(([weeksData, settingsData]) => {
+      fetch("/api/visits").then((r) => r.json()).catch((err) => {
+        console.error("All visits fetch error:", err);
+        return [];
+      }),
+    ]).then(([weeksData, settingsData, allVisitsData]) => {
       setWeeks(Array.isArray(weeksData) ? weeksData : []);
       if (settingsData.userName) setUserName(settingsData.userName);
+      setAllVisits(Array.isArray(allVisitsData) ? allVisitsData : []);
       if (Array.isArray(weeksData) && weeksData.length > 0) {
         // Load visits in parallel with week selection
         Promise.all([
@@ -126,15 +132,15 @@ export default function DashboardPage() {
   const adHocCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Ad Hoc").length, [filteredVisits]);
   const doneCount = useMemo(() => filteredVisits.filter((v) => v.status === "done").length, [filteredVisits]);
 
-  // Calculate visit count per store
+  // Calculate visit count per store (using all visits, not just current week)
   const storeVisitCount = useMemo(() => {
     const counts = new Map<string, number>();
-    filteredVisits.forEach((v) => {
+    allVisits.forEach((v) => {
       const key = v.storeId || v.storeName;
       counts.set(key, (counts.get(key) || 0) + 1);
     });
     return counts;
-  }, [filteredVisits]);
+  }, [allVisits]);
 
   if (loading) {
     return (

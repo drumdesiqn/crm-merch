@@ -60,6 +60,7 @@ export default function PlanningPage() {
     selectedWeekId: "",
     visits: [],
   });
+  const [allVisits, setAllVisits] = useState<Visit[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -74,11 +75,18 @@ export default function PlanningPage() {
     
     const loadData = async () => {
       try {
-        const weeksRes = await fetch("/api/weeks");
+        const [weeksRes, allVisitsRes] = await Promise.all([
+          fetch("/api/weeks"),
+          fetch("/api/visits")
+        ]);
         const weeks = await weeksRes.json();
+        const allVisits = await allVisitsRes.json();
         if (!isMounted) return;
         
         const weeksArray = Array.isArray(weeks) ? weeks : [];
+        const allVisitsArray = Array.isArray(allVisits) ? allVisits : [];
+        
+        setAllVisits(allVisitsArray);
         
         if (weeksArray.length > 0) {
           const visitsRes = await fetch(`/api/visits?weekId=${weeksArray[0].id}`);
@@ -196,15 +204,15 @@ export default function PlanningPage() {
       visits: dayVisits,
     })), [dayGroups]);
 
-  // Calculate visit count per store
+  // Calculate visit count per store (using all visits, not just current week)
   const storeVisitCount = useMemo(() => {
     const counts: Record<string, number> = {};
-    state.visits.forEach((v) => {
+    allVisits.forEach((v) => {
       const key = v.storeId || v.storeName;
       counts[key] = (counts[key] || 0) + 1;
     });
     return counts;
-  }, [state.visits]);
+  }, [allVisits]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
