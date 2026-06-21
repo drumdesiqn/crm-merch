@@ -53,7 +53,6 @@ export default function PlanningPage() {
   const [selectedWeekId, setSelectedWeekId] = useState<string>("");
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingVisits, setLoadingVisits] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -70,8 +69,9 @@ export default function PlanningPage() {
         setWeeks(weeks);
         if (weeks.length > 0) {
           setSelectedWeekId(weeks[0].id);
+        } else {
+          setLoading(false);
         }
-        setLoading(false);
       })
       .catch(() => {
         showToast("error", "Erreur lors du chargement des semaines");
@@ -81,17 +81,16 @@ export default function PlanningPage() {
 
   useEffect(() => {
     if (!selectedWeekId) return;
-    setLoadingVisits(true);
     setGeocodedCache({});
     fetch(`/api/visits?weekId=${selectedWeekId}`)
       .then((r) => r.json())
       .then((data) => {
         setVisits(Array.isArray(data) ? data : []);
-        setLoadingVisits(false);
+        setLoading(false);
       })
       .catch(() => {
         showToast("error", "Erreur lors du chargement des visites");
-        setLoadingVisits(false);
+        setLoading(false);
       });
   }, [selectedWeekId]);
 
@@ -273,11 +272,7 @@ export default function PlanningPage() {
       )}
 
       {/* Visits — list or map view */}
-      {loadingVisits ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : sortedDays.length === 0 ? (
+      {sortedDays.length === 0 ? (
         <div className="text-center py-12 text-slate-500">
           <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
           <p>Aucune visite. Importe ton planning Excel.</p>
