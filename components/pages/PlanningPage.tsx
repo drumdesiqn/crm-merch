@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -53,7 +54,6 @@ export default function PlanningPage() {
   const [selectedWeekId, setSelectedWeekId] = useState<string>("");
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [visitsLoaded, setVisitsLoaded] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -72,25 +72,28 @@ export default function PlanningPage() {
         if (!isMounted) return;
         
         const weeksArray = Array.isArray(weeks) ? weeks : [];
-        setWeeks(weeksArray);
         
         if (weeksArray.length > 0) {
-          setSelectedWeekId(weeksArray[0].id);
           const visitsRes = await fetch(`/api/visits?weekId=${weeksArray[0].id}`);
           const visits = await visitsRes.json();
           if (!isMounted) return;
-          setVisits(Array.isArray(visits) ? visits : []);
-          setVisitsLoaded(true);
+          
+          // Use flushSync to force synchronous updates - prevents intermediate renders
+          flushSync(() => {
+            setWeeks(weeksArray);
+            setSelectedWeekId(weeksArray[0].id);
+            setVisits(Array.isArray(visits) ? visits : []);
+            setLoading(false);
+          });
         } else {
-          setVisitsLoaded(true);
+          flushSync(() => {
+            setWeeks(weeksArray);
+            setLoading(false);
+          });
         }
       } catch (error) {
         showToast("error", "Erreur lors du chargement");
-        setVisitsLoaded(true);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
     
@@ -103,17 +106,14 @@ export default function PlanningPage() {
 
   const handleWeekChange = (weekId: string) => {
     setSelectedWeekId(weekId);
-    setVisitsLoaded(false);
     setGeocodedCache({});
     fetch(`/api/visits?weekId=${weekId}`)
       .then((r) => r.json())
       .then((data) => {
         setVisits(Array.isArray(data) ? data : []);
-        setVisitsLoaded(true);
       })
       .catch(() => {
         showToast("error", "Erreur lors du chargement des visites");
-        setVisitsLoaded(true);
       });
   };
 
@@ -183,7 +183,7 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {loading || !visitsLoaded ? (
+      {loading ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -238,7 +238,7 @@ export default function PlanningPage() {
       )}
 
       {/* Drop zone — hidden when visits are already loaded or still loading */}
-      {visits.length === 0 && visitsLoaded && (
+      {visits.length === 0 && !loading && (
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -280,7 +280,7 @@ export default function PlanningPage() {
       )}
 
       {/* Week selector */}
-      {weeks.length > 1 && (
+      {weeks.length > 1 && !loading && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {weeks.map((w) => (
             <button
