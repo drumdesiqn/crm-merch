@@ -162,28 +162,8 @@ export default function PlanningPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {loading ? (
-        // Loading skeleton
-        <div className="space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <Skeleton className="h-8 w-32" />
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-24" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-32" />
-          </div>
-          <div className="space-y-4">
-            <Skeleton className="h-6 w-40" />
-            <div className="space-y-2">
-              <VisitRowSkeleton />
-              <VisitRowSkeleton />
-              <VisitRowSkeleton />
-            </div>
-          </div>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         // Actual content

@@ -128,30 +128,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header skeleton */}
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-        
-        {/* Stats cards skeleton */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatsCardSkeleton />
-          <StatsCardSkeleton />
-          <StatsCardSkeleton />
-          <StatsCardSkeleton />
-        </div>
-        
-        {/* Visits skeleton */}
-        <div className="space-y-4">
-          <Skeleton className="h-6 w-32" />
-          <div className="space-y-2">
-            <VisitRowSkeleton />
-            <VisitRowSkeleton />
-            <VisitRowSkeleton />
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
