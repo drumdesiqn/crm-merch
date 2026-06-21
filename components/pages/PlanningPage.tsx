@@ -20,6 +20,7 @@ const RouteMapView = dynamic(() => import("@/components/pages/RouteMapView"), { 
 
 interface Visit {
   id: string;
+  storeId?: string;
   storeName: string;
   storeCity: string;
   storeZipcode: string;
@@ -195,6 +196,16 @@ export default function PlanningPage() {
       visits: dayVisits,
     })), [dayGroups]);
 
+  // Calculate visit count per store
+  const storeVisitCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    state.visits.forEach((v) => {
+      const key = v.storeId || v.storeName;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [state.visits]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {!isReady || state.weeks.length === 0 || state.selectedWeekId === "" ? (
@@ -329,7 +340,7 @@ export default function PlanningPage() {
                   </div>
                   <span className="text-xs text-slate-400 dark:text-slate-500">{day.visits.length} visite{day.visits.length > 1 ? "s" : ""}</span>
                 </div>
-                {day.visits.map((v) => <VisitCard key={v.id} visit={v} />)}
+                {day.visits.map((v) => <VisitCard key={v.id} visit={v} visitCount={storeVisitCount[v.storeId || v.storeName] || 0} />)}
               </div>
             ))
           )}
@@ -339,7 +350,7 @@ export default function PlanningPage() {
   );
 }
 
-function VisitCard({ visit }: { visit: Visit }) {
+function VisitCard({ visit, visitCount }: { visit: Visit; visitCount?: number }) {
   const router = useRouter();
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
@@ -363,6 +374,9 @@ function VisitCard({ visit }: { visit: Visit }) {
               <div className="flex items-center gap-1 mt-1">
                 <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                 <p className="text-xs text-slate-500 dark:text-slate-400">{visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}</p>
+                {visitCount !== undefined && visitCount > 1 && (
+                  <span className="text-xs text-slate-400 ml-1">· {visitCount} visites</span>
+                )}
               </div>
               {visit.salesRep && (
                 <div className="flex items-center gap-1 mt-0.5">

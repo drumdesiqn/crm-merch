@@ -126,6 +126,16 @@ export default function DashboardPage() {
   const adHocCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Ad Hoc").length, [filteredVisits]);
   const doneCount = useMemo(() => filteredVisits.filter((v) => v.status === "done").length, [filteredVisits]);
 
+  // Calculate visit count per store
+  const storeVisitCount = useMemo(() => {
+    const counts = new Map<string, number>();
+    filteredVisits.forEach((v) => {
+      const key = v.storeId || v.storeName;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    return counts;
+  }, [filteredVisits]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -275,7 +285,7 @@ export default function DashboardPage() {
                     return <p className="text-sm text-slate-500 py-2">Aucune visite aujourd&apos;hui 🎉</p>;
                   })()
                 ) : (
-                  todayVisits.map((v) => <VisitRow key={v.id} visit={v} />)
+                  todayVisits.map((v) => <VisitRow key={v.id} visit={v} visitCount={storeVisitCount.get(v.storeId || v.storeName) || 0} />)
                 )}
               </CardContent>
             </Card>
@@ -291,7 +301,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {upcomingVisits.slice(0, 5).map((v) => (
-                    <VisitRow key={v.id} visit={v} showDate />
+                    <VisitRow key={v.id} visit={v} showDate visitCount={storeVisitCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {upcomingVisits.length > 5 && (
                     <Link href="/planning" className="block text-center text-sm text-red-600 hover:underline pt-1">
@@ -318,7 +328,7 @@ export default function DashboardPage() {
               {showPast && (
                 <div id="past-visits" className="mt-2 space-y-2">
                   {pastVisits.slice(0, 10).map((v) => (
-                    <VisitRow key={v.id} visit={v} showDate />
+                    <VisitRow key={v.id} visit={v} showDate visitCount={storeVisitCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {pastVisits.length > 10 && (
                     <Link href="/planning" className="block text-center text-sm text-red-600 hover:underline pt-1">
@@ -337,7 +347,7 @@ export default function DashboardPage() {
   );
 }
 
-function VisitRow({ visit, showDate }: { visit: Visit; showDate?: boolean }) {
+function VisitRow({ visit, showDate, visitCount }: { visit: Visit; showDate?: boolean; visitCount?: number }) {
   const router = useRouter();
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeCity}`)}&navigate=yes`;
@@ -362,6 +372,9 @@ function VisitRow({ visit, showDate }: { visit: Visit; showDate?: boolean }) {
             <p className="text-xs text-slate-500 dark:text-slate-400">{visit.storeCity}</p>
             {showDate && (
               <span className="text-xs text-slate-400 ml-1">· {formatDateShort(visit.visitDate)}</span>
+            )}
+            {visitCount !== undefined && visitCount > 1 && (
+              <span className="text-xs text-slate-400 ml-1">· {visitCount} visites</span>
             )}
           </div>
           {visit.remarks && (
