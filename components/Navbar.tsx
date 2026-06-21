@@ -141,12 +141,12 @@ export default function Navbar() {
           {/* Overlay pour capturer les clics à l'extérieur */}
           {showMore && (
             <div 
-              className="fixed inset-0 z-[55] bg-transparent"
+              className="fixed inset-0 z-[100] bg-transparent"
               onClick={closeMore}
             />
           )}
           {showMore && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 min-w-[160px] z-[60]">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 min-w-[160px] z-[200]">
               {MORE_ITEMS.map((item) => {
                 const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                 return (
