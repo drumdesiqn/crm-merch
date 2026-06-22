@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'sha256-FSEg1DpSp34ugQaHXB/k5awL/jhpWdj9opdwQ/0Oc0A=' 'sha256-Imcaf8L7tMgLsY3gGGAWuUdaIziyiaia+yiOLSP6QyY='",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.vercel.app https://*.public.blob.vercel-storage.com https://*.tile.openstreetmap.org",
               "font-src 'self' data:",
