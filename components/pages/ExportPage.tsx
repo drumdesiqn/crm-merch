@@ -6,7 +6,7 @@ import { ArrowLeft, FileText, Calendar, MapPin, Store, Loader2, Printer, Downloa
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
-import * as XLSX from "xlsx";
+import { showToast } from "@/components/Toast";
 import type { Week, ExportVisit } from "@/types/visit";
 
 export default function ExportPage() {
@@ -52,12 +52,23 @@ export default function ExportPage() {
 
     setGenerating(true);
 
-    // Create print window
-    const printWindow = window.open("", "_blank");
+    // Create print window (with iframe fallback for popup blockers)
+    let printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Veuillez autoriser les popups pour générer le PDF");
-      setGenerating(false);
-      return;
+      // Fallback: use a hidden iframe
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+      printWindow = iframe.contentWindow;
+      if (!printWindow) {
+        showToast("error", "Impossible d'ouvrir la fenêtre d'impression. Autorisez les popups.");
+        setGenerating(false);
+        iframe.remove();
+        return;
+      }
+      // Clean up iframe after printing
+      iframe.contentWindow?.addEventListener("afterprint", () => iframe.remove());
+      setTimeout(() => iframe.remove(), 30000);
     }
 
     const photosHtml = visit.photos
@@ -177,8 +188,10 @@ export default function ExportPage() {
     setGenerating(false);
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (visits.length === 0) return;
+
+    const XLSX = await import("xlsx");
 
     const exportData = visits.map((visit) => ({
       Date: formatDate(visit.visitDate),
@@ -201,8 +214,10 @@ export default function ExportPage() {
     XLSX.writeFile(wb, `visites-${weekLabel}.xlsx`);
   };
 
-  const exportToCSV = () => {
+  const exportToCSV = async () => {
     if (visits.length === 0) return;
+
+    const XLSX = await import("xlsx");
 
     const exportData = visits.map((visit) => ({
       Date: formatDate(visit.visitDate),

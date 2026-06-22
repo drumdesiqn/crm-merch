@@ -6,6 +6,7 @@ import { LayoutDashboard, Calendar, Mail, Settings, Package, Sun, Moon, Users, B
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
+import { installAuthInterceptor } from "@/lib/fetch-auth";
 
 // Navigation principale (3 items max pour mobile)
 const NAV_ITEMS = [
@@ -27,6 +28,8 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [showMore, setShowMore] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { installAuthInterceptor(); }, []);
 
   const toggleMore = useCallback(() => setShowMore((v) => !v), []);
   const closeMore = useCallback(() => setShowMore(false), []);

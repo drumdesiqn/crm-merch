@@ -12,6 +12,7 @@ import { showToast } from "@/components/Toast";
 import { StatusBadge } from "@/components/StatusBadge";
 import type { Visit, Week } from "@/types/visit";
 import { Search } from "lucide-react";
+import { DashboardSkeleton } from "@/components/Skeleton";
 
 export default function DashboardPage() {
   const [weeks, setWeeks] = useState<Week[]>([]);
@@ -41,23 +42,16 @@ export default function DashboardPage() {
         return [];
       }),
     ]).then(([weeksData, settingsData, allVisitsData]) => {
+      const allV = Array.isArray(allVisitsData) ? allVisitsData : [];
       setWeeks(Array.isArray(weeksData) ? weeksData : []);
       if (settingsData.userName) setUserName(settingsData.userName);
-      setAllVisits(Array.isArray(allVisitsData) ? allVisitsData : []);
+      setAllVisits(allV);
+      // Derive current week visits from allVisits instead of a second API call
       if (Array.isArray(weeksData) && weeksData.length > 0) {
-        // Load visits in parallel with week selection
-        Promise.all([
-          fetch(`/api/visits?weekId=${weeksData[0].id}`)
-            .then((r) => r.json())
-            .then((v) => setVisits(Array.isArray(v) ? v : []))
-            .catch((err) => {
-              console.error("Visits fetch error:", err);
-              showToast("error", "Erreur lors du chargement des visites");
-            }),
-        ]).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+        const currentWeekId = weeksData[0].id;
+        setVisits(allV.filter((v) => (v as unknown as { weekId: string }).weekId === currentWeekId));
       }
+      setLoading(false);
     }).catch((err) => {
       console.error("Dashboard load error:", err);
       showToast("error", "Erreur lors du chargement des données");
@@ -157,11 +151,7 @@ export default function DashboardPage() {
   }, [allVisits]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import ToastContainer from "@/components/Toast";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import dynamic from "next/dynamic";
 
 const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
@@ -54,7 +55,9 @@ export default function RootLayout({
           <ChatWidget />
           <Navbar />
           <main className="md:pt-14 pb-20 md:pb-4 min-h-screen">
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </main>
         </ThemeProvider>
         <script

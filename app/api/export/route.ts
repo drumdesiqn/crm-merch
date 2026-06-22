@@ -46,20 +46,59 @@ export async function GET(req: NextRequest) {
       select: { content: true, createdAt: true, visitId: true, storeId: true },
     });
 
-    // Group by visit (visitId match OR storeId match)
-    const photosByVisit = visits.reduce((acc, v) => {
-      acc[v.id] = allPhotos
-        .filter((p) => p.visitId === v.id || p.storeId === v.storeId)
-        .map((p) => ({ id: p.id, url: p.url }));
-      return acc;
-    }, {} as Record<string, { id: string; url: string }[]>);
+    // Group by visit — each photo/note is assigned to exactly one visit
+    // Visit-specific items go to their visit; store-level items (no visitId match) go to the latest visit for that store
+    const photosByVisit: Record<string, { id: string; url: string }[]> = {};
+    const notesByVisit: Record<string, { content: string; createdAt: Date }[]> = {};
 
-    const notesByVisit = visits.reduce((acc, v) => {
-      acc[v.id] = allNotes
-        .filter((n) => n.visitId === v.id || n.storeId === v.storeId)
-        .map((n) => ({ content: n.content, createdAt: n.createdAt }));
-      return acc;
-    }, {} as Record<string, { content: string; createdAt: Date }[]>);
+    const assignedPhotoIds = new Set<string>();
+    const assignedNoteIndices = new Set<number>();
+
+    // First pass: assign visit-specific items
+    for (const v of visits) {
+      photosByVisit[v.id] = [];
+      notesByVisit[v.id] = [];
+
+      for (const p of allPhotos) {
+        if (p.visitId === v.id) {
+          photosByVisit[v.id].push({ id: p.id, url: p.url });
+          assignedPhotoIds.add(p.id);
+        }
+      }
+      allNotes.forEach((n, idx) => {
+        if (n.visitId === v.id) {
+          notesByVisit[v.id].push({ content: n.content, createdAt: n.createdAt });
+          assignedNoteIndices.add(idx);
+        }
+      });
+    }
+
+    // Second pass: assign store-level items (no visitId or visitId not in this week) to the latest visit for that store
+    const latestVisitByStore = new Map<string, string>();
+    for (const v of visits) {
+      if (v.storeId && !latestVisitByStore.has(v.storeId)) {
+        latestVisitByStore.set(v.storeId, v.id);
+      }
+    }
+
+    for (const p of allPhotos) {
+      if (assignedPhotoIds.has(p.id)) continue;
+      if (p.storeId) {
+        const targetVisitId = latestVisitByStore.get(p.storeId);
+        if (targetVisitId) {
+          photosByVisit[targetVisitId].push({ id: p.id, url: p.url });
+        }
+      }
+    }
+    allNotes.forEach((n, idx) => {
+      if (assignedNoteIndices.has(idx)) return;
+      if (n.storeId) {
+        const targetVisitId = latestVisitByStore.get(n.storeId);
+        if (targetVisitId) {
+          notesByVisit[targetVisitId].push({ content: n.content, createdAt: n.createdAt });
+        }
+      }
+    });
 
     return NextResponse.json({
       weekId,

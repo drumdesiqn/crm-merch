@@ -12,15 +12,8 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
 }
 
-function getPrismaClient(): PrismaClient {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = createPrismaClient();
-  }
-  return globalForPrisma.prisma;
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = createPrismaClient();
 }
 
-export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
-    return (getPrismaClient() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
+export const prisma = globalForPrisma.prisma;

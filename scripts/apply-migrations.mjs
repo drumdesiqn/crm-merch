@@ -136,6 +136,16 @@ const migrations = [
       `DROP TABLE IF EXISTS "Session"`,
     ],
   },
+  {
+    name: "20260622200000_add_performance_indexes",
+    sql: [
+      `CREATE INDEX IF NOT EXISTS "Visit_storeId_idx" ON "Visit"("storeId");`,
+      `CREATE INDEX IF NOT EXISTS "Visit_weekId_idx" ON "Visit"("weekId");`,
+      `CREATE INDEX IF NOT EXISTS "Visit_visitDate_idx" ON "Visit"("visitDate");`,
+      `CREATE INDEX IF NOT EXISTS "VisitNote_visitId_idx" ON "VisitNote"("visitId");`,
+      `CREATE INDEX IF NOT EXISTS "VisitPhoto_visitId_idx" ON "VisitPhoto"("visitId");`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {

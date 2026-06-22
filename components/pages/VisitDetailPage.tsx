@@ -15,6 +15,7 @@ import VisitNotes from "@/components/visit/VisitNotes";
 import VisitPhotos from "@/components/visit/VisitPhotos";
 import VisitHistory from "@/components/visit/VisitHistory";
 import PhotoLightbox from "@/components/visit/PhotoLightbox";
+import { VisitDetailSkeleton } from "@/components/Skeleton";
 
 interface HistoryVisit {
   id: string;
@@ -60,7 +61,10 @@ export default function VisitDetailPage() {
   useEffect(() => {
     if (!visitId) return;
     fetch(`/api/visits/${visitId}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status === 404 ? "not_found" : "server_error");
+        return r.json();
+      })
       .then((data) => {
         if (data?.id) {
           setVisit(data);
@@ -71,9 +75,12 @@ export default function VisitDetailPage() {
         }
         setLoading(false);
       })
-      .catch(() => {
-        showToast("error", "Erreur lors du chargement de la visite");
+      .catch((err) => {
+        setVisit(null);
         setLoading(false);
+        if (err?.message !== "not_found") {
+          showToast("error", "Erreur lors du chargement de la visite");
+        }
       });
 
     // Load notes & photos eagerly in parallel
@@ -484,11 +491,7 @@ export default function VisitDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <VisitDetailSkeleton />;
   }
 
   if (!visit) {

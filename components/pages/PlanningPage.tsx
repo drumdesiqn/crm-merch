@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
-import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -68,22 +67,17 @@ export default function PlanningPage() {
           const visits = await visitsRes.json();
           if (!isMounted) return;
           
-          // Use flushSync to ensure state is applied before marking ready
-          flushSync(() => {
-            setState({
-              weeks: weeksArray,
-              selectedWeekId: weeksArray[0].id,
-              visits: Array.isArray(visits) ? visits : [],
-            });
+          setState({
+            weeks: weeksArray,
+            selectedWeekId: weeksArray[0].id,
+            visits: Array.isArray(visits) ? visits : [],
           });
           setIsReady(true);
         } else {
-          flushSync(() => {
-            setState({
-              weeks: weeksArray,
-              selectedWeekId: "",
-              visits: [],
-            });
+          setState({
+            weeks: weeksArray,
+            selectedWeekId: "",
+            visits: [],
           });
           setIsReady(true);
         }

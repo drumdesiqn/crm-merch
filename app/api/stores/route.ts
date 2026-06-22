@@ -1,13 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+interface StoreAggregate {
+  storeId: string;
+  storeName: string;
+  storeAddress: string;
+  storeZipcode: string;
+  storeCity: string;
+  totalVisits: number;
+  completedVisits: number;
+  lastVisit: Date | null;
+  materialTypes: Set<string>;
+  totalPhotos: number;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const sortBy = searchParams.get("sortBy") || "name";
     const order = searchParams.get("order") || "asc";
 
-    // Get all unique stores with visit statistics
+    // Lightweight query: only the fields needed for aggregation, no relation loading
     const visits = await prisma.visit.findMany({
       select: {
         storeId: true,
@@ -18,18 +31,22 @@ export async function GET(req: NextRequest) {
         visitDate: true,
         status: true,
         materialType: true,
-        photos: {
-          select: {
-            id: true,
-          },
-        },
       },
       orderBy: { visitDate: "desc" },
-      take: 5000,
     });
 
+    // Photo counts per store (single query)
+    const photoCounts = await prisma.visitPhoto.groupBy({
+      by: ["storeId"],
+      _count: { id: true },
+      where: { storeId: { not: null } },
+    });
+    const photoCountMap = new Map(
+      photoCounts.map((p) => [p.storeId, p._count.id])
+    );
+
     // Aggregate by store
-    const storeMap = new Map<string, any>();
+    const storeMap = new Map<string, StoreAggregate>();
 
     for (const visit of visits) {
       if (!storeMap.has(visit.storeId)) {
@@ -47,7 +64,7 @@ export async function GET(req: NextRequest) {
         });
       }
 
-      const store = storeMap.get(visit.storeId);
+      const store = storeMap.get(visit.storeId)!;
       store.totalVisits++;
       if (visit.status === "done") {
         store.completedVisits++;
@@ -55,9 +72,11 @@ export async function GET(req: NextRequest) {
       if (visit.materialType) {
         store.materialTypes.add(visit.materialType);
       }
-      if (visit.photos && visit.photos.length > 0) {
-        store.totalPhotos += visit.photos.length;
-      }
+    }
+
+    // Attach photo counts
+    for (const store of storeMap.values()) {
+      store.totalPhotos = photoCountMap.get(store.storeId) || 0;
     }
 
     // Convert to array and sort
@@ -79,9 +98,12 @@ export async function GET(req: NextRequest) {
         case "visits":
           comparison = b.totalVisits - a.totalVisits;
           break;
-        case "lastVisit":
-          comparison = new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
+        case "lastVisit": {
+          const ta = a.lastVisit ? new Date(a.lastVisit).getTime() : 0;
+          const tb = b.lastVisit ? new Date(b.lastVisit).getTime() : 0;
+          comparison = tb - ta;
           break;
+        }
         default:
           comparison = a.storeName.localeCompare(b.storeName);
       }

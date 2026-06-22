@@ -307,19 +307,25 @@ export default function RouteMapView({
     const toGeocode = dayVisitsAll.filter((v) => !(v.id in geocodedCache));
     if (toGeocode.length === 0) return;
 
+    let cancelled = false;
     setGeocoding(true);
     setGeocodingProgress({ done: 0, total: toGeocode.length });
     (async () => {
       for (let i = 0; i < toGeocode.length; i++) {
+        if (cancelled) break;
         const v = toGeocode[i];
         const coords = await geocodeAddress(v.storeAddress, v.storeCity, v.storeZipcode);
+        if (cancelled) break;
         onGeocodedCacheUpdate((prev) => ({ ...prev, [v.id]: coords }));
         setGeocodingProgress({ done: i + 1, total: toGeocode.length });
         if (i < toGeocode.length - 1) await sleep(1100);
       }
-      setGeocoding(false);
-      setGeocodingProgress(null);
+      if (!cancelled) {
+        setGeocoding(false);
+        setGeocodingProgress(null);
+      }
     })();
+    return () => { cancelled = true; setGeocoding(false); setGeocodingProgress(null); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDay, initialVisits.length]);
 

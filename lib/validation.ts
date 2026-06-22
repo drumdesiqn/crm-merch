@@ -83,6 +83,11 @@ export const WeekIdSchema = z.object({
   id: z.string().min(1, "ID de semaine requis"),
 });
 
+// Schema for applying mail modifications (POST /api/mail/apply)
+export const ModificationIdsSchema = z.object({
+  modificationIds: z.array(z.string().min(1, "ID requis")).min(1, "Au moins une modification requise"),
+});
+
 // Schema for import mode
 export const ImportSchema = z.object({
   mode: z.enum(["replace", "merge", "check"]).default("replace"),

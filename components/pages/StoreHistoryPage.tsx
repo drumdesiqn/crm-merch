@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
-import * as XLSX from "xlsx";
 import type { StoreHistoryVisit } from "@/types/visit";
+import { StoreHistorySkeleton } from "@/components/Skeleton";
 
 interface StoreData {
   storeId: string;
@@ -72,8 +72,10 @@ export default function StoreHistoryPage() {
     materialTypes: Array.from(new Set(storeData.visits.map((v) => v.materialType).filter(Boolean))),
   } : null;
 
-  const exportHistory = () => {
+  const exportHistory = async () => {
     if (!storeData) return;
+
+    const XLSX = await import("xlsx");
 
     const exportData = storeData.visits.map((visit) => ({
       Date: formatDate(visit.visitDate),
@@ -94,11 +96,7 @@ export default function StoreHistoryPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <StoreHistorySkeleton />;
   }
 
   if (!storeData) {

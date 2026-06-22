@@ -1,5 +1,7 @@
 // Simple in-memory rate limiting
-// For production, consider using Redis or a similar solution
+// WARNING: On serverless platforms (Vercel), each function instance has its own memory.
+// This rate limiter resets on every cold start and doesn't share state across instances.
+// For stricter rate limiting, migrate to Vercel KV, Upstash Redis, or similar.
 
 interface RateLimitEntry {
   count: number;

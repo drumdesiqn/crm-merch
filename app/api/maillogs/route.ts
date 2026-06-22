@@ -1,11 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const take = Math.min(Number(searchParams.get("limit")) || 50, 100);
+    const skip = Math.max(Number(searchParams.get("offset")) || 0, 0);
+
     const logs = await prisma.mailLog.findMany({
       orderBy: { createdAt: "desc" },
-      take: 100, // Limit to prevent performance issues
+      take,
+      skip,
       select: {
         id: true,
         summary: true,

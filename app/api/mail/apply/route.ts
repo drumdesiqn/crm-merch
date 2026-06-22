@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ModificationIdsSchema, validate } from "@/lib/validation";
 
 const ALLOWED_FIELDS = ["remarks", "salesRep", "visitType", "materials", "visitDate", "visitFrequence", "status", "materialType"];
 
 export async function POST(req: NextRequest) {
   try {
-    const { modificationIds } = await req.json();
+    const body = await req.json();
 
-    if (!modificationIds?.length) {
-      return NextResponse.json({ error: "No modifications selected" }, { status: 400 });
+    const validation = validate(ModificationIdsSchema, body);
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
+    const { modificationIds } = validation.data;
 
     const modifications = await prisma.modification.findMany({
       where: { id: { in: modificationIds } },
@@ -33,19 +36,30 @@ export async function POST(req: NextRequest) {
             }
             if (mod.target) {
               const targetClean = mod.target.replace(/\s*\([^)]*\)\s*$/, "").trim();
+              const targetLower = mod.target.toLowerCase();
+              const targetCleanLower = targetClean.toLowerCase();
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const visits = await prisma.visit.findMany({
+              // First try exact id/storeId match
+              let visits = await prisma.visit.findMany({
                 where: {
                   ...(currentWeek ? { weekId: currentWeek.id } : {}),
                   OR: [
                     { id: mod.target },
                     { storeId: mod.target },
-                    { storeName: { contains: mod.target, mode: "insensitive" } as any },
-                    { storeName: { contains: targetClean, mode: "insensitive" } as any },
                   ],
                 },
               });
+
+              // Fallback: case-insensitive name match in JS
+              if (visits.length === 0 && currentWeek) {
+                const weekVisits = await prisma.visit.findMany({
+                  where: { weekId: currentWeek.id },
+                });
+                visits = weekVisits.filter((v) => {
+                  const name = v.storeName.toLowerCase();
+                  return name.includes(targetLower) || name.includes(targetCleanLower);
+                });
+              }
 
               if (visits.length === 0) {
                 results.push({ id: mod.id, success: false, error: `No visit found for target "${mod.target}"` });
