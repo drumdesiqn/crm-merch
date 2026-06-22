@@ -146,30 +146,3 @@ export interface VisitBase {
   sortOrder: number;
   status: string;
 }
-
-export const STATUS_CONFIG: Record<VisitStatus, { label: string; color: string; darkColor: string; iconName: string }> = {
-  pending:   { 
-    label: "À faire",   
-    color: "bg-slate-100 text-slate-600 border-slate-200",   
-    darkColor: "dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
-    iconName: "Clock"
-  },
-  done:      { 
-    label: "Effectuée", 
-    color: "bg-green-100 text-green-700 border-green-200",   
-    darkColor: "dark:bg-green-900/40 dark:text-green-400 dark:border-green-800",
-    iconName: "CheckCircle2"
-  },
-  cancelled: { 
-    label: "Annulée",   
-    color: "bg-red-100 text-red-700 border-red-200",         
-    darkColor: "dark:bg-red-900/40 dark:text-red-400 dark:border-red-800",
-    iconName: "Ban"
-  },
-  postponed: { 
-    label: "Reportée",  
-    color: "bg-orange-100 text-orange-700 border-orange-200", 
-    darkColor: "dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-800",
-    iconName: "RotateCcw"
-  },
-};

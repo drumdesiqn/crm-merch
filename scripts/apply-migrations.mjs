@@ -127,6 +127,15 @@ const migrations = [
       END $$;
     `,
   },
+  {
+    name: "20260622000000_drop_unused_auth_tables",
+    sql: [
+      `ALTER TABLE "Account" DROP CONSTRAINT IF EXISTS "Account_userId_fkey"`,
+      `ALTER TABLE "Session" DROP CONSTRAINT IF EXISTS "Session_userId_fkey"`,
+      `DROP TABLE IF EXISTS "Account"`,
+      `DROP TABLE IF EXISTS "Session"`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {

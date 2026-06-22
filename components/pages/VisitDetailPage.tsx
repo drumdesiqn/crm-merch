@@ -1,125 +1,33 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, MapPin, User, Calendar, Tag, Package, AlertCircle, Wrench, ExternalLink, StickyNote, Image, History, Plus, Trash2, Upload, X, CheckCircle2, Clock, Ban, RotateCcw, Share2, CheckSquare, Square, FileDown } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Calendar, History, StickyNote, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, formatDate, formatDateShort, compressImage, VisitStatus } from "@/lib/utils";
+import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, compressImage, VisitStatus } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
 import { STATUS_CONFIG } from "@/components/StatusBadge";
-
-interface Visit {
-  id: string;
-  assortment: string;
-  storeId: string;
-  storeName: string;
-  storeAddress: string;
-  storeZipcode: string;
-  storeCity: string;
-  visitType: string;
-  visitFrequence: string | null;
-  visitDate: string;
-  merchandiser: string | null;
-  remarks: string | null;
-  salesRep: string | null;
-  materials: string | null;
-  status: VisitStatus;
-  materialType: string | null;
-  week: { label: string };
-}
-
-interface VisitNote {
-  id: string;
-  content: string;
-  createdAt: string;
-  visit?: { visitDate: string; week: { label: string } } | null;
-}
-
-interface VisitPhoto {
-  id: string;
-  url: string;
-  caption: string | null;
-  createdAt: string;
-  visit?: { visitDate: string; week: { label: string } } | null;
-}
+import type { Visit, VisitNote, VisitPhoto } from "@/types/visit";
+import VisitInfoCard from "@/components/visit/VisitInfoCard";
+import MaterialTypeSelector from "@/components/visit/MaterialTypeSelector";
+import VisitNotes from "@/components/visit/VisitNotes";
+import VisitPhotos from "@/components/visit/VisitPhotos";
+import VisitHistory from "@/components/visit/VisitHistory";
+import PhotoLightbox from "@/components/visit/PhotoLightbox";
 
 interface HistoryVisit {
   id: string;
   visitDate: string;
   visitType: string;
   week: { label: string };
-  notes?: VisitNote[];
-  photos?: VisitPhoto[];
+  notes?: { id: string; content: string; createdAt: string }[];
+  photos?: { id: string; url: string; caption: string | null; createdAt: string }[];
   materialType?: string | null;
   status?: string;
 }
 
 type Tab = "visit" | "history";
-
-const MATERIAL_TYPES: Record<string, string[]> = {
-  snacking: [
-    "TG star", "Butter", "Halfmoon", "Modulair", "Accroche", "Choco boutique", "Colorworks",
-    "S180", "Self check out 3 layer display", "BE KIND single tower & metal HP tower",
-    "BE KIND 3 layer display", "Plastic box & wooden box", "Display", "Arch", "Totem",
-    "Standee", "Pop up", "Storbak/dumbbin display/flexi",
-    "Big wobbler (totem, arch, display)", "Small wobbler (shelf)", "Small & big freezer",
-  ],
-  "food-pet": [
-    "Arch", "Totem", "Caisse & Treat Furniture", "Wobbler in shelf",
-    "Dumpbins & Free sample wobbler", "Special flexis", "Flexi Whiskas",
-    "Flexi Sheba & Catisfactions", "Display", "Display & Totem", "Flexis + totem + arch",
-  ],
-};
-
-function getMaterialTypes(assortment: string): string[] {
-  const key = assortment.toLowerCase();
-  if (key.includes("snacking")) return MATERIAL_TYPES.snacking;
-  if (key.includes("food") || key.includes("pet") || key.includes("nutrition")) return MATERIAL_TYPES["food-pet"];
-  return [...MATERIAL_TYPES.snacking, ...MATERIAL_TYPES["food-pet"]];
-}
-
-function MaterialTypeSelector({
-  assortment, value, saving, onChange,
-}: { assortment: string; value: string | null; saving: boolean; onChange: (v: string) => void }) {
-  const types = getMaterialTypes(assortment);
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between text-base">
-          <span className="flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-red-600" /> Type de matériel installé
-          </span>
-          {saving && <span className="text-xs text-slate-400 font-normal animate-pulse">Sauvegarde...</span>}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pb-3">
-        <div className="flex flex-wrap gap-1.5">
-          {types.map((t) => (
-            <button
-              key={t}
-              onClick={() => onChange(t)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                value === t
-                  ? "bg-red-600 text-white border-red-600"
-                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-red-400 hover:text-red-600"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-        {value && (
-          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            Sélectionné : <span className="font-medium text-red-600">{value}</span>
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function VisitDetailPage() {
   const params = useParams();
@@ -143,9 +51,6 @@ export default function VisitDetailPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [sharing, setSharing] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
-  const photoRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
-
   // History state
   const [history, setHistory] = useState<HistoryVisit[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -201,10 +106,12 @@ export default function VisitDetailPage() {
 
   const addNote = async () => {
     if (!noteInput.trim()) return;
-    const tempNote = {
+    const tempNote: VisitNote = {
       id: `temp-${Date.now()}`,
       content: noteInput.trim(),
       createdAt: new Date().toISOString(),
+      visitId,
+      storeId: visit?.storeId || null,
     };
     
     // Optimistic update
@@ -260,12 +167,13 @@ export default function VisitDetailPage() {
   };
 
   const handleFileSelect = async (file: File) => {
-    const tempPhoto = {
+    const tempPhoto: VisitPhoto = {
       id: `temp-${Date.now()}`,
       url: URL.createObjectURL(file),
       caption: null,
       createdAt: new Date().toISOString(),
       visitId,
+      storeId: visit?.storeId || null,
       blobKey: "",
     };
     
@@ -293,7 +201,7 @@ export default function VisitDetailPage() {
       }
     } catch {
       // Revert on error
-      setPhotos((prev) => prev.filter((p) => p.id === tempPhoto.id));
+      setPhotos((prev) => prev.filter((p) => p.id !== tempPhoto.id));
       URL.revokeObjectURL(tempPhoto.url);
       showToast("error", "Erreur réseau");
     } finally {
@@ -650,7 +558,7 @@ export default function VisitDetailPage() {
             {visit.assortment}
           </span>
           <Badge variant="outline" className="text-xs">
-            {visit.week.label}
+            {visit.week?.label}
           </Badge>
         </div>
 
@@ -703,102 +611,8 @@ export default function VisitDetailPage() {
       {/* ── Tab: Visite ── */}
       {tab === "visit" && (
         <div className="space-y-4">
-          {/* Consolidated info card */}
-          <Card>
-            <CardContent className="py-3 space-y-3">
-              <div className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-red-600 shrink-0" />
-                <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Date de visite</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">{formatDate(visit.visitDate)}</p>
-                </div>
-              </div>
-              <div className="h-px bg-slate-100 dark:bg-slate-700" />
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Adresse</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.storeAddress}</p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300">{visit.storeZipcode} {visit.storeCity}</p>
-                </div>
-              </div>
-              {visit.salesRep && (
-                <>
-                  <div className="h-px bg-slate-100 dark:bg-slate-700" />
-                  <div className="flex items-center gap-3">
-                    <User className="w-4 h-4 text-red-600 shrink-0" />
-                    <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Sales Representative</p>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.salesRep}</p>
-                    </div>
-                  </div>
-                </>
-              )}
-              {visit.visitFrequence && (
-                <>
-                  <div className="h-px bg-slate-100 dark:bg-slate-700" />
-                  <div className="flex items-center gap-3">
-                    <Tag className="w-4 h-4 text-red-600 shrink-0" />
-                    <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Type / Fréquence</p>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.visitFrequence}</p>
-                    </div>
-                  </div>
-                </>
-              )}
-              {visit.merchandiser && (
-                <>
-                  <div className="h-px bg-slate-100 dark:bg-slate-700" />
-                  <div className="flex items-center gap-3">
-                    <Package className="w-4 h-4 text-red-600 shrink-0" />
-                    <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Merchandiser</p>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.merchandiser}</p>
-                    </div>
-                  </div>
-                </>
-              )}
-              <div className="h-px bg-slate-100 dark:bg-slate-700" />
-              <div className="flex gap-2 pt-1">
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-colors">
-                  <ExternalLink className="w-4 h-4" /> Google Maps
-                </a>
-                <a href={wazeUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 text-sm font-medium hover:bg-sky-100 transition-colors">
-                  <ExternalLink className="w-4 h-4" /> Waze
-                </a>
-              </div>
-            </CardContent>
-          </Card>
+          <VisitInfoCard visit={visit} mapsUrl={mapsUrl} wazeUrl={wazeUrl} />
 
-          {visit.remarks && (
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base text-orange-800">
-                  <AlertCircle className="w-4 h-4" /> Remarques
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="py-0 pb-4">
-                <p className="text-sm text-orange-900 whitespace-pre-wrap">{visit.remarks}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {visit.materials && (
-            <Card className="border-purple-200 bg-purple-50">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base text-purple-800">
-                  <Wrench className="w-4 h-4" /> Matériel nécessaire
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="py-0 pb-4">
-                <p className="text-sm text-purple-900 whitespace-pre-wrap">{visit.materials}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* ── Type de matériel installé ── */}
           <MaterialTypeSelector
             assortment={visit.assortment}
             value={materialType}
@@ -806,7 +620,7 @@ export default function VisitDetailPage() {
             onChange={updateMaterialType}
           />
 
-          {/* ── Notes & Photos (merged into visit tab) ── */}
+          {/* ── Notes & Photos divider ── */}
           <div className="space-y-4 pt-1">
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-slate-200" />
@@ -820,387 +634,50 @@ export default function VisitDetailPage() {
               <div className="flex-1 h-px bg-slate-200" />
             </div>
 
-          {/* Add note */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <StickyNote className="w-4 h-4 text-red-600" /> Ajouter une note
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <textarea
-                value={noteInput}
-                onChange={(e) => setNoteInput(e.target.value)}
-                placeholder="Ex: Facing refait, clipstrip ajouté côté gauche..."
-                className="w-full min-h-[90px] resize-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) addNote(); }}
-              />
-              <Button size="sm" onClick={addNote} disabled={!noteInput.trim() || addingNote}>
-                <Plus className="w-4 h-4" />
-                {addingNote ? "Enregistrement..." : "Ajouter la note"}
-              </Button>
-            </CardContent>
-          </Card>
+            <VisitNotes
+              notes={notes}
+              noteInput={noteInput}
+              setNoteInput={setNoteInput}
+              addingNote={addingNote}
+              onAddNote={addNote}
+              onDeleteNote={deleteNote}
+            />
 
-          {/* Notes list */}
-          {notes.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Notes ({notes.length})</p>
-              {[...notes]
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .map((note) => (
-                <Card key={note.id} className="border-slate-200">
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-start gap-2">
-                      <p className="flex-1 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{note.content}</p>
-                      <button
-                        onClick={() => deleteNote(note.id)}
-                        className="text-slate-300 hover:text-red-500 transition-colors shrink-0 mt-0.5"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {new Date(note.createdAt).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      {note.visit?.week?.label && (
-                        <span className="ml-2 text-red-500 font-medium">· {note.visit.week.label}</span>
-                      )}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+            <VisitPhotos
+              photos={photos}
+              uploadingPhoto={uploadingPhoto}
+              selectMode={selectMode}
+              selectedPhotos={selectedPhotos}
+              sharing={sharing}
+              onFileSelect={handleFileSelect}
+              onDeletePhoto={deletePhoto}
+              onDeleteSelected={deleteSelectedPhotos}
+              onShareSelected={shareSelectedPhotos}
+              onToggleSelection={togglePhotoSelection}
+              onSetSelectMode={setSelectMode}
+              onExitSelectMode={exitSelectMode}
+              onOpenLightbox={setLightboxUrl}
+            />
 
-          {/* Photo upload */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Image className="w-4 h-4 text-red-600" /> Photos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => photoRef.current?.click()}
-                  disabled={uploadingPhoto}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-red-300 hover:bg-red-50 transition-colors text-sm text-slate-500 hover:text-red-600 disabled:opacity-50"
-                  aria-label="Prendre une photo"
-                >
-                  {uploadingPhoto ? (
-                    <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  {uploadingPhoto ? "Envoi..." : "Caméra"}
-                </button>
-                <button
-                  onClick={() => galleryRef.current?.click()}
-                  disabled={uploadingPhoto}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-red-300 hover:bg-red-50 transition-colors text-sm text-slate-500 hover:text-red-600 disabled:opacity-50"
-                  aria-label="Choisir depuis la galerie"
-                >
-                  {uploadingPhoto ? (
-                    <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Image className="w-4 h-4" />
-                  )}
-                  {uploadingPhoto ? "Envoi..." : "Galerie"}
-                </button>
-              </div>
-              <input
-                ref={photoRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) {
-                    handleFileSelect(f);
-                    e.target.value = "";
-                  }
-                }}
-              />
-              <input
-                ref={galleryRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) {
-                    handleFileSelect(f);
-                    e.target.value = "";
-                  }
-                }}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Photos grid */}
-          {photos.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Photos ({photos.length})</p>
-                <button
-                  onClick={() => selectMode ? exitSelectMode() : setSelectMode(true)}
-                  className="text-xs text-red-600 font-medium hover:underline"
-                >
-                  {selectMode ? "Annuler" : "Sélectionner"}
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {[...photos]
-                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                  .map((photo) => {
-                  const isSelected = selectedPhotos.has(photo.id);
-                  const photoDate = photo.visit?.visitDate
-                    ? new Date(photo.visit.visitDate).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "2-digit" })
-                    : new Date(photo.createdAt).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "2-digit" });
-                  const photoWeek = photo.visit?.week?.label;
-                  return (
-                    <div
-                      key={photo.id}
-                      className={`relative group rounded-lg overflow-hidden bg-slate-100 border-2 transition-all ${
-                        isSelected ? "border-red-500 ring-2 ring-red-500/20" : "border-slate-200"
-                      }`}
-                    >
-                      {/* Selection checkbox */}
-                      {selectMode && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            togglePhotoSelection(photo.id);
-                          }}
-                          className="absolute top-1 left-1 z-10 bg-white dark:bg-slate-800 rounded p-0.5 shadow"
-                        >
-                          {isSelected ? (
-                            <CheckSquare className="w-4 h-4 text-red-600" />
-                          ) : (
-                            <Square className="w-4 h-4 text-slate-400" />
-                          )}
-                        </button>
-                      )}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={photo.url}
-                        alt={photo.caption || "Photo visite"}
-                        className={`w-full aspect-square object-cover ${selectMode ? "cursor-pointer" : "cursor-pointer"}`}
-                        onClick={() => selectMode ? togglePhotoSelection(photo.id) : setLightboxUrl(photo.url)}
-                      />
-                      {/* Delete button - only when not in select mode */}
-                      {!selectMode && (
-                        <button
-                          onClick={() => deletePhoto(photo.id)}
-                          className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                      <div className="px-1.5 py-1 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-                        <p className="text-[10px] font-medium text-slate-700 dark:text-slate-200 leading-tight">
-                          {photoDate}
-                        </p>
-                        {photoWeek && (
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                            {photoWeek}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Floating action bar for selection - compact on left to avoid chat button */}
-              {selectMode && selectedPhotos.size > 0 && (
-                <div className="fixed bottom-24 left-2 right-auto md:bottom-4 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-2 z-40 max-w-[280px]">
-                  <span className="text-xs font-medium text-slate-900 dark:text-slate-100 whitespace-nowrap px-1">
-                    {selectedPhotos.size}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={exitSelectMode}
-                      className="h-8 px-2 text-xs"
-                    >
-                      Annuler
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 px-2 text-red-600 border-red-200 hover:bg-red-50"
-                      onClick={deleteSelectedPhotos}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="h-8 px-3 bg-red-600 hover:bg-red-700 text-white"
-                      onClick={shareSelectedPhotos}
-                      disabled={sharing}
-                    >
-                      <Share2 className="w-4 h-4 mr-1" />
-                      {sharing ? "..." : "Partager"}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {notes.length === 0 && photos.length === 0 && (
-            <p className="text-center text-slate-400 text-sm py-6">Aucune note ni photo pour cette visite.</p>
-          )}
+            {notes.length === 0 && photos.length === 0 && (
+              <p className="text-center text-slate-400 text-sm py-6">Aucune note ni photo pour cette visite.</p>
+            )}
           </div>
         </div>
       )}
 
       {/* ── Tab: Historique ── */}
       {tab === "history" && (
-        <div className="space-y-3">
-          <p className="text-sm text-slate-500">
-            Toutes les visites précédentes à <strong>{visit.storeName}</strong>
-          </p>
-
-          {!historyLoaded && (
-            <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-
-          {historyLoaded && history.length === 0 && (
-            <div className="text-center py-8 text-slate-400 text-sm">
-              Aucune autre visite enregistrée pour ce magasin.
-            </div>
-          )}
-
-          {history.map((v) => {
-            const hTypeColor = VISIT_TYPE_COLORS[v.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
-            return (
-              <Link key={v.id} href={`/planning/${v.id}`}>
-                <Card className="hover:shadow-md hover:border-red-200 transition-all cursor-pointer">
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-medium text-slate-900 capitalize">
-                            {formatDateShort(v.visitDate)}
-                          </p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${hTypeColor}`}>
-                            {v.visitType}
-                          </span>
-                          <span className="text-xs text-slate-400">{v.week.label}</span>
-                        </div>
-                        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                          {v.materialType && (
-                            <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full">
-                              <Wrench className="w-3 h-3" /> {v.materialType}
-                            </span>
-                          )}
-                          {(v.notes?.length || 0) > 0 && (
-                            <span className="flex items-center gap-1 text-xs text-slate-500">
-                              <StickyNote className="w-3 h-3" /> {v.notes!.length} note{v.notes!.length > 1 ? "s" : ""}
-                            </span>
-                          )}
-                          {(v.photos?.length || 0) > 0 && (
-                            <span className="flex items-center gap-1 text-xs text-slate-500">
-                              <Image className="w-3 h-3" /> {v.photos!.length} photo{v.photos!.length > 1 ? "s" : ""}
-                            </span>
-                          )}
-                          {(v.notes?.length || 0) === 0 && (v.photos?.length || 0) === 0 && !v.materialType && (
-                            <span className="text-xs text-slate-300">Aucune note</span>
-                          )}
-                        </div>
-                        {/* Preview first note */}
-                        {v.notes?.[0] && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 italic">"{v.notes[0].content}"</p>
-                        )}
-                        {/* Preview photos thumbnails */}
-                        {(v.photos?.length || 0) > 0 && (
-                          <div className="flex gap-1 mt-2">
-                            {v.photos!.slice(0, 4).map((p) => (
-                              <div key={p.id} className="w-10 h-10 rounded overflow-hidden bg-slate-100 shrink-0">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={p.url} alt="" className="w-full h-full object-cover" />
-                              </div>
-                            ))}
-                            {v.photos!.length > 4 && (
-                              <div className="w-10 h-10 rounded bg-slate-100 flex items-center justify-center text-xs text-slate-500">
-                                +{v.photos!.length - 4}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+        <VisitHistory
+          history={history}
+          historyLoaded={historyLoaded}
+          storeName={visit.storeName}
+        />
       )}
 
       {/* Lightbox */}
       {lightboxUrl && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setLightboxUrl(null)}
-        >
-          {/* Top actions */}
-          <div className="absolute top-4 right-4 flex items-center gap-3">
-            <button
-              className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
-              onClick={async (e) => {
-                e.stopPropagation();
-                try {
-                  const response = await fetch(lightboxUrl);
-                  const blob = await response.blob();
-                  const file = new File([blob], `photo-visite.jpg`, { type: blob.type });
-                  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                      files: [file],
-                      title: "Photo visite",
-                    });
-                  } else {
-                    // Fallback: download
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `photo-visite.jpg`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                  }
-                } catch {
-                  showToast("error", "Erreur lors du partage");
-                }
-              }}
-              title="Partager"
-              aria-label="Partager la photo"
-            >
-              <Share2 className="w-6 h-6" />
-            </button>
-            <button
-              className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
-              onClick={() => setLightboxUrl(null)}
-              title="Fermer"
-            >
-              <X className="w-8 h-8" />
-            </button>
-          </div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightboxUrl}
-            alt="Photo plein écran"
-            className="max-w-full max-h-full object-contain rounded"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
+        <PhotoLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
     </div>
   );
