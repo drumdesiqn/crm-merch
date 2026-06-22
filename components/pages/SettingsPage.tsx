@@ -5,17 +5,12 @@ import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, R
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
+import type { Week } from "@/types/visit";
 
 interface GlossaryTerm {
   id: string;
   term: string;
   definition: string;
-}
-
-interface Week {
-  id: string;
-  label: string;
-  _count: { visits: number };
 }
 
 export default function SettingsPage() {

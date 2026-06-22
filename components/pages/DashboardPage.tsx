@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Skeleton, StatsCardSkeleton, VisitRowSkeleton } from "@/components/Skeleton";
 import type { Visit, Week } from "@/types/visit";
 import { Search } from "lucide-react";
 
@@ -67,8 +66,11 @@ export default function DashboardPage() {
   }, []);
 
   const currentWeek = weeks[0];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
 
   // Filter visits based on search query and filters
   const filteredVisits = useMemo(() => {

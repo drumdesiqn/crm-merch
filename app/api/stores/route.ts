@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         },
       },
       orderBy: { visitDate: "desc" },
+      take: 5000,
     });
 
     // Aggregate by store
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Convert to array and sort
-    let stores = Array.from(storeMap.values()).map((store) => ({
+    const stores = Array.from(storeMap.values()).map((store) => ({
       ...store,
       materialTypes: Array.from(store.materialTypes),
     }));

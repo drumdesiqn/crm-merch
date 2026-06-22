@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Store, MapPin, Calendar, TrendingUp, Download, Filter, ChevronRight, Image, FileText, BarChart3 } from "lucide-react";
@@ -9,19 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import * as XLSX from "xlsx";
-
-interface Visit {
-  id: string;
-  visitDate: string;
-  visitType: string;
-  status: string;
-  remarks: string | null;
-  materials: string | null;
-  materialType: string | null;
-  week: { label: string };
-  notes: Array<{ id: string; content: string; createdAt: string }>;
-  photos: Array<{ id: string; url: string; caption: string | null; createdAt: string }>;
-}
+import type { StoreHistoryVisit } from "@/types/visit";
 
 interface StoreData {
   storeId: string;
@@ -29,7 +17,7 @@ interface StoreData {
   storeAddress: string;
   storeZipcode: string;
   storeCity: string;
-  visits: Visit[];
+  visits: StoreHistoryVisit[];
 }
 
 export default function StoreHistoryPage() {
@@ -42,22 +30,18 @@ export default function StoreHistoryPage() {
   const [filterType, setFilterType] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    fetchStoreHistory();
-  }, [storeId]);
-
-  const fetchStoreHistory = async () => {
+  const fetchStoreHistory = useCallback(async () => {
     try {
       const res = await fetch(`/api/stores/${storeId}/history`);
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
+      if (data && data.visits) {
         setStoreData({
-          storeId,
-          storeName: data[0].storeName,
-          storeAddress: data[0].storeAddress,
-          storeZipcode: data[0].storeZipcode,
-          storeCity: data[0].storeCity,
-          visits: data,
+          storeId: data.storeId,
+          storeName: data.storeName,
+          storeAddress: data.storeAddress,
+          storeZipcode: data.storeZipcode,
+          storeCity: data.storeCity,
+          visits: data.visits,
         });
       }
     } catch (error) {
@@ -65,7 +49,11 @@ export default function StoreHistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [storeId]);
+
+  useEffect(() => {
+    fetchStoreHistory();
+  }, [fetchStoreHistory]);
 
   const filteredVisits = storeData?.visits.filter((visit) => {
     if (filterStatus !== "all" && visit.status !== filterStatus) return false;

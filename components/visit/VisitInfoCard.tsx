@@ -3,21 +3,12 @@
 import { Calendar, MapPin, User, Tag, Package, AlertCircle, Wrench, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
+import type { Visit } from "@/types/visit";
 
-interface Visit {
-  storeAddress: string;
-  storeZipcode: string;
-  storeCity: string;
-  visitDate: string;
-  salesRep: string | null;
-  visitFrequence: string | null;
-  merchandiser: string | null;
-  remarks: string | null;
-  materials: string | null;
-}
+type VisitInfoFields = Pick<Visit, "storeAddress" | "storeZipcode" | "storeCity" | "visitDate" | "salesRep" | "visitFrequence" | "merchandiser" | "remarks" | "materials">;
 
 interface VisitInfoCardProps {
-  visit: Visit;
+  visit: VisitInfoFields;
   mapsUrl: string;
   wazeUrl: string;
 }

@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const rateLimit = checkRateLimit(`chat:${ip}`, 20, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Trop de requêtes. Réessaie dans un moment." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { messages } = body;
     if (!Array.isArray(messages) || messages.length === 0) {

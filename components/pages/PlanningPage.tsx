@@ -13,36 +13,11 @@ import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, VisitStatus } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
 import { showToast } from "@/components/Toast";
 import { Skeleton, VisitRowSkeleton } from "@/components/Skeleton";
+import type { Visit, Week } from "@/types/visit";
 
 const RouteMapView = dynamic(() => import("@/components/pages/RouteMapView"), { ssr: false, loading: () => (
   <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" /></div>
 ) });
-
-interface Visit {
-  id: string;
-  storeId?: string;
-  storeName: string;
-  storeCity: string;
-  storeZipcode: string;
-  storeAddress: string;
-  visitType: string;
-  visitDate: string;
-  remarks: string | null;
-  salesRep: string | null;
-  assortment: string;
-  materials: string | null;
-  materialType: string | null;
-  sortOrder: number;
-  status: string;
-}
-
-interface Week {
-  id: string;
-  label: string;
-  weekNum: number;
-  year: number;
-  _count: { visits: number };
-}
 
 interface DayGroup {
   date: string;

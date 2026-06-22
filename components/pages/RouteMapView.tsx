@@ -22,23 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Save, CheckCircle, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VISIT_TYPE_COLORS } from "@/lib/utils";
-
-interface Visit {
-  id: string;
-  storeName: string;
-  storeCity: string;
-  storeZipcode: string;
-  storeAddress: string;
-  visitType: string;
-  visitDate: string;
-  sortOrder: number;
-  remarks: string | null;
-  salesRep: string | null;
-  assortment: string;
-  materials: string | null;
-  materialType: string | null;
-  status: string;
-}
+import type { Visit } from "@/types/visit";
 
 interface LatLng {
   lat: number;

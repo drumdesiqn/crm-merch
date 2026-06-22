@@ -502,13 +502,6 @@ export default function VisitDetailPage() {
 
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
-  const visitDateLocal = (() => {
-    const iso = visit.visitDate.split("T")[0];
-    const [y, m, d] = iso.split("-").map(Number);
-    return new Date(y, m - 1, d);
-  })();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const isPast = visitDateLocal.getTime() < today.getTime();
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`)}`;
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
 

@@ -108,7 +108,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Photo does not belong to this visit" }, { status: 403 });
     }
 
-    await del(photo.blobKey, { token: process.env.BLOB_READ_WRITE_TOKEN });
+    try {
+      await del(photo.blobKey, { token: process.env.BLOB_READ_WRITE_TOKEN });
+    } catch (blobError) {
+      console.error("Failed to delete blob, proceeding with DB cleanup:", blobError);
+    }
     await prisma.visitPhoto.delete({ where: { id: validation.data.photoId } });
 
     return NextResponse.json({ success: true });

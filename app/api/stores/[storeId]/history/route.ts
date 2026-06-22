@@ -39,14 +39,27 @@ export async function GET(
       select: { id: true, url: true, caption: true, createdAt: true, visitId: true, storeId: true },
     });
 
+    // Store-level notes/photos (storeId match but not tied to a specific visit)
+    const storeNotes = notes.filter((n) => n.storeId === storeId && !visitIds.includes(n.visitId));
+    const storePhotos = photos.filter((p) => p.storeId === storeId && !visitIds.includes(p.visitId));
+
     const enrichedVisits = visits.map((v) => ({
       ...v,
       materialType: v.materialType,
-      notes: notes.filter((n) => n.visitId === v.id || n.storeId === storeId),
-      photos: photos.filter((p) => p.visitId === v.id || p.storeId === storeId),
+      notes: notes.filter((n) => n.visitId === v.id),
+      photos: photos.filter((p) => p.visitId === v.id),
     }));
 
-    return NextResponse.json(enrichedVisits);
+    return NextResponse.json({
+      storeId,
+      storeName: visits[0]?.storeName || storeId,
+      storeAddress: visits[0]?.storeAddress || "",
+      storeZipcode: visits[0]?.storeZipcode || "",
+      storeCity: visits[0]?.storeCity || "",
+      visits: enrichedVisits,
+      storeNotes,
+      storePhotos,
+    });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }

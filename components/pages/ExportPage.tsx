@@ -7,35 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import * as XLSX from "xlsx";
-
-interface Week {
-  id: string;
-  label: string;
-  year: number;
-  weekNum: number;
-}
-
-interface Visit {
-  id: string;
-  visitDate: string;
-  storeName: string;
-  storeCity: string;
-  storeAddress: string;
-  storeZipcode: string;
-  visitType: string;
-  status: string;
-  merchandiser: string | null;
-  remarks: string | null;
-  materials: string | null;
-  materialType: string | null;
-  photos: { id: string; url: string }[];
-  notes: { content: string; createdAt: string }[];
-}
+import type { Week, ExportVisit } from "@/types/visit";
 
 export default function ExportPage() {
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string>("");
-  const [visits, setVisits] = useState<Visit[]>([]);
+  const [visits, setVisits] = useState<ExportVisit[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);

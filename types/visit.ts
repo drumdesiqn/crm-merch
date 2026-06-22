@@ -48,3 +48,21 @@ export interface VisitPhoto {
   storeId: string | null;
   visit?: { visitDate: string; week: { label: string } } | null;
 }
+
+export interface ExportVisit extends Visit {
+  photos: { id: string; url: string }[];
+  notes: { content: string; createdAt: string }[];
+}
+
+export interface StoreHistoryVisit {
+  id: string;
+  visitDate: string;
+  visitType: string;
+  status: string;
+  remarks: string | null;
+  materials: string | null;
+  materialType: string | null;
+  week: { label: string };
+  notes: { id: string; content: string; createdAt: string }[];
+  photos: { id: string; url: string; caption: string | null; createdAt: string }[];
+}

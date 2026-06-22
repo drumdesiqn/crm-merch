@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
       where: { id: { in: modificationIds } },
     });
 
+    // Limit modifications to current week to avoid unintended mass updates
+    const currentWeek = await prisma.week.findFirst({
+      orderBy: [{ year: "desc" }, { weekNum: "desc" }],
+      select: { id: true },
+    });
+
     const results = [];
 
     for (const mod of modifications) {
@@ -31,6 +37,7 @@ export async function POST(req: NextRequest) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const visits = await prisma.visit.findMany({
                 where: {
+                  ...(currentWeek ? { weekId: currentWeek.id } : {}),
                   OR: [
                     { id: mod.target },
                     { storeId: mod.target },

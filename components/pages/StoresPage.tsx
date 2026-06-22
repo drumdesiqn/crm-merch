@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, Store, MapPin, Calendar, TrendingUp, Search, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,11 +28,7 @@ export default function StoresPage() {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  useEffect(() => {
-    fetchStores();
-  }, [sortBy, sortOrder]);
-
-  const fetchStores = async () => {
+  const fetchStores = useCallback(async () => {
     try {
       const res = await fetch(`/api/stores?sortBy=${sortBy}&order=${sortOrder}`);
       const data = await res.json();
@@ -42,7 +38,11 @@ export default function StoresPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortBy, sortOrder]);
+
+  useEffect(() => {
+    fetchStores();
+  }, [fetchStores]);
 
   const filteredStores = stores.filter((store) =>
     store.storeName.toLowerCase().includes(searchQuery.toLowerCase()) ||

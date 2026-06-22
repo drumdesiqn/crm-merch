@@ -131,18 +131,3 @@ export async function compressImage(
 // ============================================
 
 export type VisitStatus = "pending" | "done" | "cancelled" | "postponed";
-
-export interface VisitBase {
-  id: string;
-  storeName: string;
-  storeCity: string;
-  storeZipcode: string;
-  storeAddress?: string;
-  visitType: string;
-  visitDate: string;
-  remarks: string | null;
-  salesRep: string | null;
-  assortment: string;
-  sortOrder: number;
-  status: string;
-}

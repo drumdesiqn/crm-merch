@@ -1,7 +1,7 @@
 const CACHE_VERSION = new Date().toISOString().split('T')[0]; // YYYY-MM-DD for daily cache busting
 const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
 const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
-const PRECACHE_URLS = ["/", "/planning", "/mails", "/settings", "/export", "/guide"];
+const PRECACHE_URLS = ["/", "/planning", "/mails", "/settings", "/export", "/guide", "/contacts", "/stores", "/assistant"];
 
 // Install - precache critical pages
 self.addEventListener("install", (event) => {

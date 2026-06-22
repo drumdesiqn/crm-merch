@@ -93,7 +93,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
                     </div>
                     {/* Preview first note */}
                     {v.notes?.[0] && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 italic">"{v.notes[0].content}"</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 italic">&ldquo;{v.notes[0].content}&rdquo;</p>
                     )}
                     {/* Preview photos thumbnails */}
                     {(v.photos?.length || 0) > 0 && (

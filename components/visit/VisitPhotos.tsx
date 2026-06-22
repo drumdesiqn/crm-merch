@@ -146,7 +146,7 @@ export default function VisitPhotos({
                   <img
                     src={photo.url}
                     alt={photo.caption || "Photo visite"}
-                    className={`w-full aspect-square object-cover ${selectMode ? "cursor-pointer" : "cursor-pointer"}`}
+                    className="w-full aspect-square object-cover cursor-pointer"
                     onClick={() => selectMode ? onToggleSelection(photo.id) : onOpenLightbox(photo.url)}
                   />
                   {/* Delete button - only when not in select mode */}

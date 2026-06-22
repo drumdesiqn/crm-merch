@@ -42,5 +42,6 @@ next-env.d.ts
 
 /app/generated/prisma
 
-.vercel
-.env*
+# sensitive / dev-only
+ADMIN_CREDENTIALS.txt
+dev.db
