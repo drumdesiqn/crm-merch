@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseExcelBuffer } from "@/lib/excel-parser";
 import { prisma } from "@/lib/prisma";
 import { ImportSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -114,10 +115,6 @@ export async function POST(req: NextRequest) {
       warnings,
     });
   } catch (error) {
-    console.error("Import error:", error);
-    return NextResponse.json(
-      { error: "Failed to parse file: " + String(error) },
-      { status: 500 }
-    );
+    return errorResponse(error, "POST /api/import");
   }
 }

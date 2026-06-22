@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { PhotoIdSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(
   _req: NextRequest,
@@ -31,7 +32,7 @@ export async function GET(
     });
     return NextResponse.json(photos);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/visits/[id]/photos");
   }
 }
 
@@ -79,7 +80,7 @@ export async function POST(
 
     return NextResponse.json(photo);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/visits/[id]/photos");
   }
 }
 
@@ -117,6 +118,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "DELETE /api/visits/[id]/photos");
   }
 }

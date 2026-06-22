@@ -137,6 +137,7 @@ export default function AssistantPage() {
             disabled={!input.trim() || loading}
             size="icon"
             className="shrink-0 h-11 w-11 rounded-xl"
+            aria-label="Envoyer"
           >
             <Send className="w-4 h-4" />
           </Button>

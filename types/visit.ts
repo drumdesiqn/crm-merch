@@ -58,11 +58,11 @@ export interface StoreHistoryVisit {
   id: string;
   visitDate: string;
   visitType: string;
-  status: string;
-  remarks: string | null;
-  materials: string | null;
-  materialType: string | null;
+  status?: string;
+  remarks?: string | null;
+  materials?: string | null;
+  materialType?: string | null;
   week: { label: string };
-  notes: { id: string; content: string; createdAt: string }[];
-  photos: { id: string; url: string; caption: string | null; createdAt: string }[];
+  notes?: { id: string; content: string; createdAt: string }[];
+  photos?: { id: string; url: string; caption: string | null; createdAt: string }[];
 }

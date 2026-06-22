@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
-    "vercel-build": "prisma generate && node scripts/apply-migrations.mjs && node scripts/gen-icons.mjs && node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\" && next build",
+    "build": "prisma generate && node scripts/stamp-sw.mjs && next build",
+    "vercel-build": "node scripts/vercel-build.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(
   _req: NextRequest,
@@ -61,6 +62,6 @@ export async function GET(
       storePhotos,
     });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/stores/[storeId]/history");
   }
 }

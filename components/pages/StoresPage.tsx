@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Store, MapPin, Calendar, TrendingUp, Search, ChevronRight } from "lucide-react";
+import { ArrowLeft, Store, MapPin, Calendar, TrendingUp, Search, ChevronRight, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,10 @@ export default function StoresPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchStores = useCallback(async () => {
+    if (!loading) setRefreshing(true);
     try {
       const res = await fetch(`/api/stores?sortBy=${sortBy}&order=${sortOrder}`);
       const data = await res.json();
@@ -38,8 +40,9 @@ export default function StoresPage() {
       console.error("Error fetching stores:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [sortBy, sortOrder]);
+  }, [sortBy, sortOrder, loading]);
 
   useEffect(() => {
     fetchStores();
@@ -61,14 +64,15 @@ export default function StoresPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-3">
           <Link href="/">
-            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" aria-label="Retour">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">Magasins</h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               {stores.length} magasin{stores.length !== 1 ? "s" : ""} visité{stores.length !== 1 ? "s" : ""}
+              {refreshing && <Loader2 className="w-3 h-3 animate-spin" />}
             </p>
           </div>
         </div>

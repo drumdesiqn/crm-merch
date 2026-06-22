@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(
   req: NextRequest,
@@ -69,6 +70,6 @@ export async function GET(
     });
   } catch (error) {
     console.error("Export visit error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/visits/[id]/export");
   }
 }

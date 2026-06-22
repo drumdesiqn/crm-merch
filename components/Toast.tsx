@@ -17,7 +17,7 @@ function notifyListeners() {
 }
 
 export function showToast(type: Toast["type"], message: string) {
-  const id = Math.random().toString(36).substring(2, 9);
+  const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9);
   toasts.push({ id, type, message });
   notifyListeners();
   

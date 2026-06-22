@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { NoteSchema, NoteIdSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(
   _req: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
     });
     return NextResponse.json(notes);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/visits/[id]/notes");
   }
 }
 
@@ -55,7 +56,7 @@ export async function POST(
     });
     return NextResponse.json(note);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/visits/[id]/notes");
   }
 }
 
@@ -87,6 +88,6 @@ export async function DELETE(
     });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "DELETE /api/visits/[id]/notes");
   }
 }

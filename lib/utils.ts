@@ -47,83 +47,23 @@ export const ASSORTMENT_COLORS: Record<string, string> = {
   "Grocery Pet Nutrition": "bg-green-100 text-green-800",
 };
 
-export const DEFAULT_GLOSSARY = [
-  { term: "Halfmoon", definition: "Meuble/display métallique arrondi installé en magasin pour présenter les produits Mars" },
-  { term: "HM", definition: "Abréviation de Halfmoon" },
-  { term: "Clipstrip", definition: "Bande plastique accrochée en rayon permettant d'exposer des produits supplémentaires" },
-  { term: "C&T", definition: "Confiserie & Tablette — catégorie de produits chocolat/confiserie" },
-  { term: "MEUBLES SELF C/O", definition: "Mobilier libre-service à vérifier, remplir et maintenir" },
-  { term: "Ad Hoc", definition: "Visite ponctuelle hors planning standard pour une mission spécifique" },
-  { term: "Maintenance", definition: "Visite de routine : remplissage produits, facing, vérification des prix, mise en ordre du rayon" },
-  { term: "Sales rep", definition: "Représentant commercial Mars à contacter en cas de problème en magasin" },
-  { term: "Facing", definition: "Mise en avant des produits en rayon (produits bien alignés et visibles en façade)" },
-  { term: "CRF MKT", definition: "Carrefour Market" },
-  { term: "CRF EXPRESS", definition: "Carrefour Express" },
-  { term: "AD DELHAIZE", definition: "AD Delhaize — magasin affilié Delhaize" },
-  { term: "INTERMARCHE", definition: "Intermarché" },
-];
+// DEFAULT_GLOSSARY moved to lib/constants.ts
+export { DEFAULT_GLOSSARY } from "./constants";
+
+// compressImage moved to lib/image-utils.ts
+export { compressImage } from "./image-utils";
 
 /**
- * Compress an image file using canvas resizing.
- * Returns a compressed Blob (as File) with max dimensions and quality.
+ * Escape HTML special characters to prevent XSS injection.
+ * Use this whenever inserting user content into raw HTML (e.g. PDF exports).
  */
-export async function compressImage(
-  file: File,
-  options: { maxWidth?: number; maxHeight?: number; quality?: number; type?: string } = {}
-): Promise<File> {
-  const { maxWidth = 1200, maxHeight = 1200, quality = 0.8, type = "image/jpeg" } = options;
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-
-      let { width, height } = img;
-
-      // Calculate new dimensions maintaining aspect ratio
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = Math.round(width * ratio);
-        height = Math.round(height * ratio);
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("Canvas context not available"));
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Canvas toBlob failed"));
-            return;
-          }
-          const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
-            type,
-            lastModified: file.lastModified,
-          });
-          resolve(compressedFile);
-        },
-        type,
-        quality
-      );
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Failed to load image"));
-    };
-
-    img.src = url;
-  });
+export function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // ============================================

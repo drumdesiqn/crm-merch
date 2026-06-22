@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_GLOSSARY } from "@/lib/utils";
 import { GlossaryTermSchema, GlossaryIdSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET() {
   try {
@@ -21,7 +22,7 @@ export async function GET() {
     }
     return NextResponse.json(terms);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/glossary");
   }
 }
 
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(term);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/glossary");
   }
 }
 
@@ -59,6 +60,6 @@ export async function DELETE(req: NextRequest) {
     await prisma.glossaryTerm.delete({ where: { id: validation.data.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "DELETE /api/glossary");
   }
 }

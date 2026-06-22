@@ -2,27 +2,15 @@
 
 import { Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getMaterialTypesByCategory } from "@/lib/constants";
 
-const MATERIAL_TYPES: Record<string, string[]> = {
-  snacking: [
-    "TG star", "Butter", "Halfmoon", "Modulair", "Accroche", "Choco boutique", "Colorworks",
-    "S180", "Self check out 3 layer display", "BE KIND single tower & metal HP tower",
-    "BE KIND 3 layer display", "Plastic box & wooden box", "Display", "Arch", "Totem",
-    "Standee", "Pop up", "Storbak/dumbbin display/flexi",
-    "Big wobbler (totem, arch, display)", "Small wobbler (shelf)", "Small & big freezer",
-  ],
-  "food-pet": [
-    "Arch", "Totem", "Caisse & Treat Furniture", "Wobbler in shelf",
-    "Dumpbins & Free sample wobbler", "Special flexis", "Flexi Whiskas",
-    "Flexi Sheba & Catisfactions", "Display", "Display & Totem", "Flexis + totem + arch",
-  ],
-};
+const MATERIAL_TYPES = getMaterialTypesByCategory();
 
 function getMaterialTypes(assortment: string): string[] {
   const key = assortment.toLowerCase();
-  if (key.includes("snacking")) return MATERIAL_TYPES.snacking;
-  if (key.includes("food") || key.includes("pet") || key.includes("nutrition")) return MATERIAL_TYPES["food-pet"];
-  return [...MATERIAL_TYPES.snacking, ...MATERIAL_TYPES["food-pet"]];
+  if (key.includes("snacking")) return MATERIAL_TYPES.snacking || [];
+  if (key.includes("food") || key.includes("pet") || key.includes("nutrition")) return MATERIAL_TYPES["food-pet"] || [];
+  return [...(MATERIAL_TYPES.snacking || []), ...(MATERIAL_TYPES["food-pet"] || [])];
 }
 
 interface MaterialTypeSelectorProps {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,6 +23,6 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(logs);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/maillogs");
   }
 }

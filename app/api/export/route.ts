@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,28 +24,28 @@ export async function GET(req: NextRequest) {
     const visitIds = visits.map((v) => v.id);
     const storeIds = [...new Set(visits.map((v) => v.storeId).filter(Boolean))];
 
-    // Get all photos for these visits OR stores (magasin-linked)
-    const allPhotos = await prisma.visitPhoto.findMany({
-      where: {
-        OR: [
-          { visitId: { in: visitIds } },
-          ...(storeIds.length > 0 ? [{ storeId: { in: storeIds } }] : []),
-        ],
-      },
-      select: { id: true, url: true, visitId: true, storeId: true },
-    });
-
-    // Get all notes for these visits OR stores (magasin-linked)
-    const allNotes = await prisma.visitNote.findMany({
-      where: {
-        OR: [
-          { visitId: { in: visitIds } },
-          ...(storeIds.length > 0 ? [{ storeId: { in: storeIds } }] : []),
-        ],
-      },
-      orderBy: { createdAt: "desc" },
-      select: { content: true, createdAt: true, visitId: true, storeId: true },
-    });
+    // Parallel fetch: photos and notes at the same time
+    const [allPhotos, allNotes] = await Promise.all([
+      prisma.visitPhoto.findMany({
+        where: {
+          OR: [
+            { visitId: { in: visitIds } },
+            ...(storeIds.length > 0 ? [{ storeId: { in: storeIds } }] : []),
+          ],
+        },
+        select: { id: true, url: true, visitId: true, storeId: true },
+      }),
+      prisma.visitNote.findMany({
+        where: {
+          OR: [
+            { visitId: { in: visitIds } },
+            ...(storeIds.length > 0 ? [{ storeId: { in: storeIds } }] : []),
+          ],
+        },
+        orderBy: { createdAt: "desc" },
+        select: { content: true, createdAt: true, visitId: true, storeId: true },
+      }),
+    ]);
 
     // Group by visit — each photo/note is assigned to exactly one visit
     // Visit-specific items go to their visit; store-level items (no visitId match) go to the latest visit for that store
@@ -122,6 +123,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("Export error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/export");
   }
 }

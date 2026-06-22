@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
+import { errorResponse } from "@/lib/api-utils";
+import { MailAnalyzeSchema, validate } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
-    const { content } = await req.json();
-
-    if (!content?.trim()) {
-      return NextResponse.json({ error: "No mail content provided" }, { status: 400 });
+    const body = await req.json();
+    const validation = validate(MailAnalyzeSchema, body);
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
+    const { content } = validation.data;
 
     const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });
     const apiKey = process.env.OPENAI_API_KEY || settings?.openaiKey;
@@ -124,7 +127,6 @@ Ne retourne QUE le JSON, sans markdown, sans explication.`;
       modifications,
     });
   } catch (error) {
-    console.error("Mail analyze error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/mail/analyze");
   }
 }

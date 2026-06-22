@@ -65,8 +65,8 @@ export default function StoreHistoryPage() {
     totalVisits: storeData.visits.length,
     completedVisits: storeData.visits.filter((v) => v.status === "done").length,
     pendingVisits: storeData.visits.filter((v) => v.status === "pending").length,
-    totalNotes: storeData.visits.reduce((sum, v) => sum + v.notes.length, 0),
-    totalPhotos: storeData.visits.reduce((sum, v) => sum + v.photos.length, 0),
+    totalNotes: storeData.visits.reduce((sum, v) => sum + (v.notes?.length || 0), 0),
+    totalPhotos: storeData.visits.reduce((sum, v) => sum + (v.photos?.length || 0), 0),
     lastVisit: storeData.visits[0]?.visitDate || null,
     firstVisit: storeData.visits[storeData.visits.length - 1]?.visitDate || null,
     materialTypes: Array.from(new Set(storeData.visits.map((v) => v.materialType).filter(Boolean))),
@@ -85,8 +85,8 @@ export default function StoreHistoryPage() {
       Remarques: visit.remarks || "",
       Matériel: visit.materials || "",
       "Type Matériel": visit.materialType || "",
-      Notes: visit.notes.map((n) => n.content).join("; "),
-      "Nombre Photos": visit.photos.length,
+      Notes: (visit.notes || []).map((n) => n.content).join("; "),
+      "Nombre Photos": (visit.photos || []).length,
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -104,7 +104,7 @@ export default function StoreHistoryPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/stores">
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" aria-label="Retour">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
@@ -122,7 +122,7 @@ export default function StoreHistoryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/stores">
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" aria-label="Retour">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
@@ -269,7 +269,7 @@ export default function StoreHistoryPage() {
                       <p className="text-sm text-slate-500 dark:text-slate-400">{visit.week.label}</p>
                     </div>
                     <Link href={`/planning/${visit.id}`}>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="Voir la visite">
                         <ChevronRight className="w-4 h-4" />
                       </Button>
                     </Link>
@@ -291,37 +291,37 @@ export default function StoreHistoryPage() {
                     </div>
                   )}
 
-                  {visit.notes.length > 0 && (
+                  {(visit.notes?.length || 0) > 0 && (
                     <div className="mb-3">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Notes ({visit.notes.length})
+                          Notes ({visit.notes?.length || 0})
                         </span>
                       </div>
                       <div className="space-y-2">
-                        {visit.notes.slice(0, 2).map((note) => (
+                        {(visit.notes || []).slice(0, 2).map((note) => (
                           <div key={note.id} className="p-2 bg-slate-50 dark:bg-slate-800 rounded text-sm text-slate-600 dark:text-slate-400">
                             {note.content}
                           </div>
                         ))}
-                        {visit.notes.length > 2 && (
-                          <p className="text-xs text-slate-400">+{visit.notes.length - 2} note(s) supplémentaire(s)</p>
+                        {(visit.notes?.length || 0) > 2 && (
+                          <p className="text-xs text-slate-400">+{(visit.notes?.length || 0) - 2} note(s) supplémentaire(s)</p>
                         )}
                       </div>
                     </div>
                   )}
 
-                  {visit.photos.length > 0 && (
+                  {(visit.photos?.length || 0) > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Image className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Photos ({visit.photos.length})
+                          Photos ({visit.photos?.length || 0})
                         </span>
                       </div>
                       <div className="flex gap-2 overflow-x-auto pb-2">
-                        {visit.photos.slice(0, 4).map((photo) => (
+                        {(visit.photos || []).slice(0, 4).map((photo) => (
                           <img
                             key={photo.id}
                             src={photo.url}
@@ -329,9 +329,9 @@ export default function StoreHistoryPage() {
                             className="w-20 h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
                           />
                         ))}
-                        {visit.photos.length > 4 && (
+                        {(visit.photos?.length || 0) > 4 && (
                           <div className="w-20 h-20 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-500">
-                            +{visit.photos.length - 4}
+                            +{(visit.photos?.length || 0) - 4}
                           </div>
                         )}
                       </div>

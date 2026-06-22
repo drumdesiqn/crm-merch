@@ -56,6 +56,13 @@ export const PatchVisitSchema = z.object({
   id: z.string().min(1, "ID de visite requis"),
   status: VisitStatusSchema.optional(),
   materialType: z.string().max(100).nullable().optional(),
+  remarks: z.string().max(5000, "Maximum 5000 caractères").nullable().optional(),
+  salesRep: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
+  visitType: z.string().max(100, "Maximum 100 caractères").optional(),
+  materials: z.string().max(2000, "Maximum 2000 caractères").nullable().optional(),
+  visitDate: z.string().optional(),
+  visitFrequence: z.string().max(100, "Maximum 100 caractères").nullable().optional(),
+  merchandiser: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
 });
 
 // Schema for glossary term (POST /api/glossary)
@@ -91,6 +98,20 @@ export const ModificationIdsSchema = z.object({
 // Schema for import mode
 export const ImportSchema = z.object({
   mode: z.enum(["replace", "merge", "check"]).default("replace"),
+});
+
+// Schema for chat messages (POST /api/chat)
+export const ChatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1, "Message vide").max(10000, "Message trop long (max 10 000 caractères)"),
+});
+export const ChatSchema = z.object({
+  messages: z.array(ChatMessageSchema).min(1, "Au moins un message requis").max(50, "Maximum 50 messages"),
+});
+
+// Schema for mail analyze (POST /api/mail/analyze)
+export const MailAnalyzeSchema = z.object({
+  content: z.string().min(1, "Contenu du mail requis").max(50000, "Mail trop long (max 50 000 caractères)"),
 });
 
 // Helper function to validate and return error response if invalid

@@ -42,6 +42,15 @@ export default function ChatWidget() {
 
   return (
     <>
+      {/* Backdrop — click outside to close */}
+      {open && (
+        <div
+          className="fixed inset-0 z-30 md:hidden"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Chat panel */}
       {open && (
         <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
@@ -173,6 +182,7 @@ export default function ChatWidget() {
                 disabled={!input.trim() || loading}
                 size="icon"
                 className="shrink-0 h-9 w-9 rounded-xl"
+                aria-label="Envoyer"
               >
                 <Send className="w-3.5 h-3.5" />
               </Button>

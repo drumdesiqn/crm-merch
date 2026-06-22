@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { errorResponse } from "@/lib/api-utils";
+import { ChatSchema, validate } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,10 +17,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { messages } = body;
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
+    const validation = validate(ChatSchema, body);
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
+    const { messages } = validation.data;
 
     const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });
     const apiKey = process.env.OPENAI_API_KEY || settings?.openaiKey;
@@ -109,7 +112,6 @@ Réponds en français, de façon concise et utile. Tu as accès à tout le conte
       message: completion.choices[0].message.content,
     });
   } catch (error) {
-    console.error("Chat error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/chat");
   }
 }

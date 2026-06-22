@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PatchVisitSchema, BulkReorderSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(visits);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/visits");
   }
 }
 
@@ -74,6 +75,6 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "PATCH /api/visits");
   }
 }

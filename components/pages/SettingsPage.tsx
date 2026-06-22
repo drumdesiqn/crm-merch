@@ -252,7 +252,7 @@ export default function SettingsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">
+            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
               Clé API OpenAI
               {hasApiKey && (
                 <span className="ml-2 text-green-600 font-normal">

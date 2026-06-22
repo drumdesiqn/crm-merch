@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SettingsSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 export async function GET() {
   try {
@@ -11,7 +12,7 @@ export async function GET() {
     const { openaiKey, ...safeSettings } = settings;
     return NextResponse.json({ ...safeSettings, hasApiKey: !!openaiKey });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "GET /api/settings");
   }
 }
 
@@ -41,6 +42,6 @@ export async function POST(req: NextRequest) {
     const { openaiKey: savedKey, ...safeSettings } = settings;
     return NextResponse.json({ ...safeSettings, hasApiKey: !!savedKey });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/settings");
   }
 }

@@ -5,10 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, History, StickyNote, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, compressImage, VisitStatus } from "@/lib/utils";
+import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, compressImage, escapeHtml, VisitStatus } from "@/lib/utils";
+import { PDF_BASE_STYLES, pdfPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import { STATUS_CONFIG } from "@/components/StatusBadge";
-import type { Visit, VisitNote, VisitPhoto } from "@/types/visit";
+import type { Visit, VisitNote, VisitPhoto, StoreHistoryVisit } from "@/types/visit";
 import VisitInfoCard from "@/components/visit/VisitInfoCard";
 import MaterialTypeSelector from "@/components/visit/MaterialTypeSelector";
 import VisitNotes from "@/components/visit/VisitNotes";
@@ -16,17 +17,6 @@ import VisitPhotos from "@/components/visit/VisitPhotos";
 import VisitHistory from "@/components/visit/VisitHistory";
 import PhotoLightbox from "@/components/visit/PhotoLightbox";
 import { VisitDetailSkeleton } from "@/components/Skeleton";
-
-interface HistoryVisit {
-  id: string;
-  visitDate: string;
-  visitType: string;
-  week: { label: string };
-  notes?: { id: string; content: string; createdAt: string }[];
-  photos?: { id: string; url: string; caption: string | null; createdAt: string }[];
-  materialType?: string | null;
-  status?: string;
-}
 
 type Tab = "visit" | "history";
 
@@ -53,7 +43,7 @@ export default function VisitDetailPage() {
   const [sharing, setSharing] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   // History state
-  const [history, setHistory] = useState<HistoryVisit[]>([]);
+  const [history, setHistory] = useState<StoreHistoryVisit[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
 
   const visitId = params?.id as string;
@@ -102,7 +92,7 @@ export default function VisitDetailPage() {
     fetch(`/api/stores/${visit.storeId}/history`)
       .then((r) => r.json())
       .then((d) => {
-        if (Array.isArray(d)) setHistory(d.filter((v: HistoryVisit) => v.id !== visitId));
+        if (Array.isArray(d)) setHistory(d.filter((v: StoreHistoryVisit) => v.id !== visitId));
         setHistoryLoaded(true);
       })
       .catch(() => {
@@ -154,17 +144,20 @@ export default function VisitDetailPage() {
   };
 
   const deleteNote = async (noteId: string) => {
+    if (!window.confirm("Supprimer cette note ?")) return;
+
     const previousNotes = [...notes];
     
     // Optimistic update
     setNotes((prev) => prev.filter((n) => n.id !== noteId));
     
     try {
-      await fetch(`/api/visits/${visitId}/notes`, {
+      const res = await fetch(`/api/visits/${visitId}/notes`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ noteId }),
       });
+      if (!res.ok) throw new Error("Server error");
       showToast("success", "Note supprimée");
     } catch {
       // Revert on error
@@ -314,33 +307,23 @@ export default function VisitDetailPage() {
       }
       
       const v = data.visit;
-      const photosHtml = v.photos.map((p: {url: string, caption?: string}) => `
-        <div style="margin: 10px; break-inside: avoid;">
-          <img src="${p.url}" style="max-width: 100%; max-height: 300px; border-radius: 8px;" />
-          ${p.caption ? `<p style="font-size: 12px; color: #666; margin-top: 5px;">${p.caption}</p>` : ""}
-        </div>
-      `).join("");
+      const photosHtml = v.photos.map((p: {url: string, caption?: string}) =>
+        pdfPhotoItem(p.url, p.caption)
+      ).join("");
       
-      const notesHtml = v.notes.map((n: {content: string, createdAt: string}) => `
-        <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 8px; break-inside: avoid;">
-          <p style="font-size: 12px; color: #666; margin-bottom: 5px;">${new Date(n.createdAt).toLocaleString("fr-BE")}</p>
-          <p style="font-size: 14px;">${n.content.replace(/\n/g, "<br>")}</p>
-        </div>
-      `).join("");
+      const notesHtml = v.notes.map((n: {content: string, createdAt: string}) =>
+        pdfNoteItem(n.content, n.createdAt)
+      ).join("");
       
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Rapport de visite - ${v.storeName}</title>
+          <title>Rapport de visite - ${escapeHtml(v.storeName)}</title>
           <style>
-            @media print {
-              body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-            }
-            body { font-family: system-ui, -apple-system, sans-serif; margin: 20px; color: #333; }
+            ${PDF_BASE_STYLES}
             h1 { color: #dc2626; margin-bottom: 5px; }
             .header { border-bottom: 2px solid #dc2626; padding-bottom: 15px; margin-bottom: 20px; }
-            .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
             .info-item { padding: 8px; background: #f9fafb; border-radius: 6px; }
             .info-label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
             .info-value { font-size: 14px; font-weight: 500; margin-top: 2px; }
@@ -348,19 +331,16 @@ export default function VisitDetailPage() {
             .badge-red { background: #fee2e2; color: #dc2626; }
             .badge-blue { background: #dbeafe; color: #2563eb; }
             .badge-gray { background: #f3f4f6; color: #6b7280; }
-            .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-            .section { margin: 25px 0; }
             .section-title { font-size: 16px; font-weight: 600; color: #dc2626; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
-            .no-content { color: #9ca3af; font-style: italic; }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>${v.storeName}</h1>
-            <p style="color: #6b7280; margin: 5px 0;">#${v.storeId} | ${v.weekLabel}</p>
+            <h1>${escapeHtml(v.storeName)}</h1>
+            <p style="color: #6b7280; margin: 5px 0;">#${escapeHtml(v.storeId)} | ${escapeHtml(v.weekLabel)}</p>
             <div style="margin-top: 10px;">
-              <span class="badge badge-red">${v.visitType}</span>
-              <span class="badge badge-blue">${v.assortment}</span>
+              <span class="badge badge-red">${escapeHtml(v.visitType)}</span>
+              <span class="badge badge-blue">${escapeHtml(v.assortment)}</span>
               <span class="badge badge-gray">${v.status === "done" ? "Effectué" : v.status === "cancelled" ? "Annulé" : v.status === "postponed" ? "Reporté" : "En attente"}</span>
             </div>
           </div>
@@ -372,30 +352,30 @@ export default function VisitDetailPage() {
             </div>
             <div class="info-item">
               <div class="info-label">Adresse</div>
-              <div class="info-value">${v.storeAddress}, ${v.storeZipcode} ${v.storeCity}</div>
+              <div class="info-value">${escapeHtml(v.storeAddress)}, ${escapeHtml(v.storeZipcode)} ${escapeHtml(v.storeCity)}</div>
             </div>
             ${v.merchandiser ? `
             <div class="info-item">
               <div class="info-label">Merchandiser</div>
-              <div class="info-value">${v.merchandiser}</div>
+              <div class="info-value">${escapeHtml(v.merchandiser)}</div>
             </div>
             ` : ""}
             ${v.salesRep ? `
             <div class="info-item">
               <div class="info-label">Sales Rep</div>
-              <div class="info-value">${v.salesRep}</div>
+              <div class="info-value">${escapeHtml(v.salesRep)}</div>
             </div>
             ` : ""}
             ${v.visitFrequence ? `
             <div class="info-item">
               <div class="info-label">Fréquence</div>
-              <div class="info-value">${v.visitFrequence}</div>
+              <div class="info-value">${escapeHtml(v.visitFrequence)}</div>
             </div>
             ` : ""}
             ${v.materialType ? `
             <div class="info-item">
               <div class="info-label">Matériel installé</div>
-              <div class="info-value">${v.materialType}</div>
+              <div class="info-value">${escapeHtml(v.materialType)}</div>
             </div>
             ` : ""}
           </div>
@@ -404,7 +384,7 @@ export default function VisitDetailPage() {
           <div class="section">
             <div class="section-title">Remarques</div>
             <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 12px; border-radius: 8px; color: #9a3412;">
-              ${v.remarks.replace(/\n/g, "<br>")}
+              ${escapeHtml(v.remarks).replace(/\n/g, "<br>")}
             </div>
           </div>
           ` : ""}
@@ -413,7 +393,7 @@ export default function VisitDetailPage() {
           <div class="section">
             <div class="section-title">Matériel nécessaire</div>
             <div style="background: #faf5ff; border: 1px solid #e9d5ff; padding: 12px; border-radius: 8px; color: #6b21a8;">
-              ${v.materials.replace(/\n/g, "<br>")}
+              ${escapeHtml(v.materials).replace(/\n/g, "<br>")}
             </div>
           </div>
           ` : ""}
@@ -428,13 +408,7 @@ export default function VisitDetailPage() {
             ${v.notes.length > 0 ? notesHtml : `<p class="no-content">Aucune note</p>`}
           </div>
           
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; text-align: center;">
-            Rapport généré le ${new Date().toLocaleString("fr-BE")} • Mars Merch App
-          </div>
-          
-          <script>
-            setTimeout(() => window.print(), 500);
-          </script>
+          ${pdfFooter()}
         </body>
         </html>
       `);
@@ -448,19 +422,22 @@ export default function VisitDetailPage() {
   };
 
   const deletePhoto = async (photoId: string) => {
+    const previousPhotos = [...photos];
+
+    // Optimistic update
+    setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+
     try {
       const res = await fetch(`/api/visits/${visitId}/photos`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photoId }),
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Erreur serveur");
-      }
-      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+      if (!res.ok) throw new Error("Server error");
       showToast("success", "Photo supprimée");
     } catch {
+      // Revert on error
+      setPhotos(previousPhotos);
       showToast("error", "Erreur lors de la suppression");
     }
   };
@@ -470,23 +447,28 @@ export default function VisitDetailPage() {
     if (!confirm(`Supprimer ${selectedPhotos.size} photo${selectedPhotos.size > 1 ? "s" : ""} ?`)) return;
     
     const ids = Array.from(selectedPhotos);
-    let deletedCount = 0;
-    for (const photoId of ids) {
-      try {
-        await fetch(`/api/visits/${visitId}/photos`, {
+    const results = await Promise.allSettled(
+      ids.map((photoId) =>
+        fetch(`/api/visits/${visitId}/photos`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ photoId }),
-        });
-        deletedCount++;
-      } catch {
-        // Continue with next photo
-      }
-    }
-    setPhotos((prev) => prev.filter((p) => !selectedPhotos.has(p.id)));
+        }).then((res) => {
+          if (!res.ok) throw new Error("Server error");
+          return photoId;
+        })
+      )
+    );
+    const deletedIds = new Set(
+      results.filter((r) => r.status === "fulfilled").map((r) => (r as PromiseFulfilledResult<string>).value)
+    );
+    setPhotos((prev) => prev.filter((p) => !deletedIds.has(p.id)));
     exitSelectMode();
-    if (deletedCount > 0) {
-      showToast("success", `${deletedCount} photo${deletedCount > 1 ? "s" : ""} supprimée${deletedCount > 1 ? "s" : ""}`);
+    if (deletedIds.size > 0) {
+      showToast("success", `${deletedIds.size} photo${deletedIds.size > 1 ? "s" : ""} supprimée${deletedIds.size > 1 ? "s" : ""}`);
+    }
+    if (deletedIds.size < ids.length) {
+      showToast("error", `${ids.length - deletedIds.size} photo(s) non supprimée(s)`);
     }
   };
 

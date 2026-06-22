@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, FileText, Calendar, MapPin, Store, Loader2, Printer, Download, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
+import { formatDate, escapeHtml } from "@/lib/utils";
+import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import type { Week, ExportVisit } from "@/types/visit";
 
@@ -71,54 +72,18 @@ export default function ExportPage() {
       setTimeout(() => iframe.remove(), 30000);
     }
 
-    const photosHtml = visit.photos
-      .map(
-        (photo) => `
-      <div style="break-inside: avoid; margin-bottom: 20px;">
-        <img src="${photo.url}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #e2e8f0;" />
-      </div>
-    `
-      )
-      .join("");
+    const photosHtml = visit.photos.map((photo) => pdfPhotoItem(photo.url)).join("");
 
     const notesHtml = visit.notes.length
-      ? visit.notes
-          .map(
-            (note) => `
-        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #dc2626;">
-          <p style="margin: 0; color: #334155; font-size: 14px;">${note.content}</p>
-          <p style="margin: 4px 0 0; color: #94a3b8; font-size: 12px;">${new Date(note.createdAt).toLocaleDateString("fr-BE")}</p>
-        </div>
-      `
-          )
-          .join("")
-      : '<p style="color: #94a3b8; font-style: italic;">Aucune note</p>';
+      ? visit.notes.map((note) => pdfNoteItem(note.content, note.createdAt)).join("")
+      : '<p class="no-content">Aucune note</p>';
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Rapport visite - ${visit.storeName}</title>
-        <style>
-          @media print {
-            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-          }
-          body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-          .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #dc2626; }
-          .header h1 { color: #dc2626; margin: 0 0 10px; font-size: 24px; }
-          .header p { color: #64748b; margin: 0; font-size: 14px; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-          .info-box { background: #f8fafc; padding: 15px; border-radius: 8px; }
-          .info-box label { display: block; color: #64748b; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
-          .info-box value { display: block; color: #1e293b; font-size: 16px; font-weight: 600; }
-          .section { margin-bottom: 30px; }
-          .section h2 { color: #dc2626; font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-          .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-          .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
-          .status-pending { background: #fef3c7; color: #d97706; }
-          .status-done { background: #d1fae5; color: #059669; }
-          .status-cancelled { background: #fee2e2; color: #dc2626; }
-        </style>
+        <title>Rapport visite - ${escapeHtml(visit.storeName)}</title>
+        <style>${PDF_BASE_STYLES}</style>
       </head>
       <body>
         <div class="header">
@@ -127,18 +92,9 @@ export default function ExportPage() {
         </div>
 
         <div class="info-grid">
-          <div class="info-box">
-            <label>Magasin</label>
-            <value>${visit.storeName}</value>
-          </div>
-          <div class="info-box">
-            <label>Type</label>
-            <value>${visit.visitType}</value>
-          </div>
-          <div class="info-box">
-            <label>Adresse</label>
-            <value>${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}</value>
-          </div>
+          ${pdfInfoBox("Magasin", visit.storeName)}
+          ${pdfInfoBox("Type", visit.visitType)}
+          ${pdfInfoBox("Adresse", `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`)}
           <div class="info-box">
             <label>Statut</label>
             <value>
@@ -149,12 +105,12 @@ export default function ExportPage() {
 
         <div class="section">
           <h2>📝 Remarques</h2>
-          <p>${visit.remarks || "Aucune remarque"}</p>
+          <p>${visit.remarks ? escapeHtml(visit.remarks).replace(/\n/g, "<br>") : "Aucune remarque"}</p>
         </div>
 
         <div class="section">
           <h2>🛠️ Matériel</h2>
-          <p>${visit.materials || "Non spécifié"}</p>
+          <p>${visit.materials ? escapeHtml(visit.materials).replace(/\n/g, "<br>") : "Non spécifié"}</p>
         </div>
 
         <div class="section">
@@ -169,17 +125,7 @@ export default function ExportPage() {
           </div>
         </div>
 
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 12px;">
-          Généré par Mars Merch le ${new Date().toLocaleDateString("fr-BE")}
-        </div>
-
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 500);
-          };
-        </script>
+        ${pdfFooter()}
       </body>
       </html>
     `);
@@ -253,7 +199,7 @@ export default function ExportPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/settings">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" aria-label="Retour">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>

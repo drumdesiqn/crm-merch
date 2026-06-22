@@ -4,33 +4,10 @@ import Link from "next/link";
 import { Wrench, StickyNote, Image } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VISIT_TYPE_COLORS, formatDateShort } from "@/lib/utils";
-
-interface VisitNote {
-  id: string;
-  content: string;
-  createdAt: string;
-}
-
-interface VisitPhoto {
-  id: string;
-  url: string;
-  caption: string | null;
-  createdAt: string;
-}
-
-interface HistoryVisit {
-  id: string;
-  visitDate: string;
-  visitType: string;
-  week: { label: string };
-  notes?: VisitNote[];
-  photos?: VisitPhoto[];
-  materialType?: string | null;
-  status?: string;
-}
+import type { StoreHistoryVisit } from "@/types/visit";
 
 interface VisitHistoryProps {
-  history: HistoryVisit[];
+  history: StoreHistoryVisit[];
   historyLoaded: boolean;
   storeName: string;
 }

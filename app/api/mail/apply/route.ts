@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ModificationIdsSchema, validate } from "@/lib/validation";
+import { errorResponse } from "@/lib/api-utils";
 
 const ALLOWED_FIELDS = ["remarks", "salesRep", "visitType", "materials", "visitDate", "visitFrequence", "status", "materialType"];
 
@@ -83,12 +84,13 @@ export async function POST(req: NextRequest) {
 
         results.push({ id: mod.id, success: true });
       } catch (err) {
-        results.push({ id: mod.id, success: false, error: String(err) });
+        console.error(`[API POST /api/mail/apply] Error applying modification ${mod.id}:`, err);
+        results.push({ id: mod.id, success: false, error: "Erreur lors de l'application" });
       }
     }
 
     return NextResponse.json({ results });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return errorResponse(error, "POST /api/mail/apply");
   }
 }

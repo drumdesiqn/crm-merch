@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { showToast } from "@/components/Toast";
 
 export default function OfflineIndicator() {
   const [online, setOnline] = useState(true);
@@ -31,8 +32,12 @@ export default function OfflineIndicator() {
         setPendingCount(event.data.count);
       }
       if (event.data.type === "SYNC_COMPLETE") {
+        const synced = pendingCount - (event.data.remaining || 0);
         setPendingCount(event.data.remaining);
         setShowSync(false);
+        if (synced > 0) {
+          showToast("success", `${synced} action${synced > 1 ? "s" : ""} synchronisée${synced > 1 ? "s" : ""} avec succès`);
+        }
       }
     };
 

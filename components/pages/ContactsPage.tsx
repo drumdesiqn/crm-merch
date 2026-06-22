@@ -3,63 +3,7 @@
 import { useState } from "react";
 import { Phone, Mail, ChevronDown, ChevronUp, Search, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Contact {
-  name: string;
-  phone: string;
-  email: string;
-}
-
-interface Team {
-  id: string;
-  name: string;
-  color: string;
-  contacts: Contact[];
-}
-
-const TEAMS: Team[] = [
-  {
-    id: "snacking",
-    name: "Mars Snacking",
-    color: "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400",
-    contacts: [
-      { name: "Ann-Sophie Noppe",        phone: "+32 472 07 15 63", email: "annsophie.noppe@effem.com" },
-      { name: "Anne-Sophie Roose",       phone: "+32 497 51 57 15", email: "anne-sophie.roose@effem.com" },
-      { name: "Annelies Heerwegh",       phone: "+32 470 38 21 78", email: "annelies.heerwegh@effem.com" },
-      { name: "Didier Brynaert",         phone: "+32 499 58 59 40", email: "didier.brynaert@effem.com" },
-      { name: "Jean-Jacques Bartholoméi",phone: "+32 493 31 59 07", email: "jeanjacques.bartholomei@effem.com" },
-      { name: "Jordy Moonen",            phone: "+32 478 18 96 17", email: "jordy.moonen@effem.com" },
-      { name: "Kristof Lowartz",         phone: "+32 491 90 98 24", email: "kristof.lowartz@effem.com" },
-      { name: "Maxim Philippe",          phone: "+32 496 40 33 75", email: "maxim.philippe@effem.com" },
-      { name: "Olivier Bex",             phone: "+32 493 09 65 65", email: "olivier.bex@effem.com" },
-      { name: "Souliman Bensellam",      phone: "+32 492 73 03 67", email: "souliman.bensellam@effem.com" },
-      { name: "Yassine Boulif",          phone: "+32 499 58 59 36", email: "yassine.boulit@effem.com" },
-    ],
-  },
-  {
-    id: "food-pet",
-    name: "Mars Food & Pet Nutrition",
-    color: "bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400",
-    contacts: [
-      { name: "An Vangerven",       phone: "+32 476 50 78 71", email: "an.vangerven@effem.com" },
-      { name: "Benjamin Francq",    phone: "+32 499 58 59 38", email: "benjamin.francq@effem.com" },
-      { name: "Fabrizio Antonini",  phone: "+32 493 09 65 46", email: "fabrizio.antonini@effem.com" },
-      { name: "Marie-Ysaline Minet",phone: "+32 474 70 95 13", email: "marieysaline.minet@effem.com" },
-      { name: "Pierre Grotz",       phone: "+32 476 55 77 46", email: "pierre.grotz@effem.com" },
-      { name: "Sofie Kina",         phone: "+32 497 51 60 55", email: "sofie.kina@effem.com" },
-    ],
-  },
-  {
-    id: "spt",
-    name: "Mars SPT",
-    color: "bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-400",
-    contacts: [
-      { name: "Arnaud Van Pellecom", phone: "+32 493 97 70 88", email: "arnaud.van.pellecom@effem.com" },
-      { name: "Dominique Colot",     phone: "+32 495 59 65 37", email: "dominique.colot@effem.com" },
-      { name: "Stijn Dhooge",        phone: "+32 496 59 12 53", email: "stijn.dhooge@effem.com" },
-    ],
-  },
-];
+import { TEAMS, type Team } from "@/lib/constants";
 
 export default function ContactsPage() {
   const [search, setSearch] = useState("");

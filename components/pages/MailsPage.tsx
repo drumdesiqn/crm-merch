@@ -149,7 +149,7 @@ export default function MailsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Traitement des mails</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Traitement des mails</h1>
         {result && (
           <Button variant="outline" size="sm" onClick={resetForm}>
             <X className="w-4 h-4" /> Nouveau mail
