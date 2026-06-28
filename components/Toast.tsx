@@ -54,7 +54,7 @@ export default function ToastContainer() {
             toast.type === "success"
               ? "bg-green-50 border-green-200 text-green-800"
               : toast.type === "error"
-              ? "bg-red-50 border-red-200 text-red-800"
+              ? "bg-red-mars-light border-red-200 text-red-mars"
               : "bg-amber-50 border-amber-200 text-amber-800"
           }`}
         >

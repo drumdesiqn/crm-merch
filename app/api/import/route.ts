@@ -3,9 +3,24 @@ import { parseExcelBuffer } from "@/lib/excel-parser";
 import { prisma } from "@/lib/prisma";
 import { ImportSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { geocodeAddressServer } from "@/lib/geocode-server";
+import { del } from "@vercel/blob";
+import { waitUntil } from "@vercel/functions";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const rateLimit = checkRateLimit(`import:${ip}`, 10, 60 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Trop d'imports. Réessaie dans 1 heure." },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const rawMode = (formData.get("mode") as string) || "replace";
@@ -45,6 +60,14 @@ export async function POST(req: NextRequest) {
     let visitsToCreate = visits;
 
     if (existingWeek && mode === "replace") {
+      // Clean up Vercel Blob photos before deleting visits
+      const orphanPhotos = await prisma.visitPhoto.findMany({
+        where: { visit: { weekId: existingWeek.id } },
+        select: { blobKey: true },
+      });
+      if (orphanPhotos.length > 0) {
+        void del(orphanPhotos.map((p) => p.blobKey)).catch(() => {});
+      }
       await prisma.visit.deleteMany({ where: { weekId: existingWeek.id } });
       week = existingWeek;
     } else if (existingWeek && mode === "merge") {
@@ -73,7 +96,6 @@ export async function POST(req: NextRequest) {
     const latestVisits = await prisma.visit.findMany({
       where: {
         storeId: { in: storeIds },
-        materialType: { not: null },
       },
       orderBy: { visitDate: "desc" },
       select: { storeId: true, materialType: true },
@@ -81,10 +103,22 @@ export async function POST(req: NextRequest) {
 
     const latestMaterialTypes: Record<string, string | null> = {};
     latestVisits.forEach((v) => {
-      if (!latestMaterialTypes[v.storeId]) {
+      if (!latestMaterialTypes[v.storeId] && v.materialType) {
         latestMaterialTypes[v.storeId] = v.materialType;
       }
     });
+
+    // Pre-load salesRep from Store table to override Excel value (store-level source of truth)
+    const storeSalesRepMap: Record<string, string | null> = {};
+    try {
+      const storeRecords = await prisma.store.findMany({
+        where: { storeId: { in: storeIds } },
+        select: { storeId: true, salesRep: true },
+      });
+      storeRecords.forEach((s: { storeId: string; salesRep: string | null }) => { storeSalesRepMap[s.storeId] = s.salesRep ?? null; });
+    } catch {
+      // Store table may not exist yet — gracefully ignore
+    }
 
     await prisma.visit.createMany({
       data: visitsToCreate.map((v) => ({
@@ -100,13 +134,47 @@ export async function POST(req: NextRequest) {
         visitDate: v.visitDate,
         merchandiser: v.merchandiser,
         remarks: v.remarks,
-        salesRep: v.salesRep,
+        salesRep: storeSalesRepMap[v.storeId] ?? v.salesRep ?? null,
         materials: v.materials,
         materialType: v.materialType || latestMaterialTypes[v.storeId] || null,
       })),
     });
 
-    return NextResponse.json({
+    // K: Upsert Store table — keep name/address/city in sync with Excel (best-effort)
+    const uniqueVisits = Array.from(new Map(visitsToCreate.map((v) => [v.storeId, v])).values());
+    try {
+      await Promise.all(
+        uniqueVisits.map((v) =>
+          prisma.store.upsert({
+            where: { storeId: v.storeId },
+            update: {
+              storeName: v.storeName,
+              storeAddress: v.storeAddress,
+              storeZipcode: v.storeZipcode,
+              storeCity: v.storeCity,
+              ...(v.assortment ? { assortment: v.assortment } : {}),
+              ...(v.visitType ? { visitType: v.visitType } : {}),
+              ...(v.visitFrequence ? { visitFrequence: v.visitFrequence } : {}),
+            },
+            create: {
+              storeId: v.storeId,
+              storeName: v.storeName,
+              storeAddress: v.storeAddress,
+              storeZipcode: v.storeZipcode,
+              storeCity: v.storeCity,
+              assortment: v.assortment || "",
+              visitType: v.visitType || "Maintenance",
+              visitFrequence: v.visitFrequence || null,
+              salesRep: v.salesRep || null,
+            },
+          })
+        )
+      );
+    } catch {
+      // Store table may not exist yet — gracefully ignore
+    }
+
+    const response = NextResponse.json({
       success: true,
       weekNum,
       year,
@@ -114,6 +182,32 @@ export async function POST(req: NextRequest) {
       count: visitsToCreate.length,
       warnings,
     });
+
+    // Background geocoding via waitUntil (serverless-safe — keeps function alive until done)
+    const uniqueStores = Array.from(
+      new Map(visitsToCreate.map((v) => [v.storeId, v])).values()
+    );
+    waitUntil(
+      (async () => {
+        for (const v of uniqueStores) {
+          try {
+            const coords = await geocodeAddressServer(v.storeAddress, v.storeZipcode, v.storeCity);
+            if (coords) {
+              await prisma.visit.updateMany({
+                where: { storeId: v.storeId, latitude: null },
+                data: { latitude: coords.lat, longitude: coords.lng },
+              });
+            }
+          } catch {
+            // silently ignore individual geocoding failures
+          }
+          // Nominatim requires >= 1s between requests
+          await new Promise((r) => setTimeout(r, 1100));
+        }
+      })()
+    );
+
+    return response;
   } catch (error) {
     return errorResponse(error, "POST /api/import");
   }

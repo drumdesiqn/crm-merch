@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { WeekIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const weeks = await prisma.week.findMany({
@@ -33,7 +35,10 @@ export async function DELETE(req: Request) {
     if (!week) return NextResponse.json({ error: "Week not found" }, { status: 404 });
 
     // Clean up Vercel Blob files before deleting DB records
-    const visitIds = (await prisma.visit.findMany({ where: { weekId: id }, select: { id: true } })).map((v) => v.id);
+    const visitIds = (await prisma.visit.findMany({
+      where: { weekId: id },
+      select: { id: true },
+    })).map((v) => v.id);
     if (visitIds.length > 0) {
       const photos = await prisma.visitPhoto.findMany({
         where: { visitId: { in: visitIds } },

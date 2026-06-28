@@ -2,10 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ModificationIdsSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+export const dynamic = 'force-dynamic';
 
 const ALLOWED_FIELDS = ["remarks", "salesRep", "visitType", "materials", "visitDate", "visitFrequence", "status", "materialType"];
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const rateLimit = checkRateLimit(`mail-apply:${ip}`, 30, 60 * 1000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: "Trop de requêtes. Réessaie dans 1 minute." }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
 
@@ -29,6 +38,11 @@ export async function POST(req: NextRequest) {
 
     for (const mod of modifications) {
       try {
+        if (mod.action === "add" || mod.action === "delete") {
+          results.push({ id: mod.id, success: false, error: `Action "${mod.action}" non supportée — applique manuellement depuis le planning` });
+          continue;
+        }
+
         if (mod.action === "modify" || mod.action === "add_remark") {
           if (mod.field && mod.newValue !== null) {
             if (!ALLOWED_FIELDS.includes(mod.field)) {
@@ -49,12 +63,22 @@ export async function POST(req: NextRequest) {
                     { storeId: mod.target },
                   ],
                 },
+                select: {
+                  id: true,
+                  storeId: true,
+                  storeName: true,
+                },
               });
 
               // Fallback: case-insensitive name match in JS
               if (visits.length === 0 && currentWeek) {
                 const weekVisits = await prisma.visit.findMany({
                   where: { weekId: currentWeek.id },
+                  select: {
+                    id: true,
+                    storeId: true,
+                    storeName: true,
+                  },
                 });
                 visits = weekVisits.filter((v) => {
                   const name = v.storeName.toLowerCase();
@@ -83,8 +107,7 @@ export async function POST(req: NextRequest) {
         });
 
         results.push({ id: mod.id, success: true });
-      } catch (err) {
-        console.error(`[API POST /api/mail/apply] Error applying modification ${mod.id}:`, err);
+      } catch {
         results.push({ id: mod.id, success: false, error: "Erreur lors de l'application" });
       }
     }

@@ -32,7 +32,7 @@ export const UpdateStatusSchema = z.object({
 // Schema for updating visit material type
 export const UpdateMaterialSchema = z.object({
   id: z.string().min(1, "ID de visite requis"),
-  materialType: z.string().max(100, "Maximum 100 caractères").nullable(),
+  materialType: z.array(z.string().max(100)).default([]),
 });
 
 // Schema for bulk visit order update
@@ -63,6 +63,12 @@ export const PatchVisitSchema = z.object({
   visitDate: z.string().optional(),
   visitFrequence: z.string().max(100, "Maximum 100 caractères").nullable().optional(),
   merchandiser: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
+  storeName: z.string().max(200, "Maximum 200 caractères").optional(),
+  storeAddress: z.string().max(300, "Maximum 300 caractères").optional(),
+  storeZipcode: z.string().max(20, "Maximum 20 caractères").optional(),
+  storeCity: z.string().max(100, "Maximum 100 caractères").optional(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
 });
 
 // Schema for glossary term (POST /api/glossary)
@@ -93,6 +99,44 @@ export const WeekIdSchema = z.object({
 // Schema for applying mail modifications (POST /api/mail/apply)
 export const ModificationIdsSchema = z.object({
   modificationIds: z.array(z.string().min(1, "ID requis")).min(1, "Au moins une modification requise"),
+});
+
+// Schema for patching a store (PATCH /api/stores)
+export const PatchStoreSchema = z.object({
+  storeId: z.string().min(1, "ID magasin requis"),
+  storeName: z.string().min(1).max(200, "Maximum 200 caractères").optional(),
+  storeAddress: z.string().max(300, "Maximum 300 caractères").optional(),
+  storeZipcode: z.string().max(20, "Maximum 20 caractères").optional(),
+  storeCity: z.string().max(100, "Maximum 100 caractères").optional(),
+  assortment: z.string().max(100, "Maximum 100 caractères").optional(),
+  visitType: z.string().max(100, "Maximum 100 caractères").optional(),
+  visitFrequence: z.string().max(100, "Maximum 100 caractères").nullable().optional(),
+  salesRep: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
+});
+
+// Schema for creating a store (POST /api/stores)
+export const CreateStoreSchema = z.object({
+  storeId: z.string().min(1, "ID magasin requis").max(100, "Maximum 100 caractères"),
+  storeName: z.string().min(1, "Nom requis").max(200, "Maximum 200 caractères"),
+  storeAddress: z.string().min(1, "Adresse requise").max(300, "Maximum 300 caractères"),
+  storeZipcode: z.string().min(1, "Code postal requis").max(20, "Maximum 20 caractères"),
+  storeCity: z.string().min(1, "Ville requise").max(100, "Maximum 100 caractères"),
+  assortment: z.string().max(100, "Maximum 100 caractères").optional(),
+  visitType: z.string().max(100, "Maximum 100 caractères").optional(),
+  visitFrequence: z.string().max(100, "Maximum 100 caractères").nullable().optional(),
+  salesRep: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
+});
+
+// Schema for creating a visit manually (POST /api/visits)
+export const CreateVisitSchema = z.object({
+  storeId: z.string().min(1, "ID magasin requis"),
+  weekId: z.string().min(1, "ID de semaine requis").optional(),
+  visitDate: z.string().min(1, "Date de visite requise"),
+  visitType: z.string().max(100, "Maximum 100 caractères").optional(),
+  assortment: z.string().max(100, "Maximum 100 caractères").optional(),
+  merchandiser: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
+  remarks: z.string().max(5000, "Maximum 5000 caractères").nullable().optional(),
+  salesRep: z.string().max(200, "Maximum 200 caractères").nullable().optional(),
 });
 
 // Schema for import mode

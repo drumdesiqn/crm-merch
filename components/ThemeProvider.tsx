@@ -1,8 +1,26 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useSyncExternalStore, useCallback } from "react";
 
 type Theme = "light" | "dark";
+
+function getTheme(): Theme {
+  if (typeof document === "undefined") return "light";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
+function subscribe(callback: () => void) {
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === "class") {
+        callback();
+        return;
+      }
+    }
+  });
+  observer.observe(document.documentElement, { attributes: true });
+  return () => observer.disconnect();
+}
 
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
   theme: "light",
@@ -10,24 +28,17 @@ const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Always start with "light" for consistent SSR; the inline script in layout.tsx
-  // already applies the correct class before React hydrates.
-  const [theme, setTheme] = useState<Theme>("light");
+  const theme = useSyncExternalStore<Theme>(
+    subscribe,
+    getTheme,
+    () => "light" // SSR snapshot
+  );
 
-  useEffect(() => {
-    // Read the actual theme from the DOM (set by the inline script) on mount
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
-  }, []);
-
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const next = prev === "light" ? "dark" : "light";
-      localStorage.setItem("theme", next);
-      document.documentElement.classList.toggle("dark", next === "dark");
-      return next;
-    });
-  };
+  const toggleTheme = useCallback(() => {
+    const next = theme === "light" ? "dark" : "light";
+    localStorage.setItem("theme", next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

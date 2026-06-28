@@ -1,59 +1,73 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Store, MapPin, Calendar, TrendingUp, Download, Filter, ChevronRight, Image, FileText, BarChart3 } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, MapPin, Calendar, Download, Filter, ChevronRight, Image as ImageIcon, FileText, BarChart3, Pencil, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
-import type { StoreHistoryVisit } from "@/types/visit";
+import { fetchApi } from "@/lib/client-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useStoreHistoryPage } from "@/lib/hooks/useStoreHistoryPage";
 import { StoreHistorySkeleton } from "@/components/Skeleton";
-
-interface StoreData {
-  storeId: string;
-  storeName: string;
-  storeAddress: string;
-  storeZipcode: string;
-  storeCity: string;
-  visits: StoreHistoryVisit[];
-}
 
 export default function StoreHistoryPage() {
   const params = useParams();
   const storeId = params.storeId as string;
-  
-  const [storeData, setStoreData] = useState<StoreData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const { data: storeData, isLoading: loading } = useStoreHistoryPage(storeId);
+
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [showEditStore, setShowEditStore] = useState(false);
+  const [editForm, setEditForm] = useState({ storeName: "", storeAddress: "", storeZipcode: "", storeCity: "", visitType: "", assortment: "", visitFrequence: "", salesRep: "" });
+  const [savingStore, setSavingStore] = useState(false);
 
-  const fetchStoreHistory = useCallback(async () => {
+  const handleOpenEdit = () => {
+    if (!storeData) return;
+    const lastVisit = storeData.visits[0];
+    setEditForm({
+      storeName: storeData.storeName,
+      storeAddress: storeData.storeAddress,
+      storeZipcode: storeData.storeZipcode,
+      storeCity: storeData.storeCity,
+      visitType: lastVisit?.visitType || "",
+      assortment: "",
+      visitFrequence: "",
+      salesRep: storeData.salesRep || "",
+    });
+    setShowEditStore(true);
+  };
+
+  const handleUpdateStore = async () => {
+    if (!storeData) return;
+    setSavingStore(true);
     try {
-      const res = await fetch(`/api/stores/${storeId}/history`);
-      const data = await res.json();
-      if (data && data.visits) {
-        setStoreData({
-          storeId: data.storeId,
-          storeName: data.storeName,
-          storeAddress: data.storeAddress,
-          storeZipcode: data.storeZipcode,
-          storeCity: data.storeCity,
-          visits: data.visits,
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching store history:", error);
+      await fetchApi("/api/stores", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId,
+          storeName: editForm.storeName.trim(),
+          storeAddress: editForm.storeAddress.trim(),
+          storeZipcode: editForm.storeZipcode.trim(),
+          storeCity: editForm.storeCity.trim(),
+          salesRep: editForm.salesRep.trim() || null,
+        }),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["store-history-page", storeId] });
+      setShowEditStore(false);
+    } catch {
+      // error handled by fetchApi toast
     } finally {
-      setLoading(false);
+      setSavingStore(false);
     }
-  }, [storeId]);
-
-  useEffect(() => {
-    fetchStoreHistory();
-  }, [fetchStoreHistory]);
+  };
 
   const filteredVisits = storeData?.visits.filter((visit) => {
     if (filterStatus !== "all" && visit.status !== filterStatus) return false;
@@ -69,7 +83,7 @@ export default function StoreHistoryPage() {
     totalPhotos: storeData.visits.reduce((sum, v) => sum + (v.photos?.length || 0), 0),
     lastVisit: storeData.visits[0]?.visitDate || null,
     firstVisit: storeData.visits[storeData.visits.length - 1]?.visitDate || null,
-    materialTypes: Array.from(new Set(storeData.visits.map((v) => v.materialType).filter(Boolean))),
+    materialTypes: Array.from(new Set(storeData.visits.flatMap((v) => v.materialType ? v.materialType.split(", ") : []).filter(Boolean))),
   } : null;
 
   const exportHistory = async () => {
@@ -134,10 +148,16 @@ export default function StoreHistoryPage() {
             </div>
           </div>
         </div>
-        <Button onClick={exportHistory} variant="outline" className="gap-2">
-          <Download className="w-4 h-4" />
-          Exporter
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleOpenEdit} variant="outline" className="gap-2">
+            <Pencil className="w-4 h-4" />
+            Modifier
+          </Button>
+          <Button onClick={exportHistory} variant="outline" className="gap-2">
+            <Download className="w-4 h-4" />
+            Exporter
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -208,7 +228,7 @@ export default function StoreHistoryPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
                 >
                   <option value="all">Tous</option>
                   <option value="pending">À faire</option>
@@ -220,7 +240,7 @@ export default function StoreHistoryPage() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
                 >
                   <option value="all">Tous</option>
                   <option value="Maintenance">Maintenance</option>
@@ -248,14 +268,14 @@ export default function StoreHistoryPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredVisits.map((visit, index) => (
+            {filteredVisits.map((visit) => (
               <Card key={visit.id} className="border-slate-200 dark:border-slate-700">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Link href={`/planning/${visit.id}`}>
-                          <h3 className="font-semibold text-slate-900 dark:text-slate-100 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                          <h3 className="font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-mars dark:hover:text-blue-cpm transition-colors">
                             {formatDate(visit.visitDate)}
                           </h3>
                         </Link>
@@ -282,12 +302,12 @@ export default function StoreHistoryPage() {
                   )}
 
                   {visit.materials && (
-                    <div className="mb-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="mb-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 flex-wrap">
                       <BarChart3 className="w-4 h-4" />
                       <span>{visit.materials}</span>
-                      {visit.materialType && (
-                        <Badge variant="outline" className="text-xs">{visit.materialType}</Badge>
-                      )}
+                      {visit.materialType && visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">{type}</Badge>
+                      ))}
                     </div>
                   )}
 
@@ -315,17 +335,19 @@ export default function StoreHistoryPage() {
                   {(visit.photos?.length || 0) > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Image className="w-4 h-4 text-slate-400" />
+                        <ImageIcon className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                           Photos ({visit.photos?.length || 0})
                         </span>
                       </div>
                       <div className="flex gap-2 overflow-x-auto pb-2">
                         {(visit.photos || []).slice(0, 4).map((photo) => (
-                          <img
+                          <Image
                             key={photo.id}
                             src={photo.url}
                             alt={photo.caption || "Photo"}
+                            width={80}
+                            height={80}
                             className="w-20 h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
                           />
                         ))}
@@ -343,6 +365,71 @@ export default function StoreHistoryPage() {
           </div>
         )}
       </div>
+
+      {/* Edit store modal */}
+      {showEditStore && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Modifier {storeData?.storeName}</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom *</label>
+                <input
+                  type="text"
+                  value={editForm.storeName}
+                  onChange={(e) => setEditForm({ ...editForm, storeName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse *</label>
+                <input
+                  type="text"
+                  value={editForm.storeAddress}
+                  onChange={(e) => setEditForm({ ...editForm, storeAddress: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                />
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Code postal *</label>
+                  <input
+                    type="text"
+                    value={editForm.storeZipcode}
+                    onChange={(e) => setEditForm({ ...editForm, storeZipcode: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  />
+                </div>
+                <div className="flex-[2]">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ville *</label>
+                  <input
+                    type="text"
+                    value={editForm.storeCity}
+                    onChange={(e) => setEditForm({ ...editForm, storeCity: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Représentant</label>
+                <input
+                  type="text"
+                  value={editForm.salesRep}
+                  onChange={(e) => setEditForm({ ...editForm, salesRep: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  placeholder="Nom du représentant"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1" onClick={handleUpdateStore} disabled={savingStore}>
+                {savingStore ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowEditStore(false)}>Annuler</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

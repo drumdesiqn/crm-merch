@@ -26,14 +26,14 @@ export const STATUS_CONFIG: Record<VisitStatus, {
   },
   done: {
     label: "Effectuée",
-    color: "bg-green-100 text-green-700 border-green-200",
-    darkColor: "dark:bg-green-900/40 dark:text-green-400 dark:border-green-800",
+    color: "bg-green-cpm-light text-green-700 border-green-200",
+    darkColor: "dark:bg-green-cpm/20 dark:text-green-cpm dark:border-green-600",
     icon: <CheckCircle2 className="w-3 h-3" />,
   },
   cancelled: {
     label: "Annulée",
-    color: "bg-red-100 text-red-700 border-red-200",
-    darkColor: "dark:bg-red-900/40 dark:text-red-400 dark:border-red-800",
+    color: "bg-red-mars-light text-red-mars border-red-200",
+    darkColor: "dark:bg-red-mars/20 dark:text-red-400 dark:border-red-800",
     icon: <Ban className="w-3 h-3" />,
   },
   postponed: {

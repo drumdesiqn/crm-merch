@@ -5,6 +5,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/api-utils";
 import { ChatSchema, validate } from "@/lib/validation";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
@@ -63,18 +65,18 @@ export async function POST(req: NextRequest) {
 
     let planningText = "Aucun planning importé";
     if (currentWeek && currentWeekVisits.length > 0) {
-      const byDay = currentWeekVisits.reduce((acc, v) => {
+      const byDay = currentWeekVisits.reduce<Record<string, typeof currentWeekVisits>>((acc, v) => {
         const day = v.visitDate.toISOString().split("T")[0];
         if (!acc[day]) acc[day] = [];
         acc[day].push(v);
         return acc;
-      }, {} as Record<string, typeof currentWeekVisits>);
+      }, {});
 
-      planningText = `Semaine ${currentWeek.label}:\n` + Object.entries(byDay).map(([day, visits]) => {
+      planningText = `Semaine ${currentWeek.label}:\n` + Object.entries(byDay).map(([day, dayVisits]) => {
         const [dy, dm, dd] = day.split("-").map(Number);
         const localDate = new Date(dy, dm - 1, dd);
         const dayLabel = localDate.toLocaleDateString("fr-BE", { weekday: "long", day: "2-digit", month: "2-digit" });
-        return `${dayLabel}:\n` + visits.map(v =>
+        return `${dayLabel}:\n` + dayVisits.map((v) =>
           `  - ${v.storeName} (${v.storeCity}, ${v.storeZipcode}) | ${v.visitType} | Sales rep: ${v.salesRep || "N/A"}${v.remarks ? ` | REMARQUE: ${v.remarks}` : ""}${v.materials ? ` | Matériel: ${v.materials}` : ""}`
         ).join("\n");
       }).join("\n\n");

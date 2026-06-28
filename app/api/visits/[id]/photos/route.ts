@@ -3,6 +3,25 @@ import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { PhotoIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+export const dynamic = 'force-dynamic';
+
+function getIp(req: NextRequest) {
+  return req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+}
+
+function photoRateLimit(req: NextRequest) {
+  const ip = getIp(req);
+  const rateLimit = checkRateLimit(`visit-photos:${ip}`, 30, 60 * 1000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Trop d'actions photo. Réessaie dans 1 minute." },
+      { status: 429 }
+    );
+  }
+  return null;
+}
 
 export async function GET(
   _req: NextRequest,
@@ -40,6 +59,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimitResponse = photoRateLimit(req);
+  if (rateLimitResponse) return rateLimitResponse;
   try {
     const { id } = await params;
     const formData = await req.formData();
@@ -88,6 +109,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimitResponse = photoRateLimit(req);
+  if (rateLimitResponse) return rateLimitResponse;
   try {
     const { id } = await params;
     const body = await req.json();

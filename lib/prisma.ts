@@ -12,8 +12,8 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
 }
 
-if (!globalForPrisma.prisma) {
+if (!globalForPrisma.prisma && process.env.DATABASE_URL) {
   globalForPrisma.prisma = createPrismaClient();
 }
 
-export const prisma = globalForPrisma.prisma;
+export const prisma = globalForPrisma.prisma!;

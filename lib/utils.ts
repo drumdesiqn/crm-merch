@@ -38,13 +38,13 @@ export function formatDateShort(date: Date | string): string {
 }
 
 export const VISIT_TYPE_COLORS: Record<string, string> = {
-  Maintenance: "bg-blue-100 text-blue-800 border-blue-200",
-  "Ad Hoc": "bg-orange-100 text-orange-800 border-orange-200",
+  Maintenance: "bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+  "Ad Hoc": "bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800",
 };
 
 export const ASSORTMENT_COLORS: Record<string, string> = {
-  Snacking: "bg-purple-100 text-purple-800",
-  "Grocery Pet Nutrition": "bg-green-100 text-green-800",
+  Snacking: "bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300",
+  "Grocery Pet Nutrition": "bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-300",
 };
 
 // DEFAULT_GLOSSARY moved to lib/constants.ts

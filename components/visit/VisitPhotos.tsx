@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { Image, Upload, X, Trash2, Share2, CheckSquare, Square } from "lucide-react";
+import Image from "next/image";
+import { Image as ImageIcon, Upload, X, Trash2, Share2, CheckSquare, Square } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { VisitPhoto } from "@/types/visit";
@@ -36,7 +37,7 @@ export default function VisitPhotos({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <Image className="w-4 h-4 text-red-600" /> Photos
+            <ImageIcon className="w-4 h-4 text-blue-mars" /> Photos
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -44,7 +45,7 @@ export default function VisitPhotos({
             <button
               onClick={() => photoRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-red-300 hover:bg-red-50 transition-colors text-sm text-slate-500 hover:text-red-600 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-blue-cpm hover:bg-blue-mars-light transition-colors text-sm text-slate-500 hover:text-blue-mars disabled:opacity-50"
               aria-label="Prendre une photo"
             >
               {uploadingPhoto ? (
@@ -57,13 +58,13 @@ export default function VisitPhotos({
             <button
               onClick={() => galleryRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-red-300 hover:bg-red-50 transition-colors text-sm text-slate-500 hover:text-red-600 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-blue-cpm hover:bg-blue-mars-light transition-colors text-sm text-slate-500 hover:text-blue-mars disabled:opacity-50"
               aria-label="Choisir depuis la galerie"
             >
               {uploadingPhoto ? (
                 <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Image className="w-4 h-4" />
+                <ImageIcon className="w-4 h-4" />
               )}
               {uploadingPhoto ? "Envoi..." : "Galerie"}
             </button>
@@ -105,7 +106,7 @@ export default function VisitPhotos({
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Photos ({photos.length})</p>
             <button
               onClick={() => selectMode ? onExitSelectMode() : onSetSelectMode(true)}
-              className="text-xs text-red-600 font-medium hover:underline"
+              className="text-xs text-blue-mars font-medium hover:underline"
             >
               {selectMode ? "Annuler" : "Sélectionner"}
             </button>
@@ -123,7 +124,7 @@ export default function VisitPhotos({
                 <div
                   key={photo.id}
                   className={`relative group rounded-lg overflow-hidden bg-slate-100 border-2 transition-all ${
-                    isSelected ? "border-red-500 ring-2 ring-red-500/20" : "border-slate-200"
+                    isSelected ? "border-blue-mars ring-2 ring-blue-mars/20" : "border-slate-200"
                   }`}
                 >
                   {/* Selection checkbox */}
@@ -136,16 +137,17 @@ export default function VisitPhotos({
                       className="absolute top-1 left-1 z-10 bg-white dark:bg-slate-800 rounded p-0.5 shadow"
                     >
                       {isSelected ? (
-                        <CheckSquare className="w-4 h-4 text-red-600" />
+                        <CheckSquare className="w-4 h-4 text-blue-mars" />
                       ) : (
                         <Square className="w-4 h-4 text-slate-400" />
                       )}
                     </button>
                   )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={photo.url}
                     alt={photo.caption || "Photo visite"}
+                    width={300}
+                    height={300}
                     className="w-full aspect-square object-cover cursor-pointer"
                     onClick={() => selectMode ? onToggleSelection(photo.id) : onOpenLightbox(photo.url)}
                   />
@@ -191,14 +193,14 @@ export default function VisitPhotos({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 px-2 text-red-600 border-red-200 hover:bg-red-50"
+                  className="h-8 px-2 text-blue-mars border-blue-200 hover:bg-blue-mars-light"
                   onClick={onDeleteSelected}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 px-3 bg-red-600 hover:bg-red-700 text-white"
+                  className="h-8 px-3 bg-blue-mars hover:bg-blue-800 text-white"
                   onClick={onShareSelected}
                   disabled={sharing}
                 >

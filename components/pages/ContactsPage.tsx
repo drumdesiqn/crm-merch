@@ -12,7 +12,11 @@ export default function ContactsPage() {
   const toggleTeam = (id: string) => {
     setOpenTeams((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -28,7 +32,7 @@ export default function ContactsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       <div className="flex items-center gap-2">
-        <Users className="w-5 h-5 text-red-600" />
+        <Users className="w-5 h-5 text-blue-mars dark:text-blue-400" />
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Contacts Mars</h1>
       </div>
 
@@ -42,7 +46,7 @@ export default function ContactsPage() {
             if (e.target.value) setOpenTeams(new Set(["snacking", "food-pet", "spt"]));
           }}
           placeholder="Rechercher un contact..."
-          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
         />
       </div>
 

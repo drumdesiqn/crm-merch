@@ -3,6 +3,26 @@ import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 
+// Create migration tracking table if not exists
+await sql.query(`
+  CREATE TABLE IF NOT EXISTS "_MigrationLog" (
+    "name" TEXT NOT NULL PRIMARY KEY,
+    "appliedAt" TIMESTAMP NOT NULL DEFAULT NOW()
+  );
+`);
+
+// Mark destructive migration as already applied to prevent data loss on re-run
+await sql.query(`
+  INSERT INTO "_MigrationLog" ("name") VALUES ('20260624000000_material_type_text') ON CONFLICT DO NOTHING
+`);
+
+// Get already-applied migrations
+const applied = await sql.query(`SELECT "name" FROM "_MigrationLog"`);
+// sql.query returns an array of rows directly
+const appliedRows = Array.isArray(applied) ? applied : (applied.rows ?? []);
+const appliedSet = new Set(appliedRows.map((r) => r.name));
+console.log(`Already applied: ${appliedSet.size} migrations`);
+
 const migrations = [
   {
     name: "20260616000000_init",
@@ -146,18 +166,83 @@ const migrations = [
       `CREATE INDEX IF NOT EXISTS "VisitPhoto_visitId_idx" ON "VisitPhoto"("visitId");`,
     ],
   },
+  {
+    name: "20260623000000_add_geocoding_cache",
+    sql: [
+      `ALTER TABLE "Visit" ADD COLUMN IF NOT EXISTS "latitude" FLOAT8;`,
+      `ALTER TABLE "Visit" ADD COLUMN IF NOT EXISTS "longitude" FLOAT8;`,
+      `CREATE INDEX IF NOT EXISTS "Visit_weekId_visitDate_idx" ON "Visit"("weekId", "visitDate");`,
+    ],
+  },
+  {
+    name: "20260624000000_material_type_text",
+    sql: [
+      // Step 1: Drop if exists (any type)
+      `ALTER TABLE "Visit" DROP COLUMN IF EXISTS "materialType";`,
+      // Step 2: Add as TEXT
+      `ALTER TABLE "Visit" ADD COLUMN "materialType" TEXT;`,
+    ],
+  },
+  {
+    name: "20260625000000_ensure_geocoding_and_material",
+    sql: [
+      // Ensure lat/lng exist (in case previous migration was skipped)
+      `ALTER TABLE "Visit" ADD COLUMN IF NOT EXISTS "latitude" FLOAT8;`,
+      `ALTER TABLE "Visit" ADD COLUMN IF NOT EXISTS "longitude" FLOAT8;`,
+    ],
+  },
+  {
+    name: "20260628000000_add_salesrep_to_store",
+    sql: [
+      `ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "salesRep" TEXT;`,
+    ],
+  },
+  {
+    name: "20260627000000_add_store_model",
+    sql: [
+      `CREATE TABLE IF NOT EXISTS "Store" (
+        "id" TEXT NOT NULL,
+        "storeId" TEXT NOT NULL,
+        "storeName" TEXT NOT NULL,
+        "storeAddress" TEXT NOT NULL,
+        "storeZipcode" TEXT NOT NULL,
+        "storeCity" TEXT NOT NULL,
+        "assortment" TEXT NOT NULL DEFAULT '',
+        "visitType" TEXT NOT NULL DEFAULT 'Maintenance',
+        "visitFrequence" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(),
+        CONSTRAINT "Store_pkey" PRIMARY KEY ("id")
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Store_storeId_key" ON "Store"("storeId");`,
+      `CREATE INDEX IF NOT EXISTS "Store_storeName_idx" ON "Store"("storeName");`,
+      `CREATE INDEX IF NOT EXISTS "Store_storeCity_idx" ON "Store"("storeCity");`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {
   if (!migration.sql) continue;
+  // Skip already-applied migrations
+  if (appliedSet.has(migration.name)) {
+    console.log(`⏭ Skipping already applied: ${migration.name}`);
+    continue;
+  }
+  console.log(`\n▶ Applying migration: ${migration.name}`);
   const statements = Array.isArray(migration.sql) ? migration.sql : [migration.sql];
+  let success = true;
   for (const statement of statements) {
     try {
-      await sql(statement);
-      console.log(`✓ Migration applied: ${migration.name}`);
+      console.log(`  Executing: ${statement.substring(0, 100)}...`);
+      await sql.query(statement);
+      console.log(`  ✓ Statement executed`);
     } catch (err) {
-      // Column already exists or already applied — not fatal
-      console.warn(`⚠ Migration ${migration.name}: ${err.message}`);
+      console.warn(`  ⚠ Statement failed: ${err.message}`);
+      success = false;
     }
+  }
+  if (success) {
+    await sql.query(`INSERT INTO "_MigrationLog" ("name") VALUES ('${migration.name.replace(/'/g, "''")}') ON CONFLICT DO NOTHING`);
+    console.log(`✓ Migration ${migration.name} recorded`);
   }
 }

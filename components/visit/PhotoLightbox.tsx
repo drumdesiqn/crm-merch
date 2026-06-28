@@ -55,6 +55,7 @@ export default function PhotoLightbox({ url, onClose }: PhotoLightboxProps) {
           className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
           onClick={onClose}
           title="Fermer"
+          aria-label="Fermer la photo"
         >
           <X className="w-8 h-8" />
         </button>

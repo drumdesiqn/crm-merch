@@ -51,13 +51,13 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-mars-light to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-blue-mars rounded-full flex items-center justify-center mb-4">
             <LogIn className="w-6 h-6 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">Mars Merch</CardTitle>
+          <CardTitle className="text-2xl font-bold">CPM Mars</CardTitle>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
             Connectez-vous pour accéder à votre planning
           </p>
@@ -74,7 +74,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-800 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-mars dark:bg-slate-800 dark:text-white"
                 placeholder="votre@email.com"
               />
             </div>
@@ -88,19 +88,19 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-800 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-mars dark:bg-slate-800 dark:text-white"
                 placeholder="••••••••"
               />
             </div>
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg text-sm">
+              <div className="bg-red-mars-light dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-mars dark:text-red-400 px-4 py-2 rounded-lg text-sm">
                 {error}
               </div>
             )}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
+              className="w-full bg-blue-mars hover:bg-blue-800 text-white"
             >
               {loading ? "Connexion..." : "Se connecter"}
             </Button>

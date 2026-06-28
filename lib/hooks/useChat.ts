@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { fetchApi } from "@/lib/client-api";
 
 export interface Message {
   role: "user" | "assistant";
@@ -47,14 +48,18 @@ export function useChat() {
     setError(null);
 
     try {
-      const res = await fetch("/api/chat", {
+      const data = await fetchApi<{ message: string; error?: string }>("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newMessages.slice(-20) }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Erreur de l'assistant");
+      if (data === null) {
+        setError("Erreur de l'assistant");
+        setLoading(false);
+        return;
+      }
+      if (data.error) {
+        setError(data.error);
         setLoading(false);
         return;
       }

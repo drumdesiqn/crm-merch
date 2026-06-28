@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { NoteSchema, NoteIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // React 19 discourages setState in effects, but the app still relies on client-side
+      // data fetching with useEffect. Disabling until the app migrates to Server Components
+      // or React Query/SWR for data fetching.
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

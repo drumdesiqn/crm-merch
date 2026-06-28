@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- White background with rounded corners (iOS safe area) -->
+  <rect width="512" height="512" rx="80" fill="#ffffff"/>
+
+  <!-- Letter C -->
+  <path d="
+    M 148 150
+    A 108 108 0 1 0 148 362
+    L 148 322
+    A 68 68 0 1 1 148 190
+    Z
+  " fill="#111111"/>
+
+  <!-- Letter P -->
+  <path d="
+    M 210 150 L 210 362 L 252 362 L 252 280
+    L 290 280
+    A 65 65 0 0 0 290 150
+    Z
+    M 252 188 L 285 188
+    A 27 27 0 0 1 285 242
+    L 252 242 Z
+  " fill="#111111"/>
+
+  <!-- Letter M — left half blue, right half teal -->
+  <!-- M blue (left strokes) -->
+  <path d="
+    M 316 150 L 316 362 L 356 362 L 356 222 L 392 290 L 416 290 L 452 222 L 452 362 L 492 362 L 492 150 L 452 150 L 404 244 L 356 150 Z
+  " fill="#0010A4"/>
+  <!-- M teal overlay on right half -->
+  <clipPath id="m-right">
+    <rect x="416" y="140" width="90" height="232"/>
+  </clipPath>
+  <path d="
+    M 316 150 L 316 362 L 356 362 L 356 222 L 392 290 L 416 290 L 452 222 L 452 362 L 492 362 L 492 150 L 452 150 L 404 244 L 356 150 Z
+  " fill="#00B89C" clip-path="url(#m-right)"/>
+</svg>

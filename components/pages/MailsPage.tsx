@@ -1,34 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Sparkles, Copy, Check, ChevronDown, ChevronUp, Clock, CheckCircle2, AlertCircle, X, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Copy, Check, ChevronDown, ChevronUp, Clock, CheckCircle2, AlertCircle, X, ChevronRight, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { fetchApi } from "@/lib/client-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useMailLogs } from "@/lib/hooks/useMailLogs";
+import type { MailLog, MailLogModification } from "@/lib/hooks/useMailLogs";
 
-interface Modification {
-  id: string;
-  action: string;
-  target: string;
-  field: string | null;
-  oldValue: string | null;
-  newValue: string | null;
-  description: string;
-  applied: boolean;
-}
+interface Modification extends MailLogModification {}
 
 interface AnalysisResult {
   mailLogId: string;
   summary: string;
   replyDraft: string;
-  modifications: Modification[];
-}
-
-interface MailLog {
-  id: string;
-  summary: string | null;
-  replyDraft: string | null;
-  status: string;
-  createdAt: string;
   modifications: Modification[];
 }
 
@@ -40,6 +26,9 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export default function MailsPage() {
+  const queryClient = useQueryClient();
+  const { data: logs = [] } = useMailLogs();
+
   const [content, setContent] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -48,7 +37,6 @@ export default function MailsPage() {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [logs, setLogs] = useState<MailLog[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [copiedLogId, setCopiedLogId] = useState<string | null>(null);
@@ -61,78 +49,58 @@ export default function MailsPage() {
     setError(null);
   };
 
-  useEffect(() => {
-    fetch("/api/maillogs")
-      .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setLogs(data); })
-      .catch(() => {});
-  }, []);
-
   const analyze = async () => {
     if (!content.trim()) return;
     setAnalyzing(true);
     setError(null);
     setResult(null);
-    try {
-      const res = await fetch("/api/mail/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Erreur lors de l'analyse");
-        return;
-      }
+    const data = await fetchApi<AnalysisResult>("/api/mail/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+      suppressToast: true,
+    });
+    if (data) {
       setResult(data);
-      setSelected(new Set(data.modifications.map((m: Modification) => m.id)));
-      fetch("/api/maillogs")
-        .then((r) => r.json())
-        .then((d) => { if (Array.isArray(d)) setLogs(d); })
-        .catch(() => {});
-    } catch {
-      setError("Erreur réseau lors de l'analyse");
-    } finally {
-      setAnalyzing(false);
+      setSelected(new Set(data.modifications.map((m) => m.id)));
+      queryClient.invalidateQueries({ queryKey: ["mail-logs"] });
+    } else {
+      setError("Erreur lors de l'analyse");
     }
+    setAnalyzing(false);
   };
 
   const applySelected = async () => {
     if (!result || selected.size === 0) return;
     setApplying(true);
-    try {
-      const res = await fetch("/api/mail/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modificationIds: Array.from(selected) }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Erreur lors de l'application");
-        return;
-      }
-      const successIds = (data.results as { id: string; success: boolean }[])
+    const data = await fetchApi<{ results: { id: string; success: boolean }[] }>("/api/mail/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ modificationIds: Array.from(selected) }),
+      suppressToast: true,
+    });
+    if (data) {
+      const successIds = data.results
         .filter((r) => r.success)
         .map((r) => r.id);
       setAppliedIds(new Set(successIds));
-      fetch("/api/maillogs")
-        .then((r) => r.json())
-        .then((d) => { if (Array.isArray(d)) setLogs(d); })
-        .catch(() => {});
-    } catch {
-      setError("Erreur réseau lors de l'application");
-    } finally {
-      setApplying(false);
+      queryClient.invalidateQueries({ queryKey: ["mail-logs"] });
+    } else {
+      setError("Erreur lors de l'application");
     }
+    setApplying(false);
   };
 
   const copyReply = () => {
     if (!result?.replyDraft) return;
-    try {
-      navigator.clipboard.writeText(result.replyDraft);
-    } catch (err) {
-      console.error("Clipboard error:", err);
-    }
+    navigator.clipboard.writeText(result.replyDraft).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = result.replyDraft;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -147,9 +115,18 @@ export default function MailsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Traitement des mails</h1>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-mars-light dark:bg-blue-mars/20 flex items-center justify-center">
+            <Mail className="w-5 h-5 text-blue-mars dark:text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Traitement des mails</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Colle un email reçu — l&apos;IA détecte les changements et les applique au planning</p>
+          </div>
+        </div>
         {result && (
           <Button variant="outline" size="sm" onClick={resetForm}>
             <X className="w-4 h-4" /> Nouveau mail
@@ -157,11 +134,52 @@ export default function MailsPage() {
         )}
       </div>
 
+      {/* Stepper */}
+      {!result && (
+        <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-blue-mars text-white flex items-center justify-center font-bold text-[10px]">1</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300">Coller l&apos;email</span>
+          </div>
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-bold text-[10px]">2</span>
+            <span className="text-slate-400">Analyser</span>
+          </div>
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-bold text-[10px]">3</span>
+            <span className="text-slate-400">Appliquer</span>
+          </div>
+        </div>
+      )}
+      {result && (
+        <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px]">✓</span>
+            <span className="text-slate-400">Email collé</span>
+          </div>
+          <div className="flex-1 h-px bg-green-200 dark:bg-green-800" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px]">✓</span>
+            <span className="text-slate-400">Analysé</span>
+          </div>
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-blue-mars text-white flex items-center justify-center font-bold text-[10px]">3</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300">Appliquer les changements</span>
+          </div>
+        </div>
+      )}
+
       {/* Input zone — hidden after analysis */}
       {!result && (
         <Card>
           <CardContent className="p-4 space-y-3">
-            <label className="text-sm font-medium text-slate-700">Coller le contenu du mail ici</label>
+            <div>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Contenu de l&apos;email</label>
+              <p className="text-xs text-slate-400 mt-0.5">Ex: un mail de ton manager demandant de déplacer une visite ou d&apos;ajouter un magasin</p>
+            </div>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -170,8 +188,8 @@ export default function MailsPage() {
                 el.style.height = "auto";
                 el.style.height = `${el.scrollHeight}px`;
               }}
-              placeholder="Colle le texte de ton mail ici..."
-              className="w-full min-h-[100px] resize-none rounded-lg border border-slate-200 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 overflow-hidden"
+              placeholder={`Exemple :\n"Bonjour, merci de reporter la visite du Carrefour Ixelles de mardi à jeudi, et d'ajouter une visite Ad Hoc au Delhaize de Waterloo vendredi matin."`}
+              className="w-full min-h-[120px] resize-none rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars overflow-hidden"
             />
             <Button
               onClick={analyze}
@@ -186,7 +204,7 @@ export default function MailsPage() {
       )}
 
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-800">
+        <div className="flex items-center gap-2 rounded-lg bg-red-mars-light border border-red-200 p-3 text-sm text-red-mars">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
@@ -220,7 +238,7 @@ export default function MailsPage() {
                       appliedIds.has(mod.id)
                         ? "border-green-200 bg-green-50 cursor-default"
                         : selected.has(mod.id)
-                        ? "border-red-200 bg-red-50"
+                        ? "border-blue-200 bg-blue-mars-light"
                         : "border-slate-200 hover:bg-slate-50"
                     }`}
                   >
@@ -229,7 +247,7 @@ export default function MailsPage() {
                       checked={selected.has(mod.id)}
                       readOnly
                       disabled={appliedIds.has(mod.id)}
-                      className="mt-0.5 accent-red-600"
+                      className="mt-0.5 accent-blue-mars"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">

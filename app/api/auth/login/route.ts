@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPassword } from "@/lib/auth-simple";
-import { prisma } from "@/lib/prisma";
 import { SignJWT } from "jose";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { errorResponse } from "@/lib/api-utils";
+
+export const dynamic = 'force-dynamic';
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET environment variable is not set");
@@ -78,10 +80,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json(
-      { error: "Erreur lors de la connexion" },
-      { status: 500 }
-    );
+    return errorResponse(error, "POST /api/auth/login");
   }
 }

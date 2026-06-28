@@ -1,50 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Calendar, MapPin, Store, Loader2, Printer, Download, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, FileText, Calendar, Store, Loader2, Printer, Download, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, escapeHtml } from "@/lib/utils";
-import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
+import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfNoteItem, pdfFooter, pdfBatchDocument } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
-import type { Week, ExportVisit } from "@/types/visit";
+import { useWeeks } from "@/lib/hooks/useWeeks";
+import { useExportVisits } from "@/lib/hooks/useExportVisits";
+import type { ExportVisit } from "@/types/visit";
 
 export default function ExportPage() {
-  const [weeks, setWeeks] = useState<Week[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string>("");
-  const [visits, setVisits] = useState<ExportVisit[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generatingBatch, setGeneratingBatch] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/weeks")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setWeeks(data);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const { data: weeks = [] } = useWeeks();
+  const { data: visits = [], isLoading: loading } = useExportVisits(selectedWeek);
 
-  useEffect(() => {
-    if (!selectedWeek) {
-      setVisits([]);
-      return;
-    }
-    setLoading(true);
-    fetch(`/api/export?weekId=${selectedWeek}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.visits) {
-          setVisits(data.visits);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [selectedWeek]);
+  const selectWeek = (weekId: string) => {
+    setSelectedWeek(weekId);
+    setSelectedVisit("");
+  };
 
   const generatePDF = async () => {
     if (!selectedVisit) return;
@@ -194,6 +174,32 @@ export default function ExportPage() {
     document.body.removeChild(link);
   };
 
+  const generateBatchPDF = () => {
+    if (visits.length === 0) return;
+    setGeneratingBatch(true);
+
+    const weekLabel = weeks.find((w) => w.id === selectedWeek)?.label || "Semaine";
+    const html = pdfBatchDocument(
+      visits.map((v) => ({
+        ...v,
+        photos: v.photos.map((p) => ({ url: p.url })),
+        notes: v.notes.map((n) => ({ content: n.content, createdAt: n.createdAt })),
+      })),
+      weekLabel,
+    );
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      showToast("error", "Popup bloquée — autorisez les popups");
+      setGeneratingBatch(false);
+      return;
+    }
+    printWindow.document.write(html);
+    printWindow.document.close();
+    showToast("success", `PDF ${visits.length} visites ouvert`);
+    setGeneratingBatch(false);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       {/* Header */}
@@ -213,7 +219,7 @@ export default function ExportPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="w-4 h-4 text-red-600" />
+            <Calendar className="w-4 h-4 text-blue-mars dark:text-blue-400" />
             1. Choisir une semaine
           </CardTitle>
         </CardHeader>
@@ -222,19 +228,16 @@ export default function ExportPage() {
             {weeks.map((week) => (
               <button
                 key={week.id}
-                onClick={() => {
-                  setSelectedWeek(week.id);
-                  setSelectedVisit("");
-                }}
+                onClick={() => selectWeek(week.id)}
                 className={`flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
                   selectedWeek === week.id
-                    ? "border-red-500 bg-red-50 dark:bg-red-950/30"
+                    ? "border-blue-mars bg-blue-mars-light dark:bg-blue-mars/20"
                     : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >
                 <span className="font-medium text-slate-900 dark:text-slate-100">{week.label}</span>
                 {selectedWeek === week.id && (
-                  <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
+                  <div className="w-4 h-4 rounded-full bg-blue-mars flex items-center justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-white" />
                   </div>
                 )}
@@ -249,7 +252,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Store className="w-4 h-4 text-red-600" />
+              <Store className="w-4 h-4 text-blue-mars dark:text-blue-400" />
               2. Choisir une visite
             </CardTitle>
           </CardHeader>
@@ -266,7 +269,7 @@ export default function ExportPage() {
                   onClick={() => setSelectedVisit(visit.id)}
                   className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
                     selectedVisit === visit.id
-                      ? "border-red-500 bg-red-50 dark:bg-red-950/30"
+                      ? "border-blue-mars bg-blue-mars-light dark:bg-blue-mars/20"
                       : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                   }`}
                 >
@@ -280,7 +283,7 @@ export default function ExportPage() {
                     </p>
                   </div>
                   {selectedVisit === visit.id && (
-                    <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-4 h-4 rounded-full bg-blue-mars flex items-center justify-center shrink-0 mt-0.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-white" />
                     </div>
                   )}
@@ -296,7 +299,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="w-4 h-4 text-red-600" />
+              <FileText className="w-4 h-4 text-blue-mars dark:text-blue-400" />
               3. Générer le PDF
             </CardTitle>
           </CardHeader>
@@ -305,7 +308,7 @@ export default function ExportPage() {
               Le rapport inclura toutes les informations de la visite avec les photos et notes.
             </p>
             <Button
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
+              className="w-full bg-blue-mars hover:bg-blue-800 text-white"
               onClick={generatePDF}
               disabled={generating}
             >
@@ -330,7 +333,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileSpreadsheet className="w-4 h-4 text-red-600" />
+              <FileSpreadsheet className="w-4 h-4 text-blue-mars dark:text-blue-400" />
               Exporter toutes les visites
             </CardTitle>
           </CardHeader>
@@ -356,6 +359,23 @@ export default function ExportPage() {
                 CSV (.csv)
               </Button>
             </div>
+            <Button
+              className="w-full bg-blue-mars hover:bg-blue-800 text-white mt-3"
+              onClick={generateBatchPDF}
+              disabled={generatingBatch}
+            >
+              {generatingBatch ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Préparation…
+                </>
+              ) : (
+                <>
+                  <Printer className="w-4 h-4 mr-2" />
+                  PDF Semaine complète ({visits.length} visites)
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
       )}

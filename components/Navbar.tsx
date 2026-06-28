@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Mail, Settings, Package, Sun, Moon, Users, BookOpen, MoreHorizontal, Store } from "lucide-react";
+import Image from "next/image";
+import { LayoutDashboard, Calendar, Mail, Settings, Sun, Moon, Users, BookOpen, MoreHorizontal, Store } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
@@ -55,11 +56,9 @@ export default function Navbar() {
     <>
       {/* Top bar desktop */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 items-center px-4 gap-1">
-        <div className="flex items-center gap-2 mr-6">
-          <div className="w-7 h-7 bg-red-600 rounded-lg flex items-center justify-center">
-            <Package className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">Mars Merch</span>
+        <div className="flex items-center mr-6">
+          <Image src="/logo-cpm-mars.png" alt="CPM Mars" width={100} height={32} className="h-8 w-auto dark:hidden" style={{ width: "auto", height: "auto" }} priority />
+          <Image src="/logo-cpm-mars-white.png" alt="CPM Mars" width={100} height={32} className="h-8 w-auto hidden dark:block" style={{ width: "auto", height: "auto" }} priority />
         </div>
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
@@ -70,7 +69,7 @@ export default function Navbar() {
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
-                  ? "bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400"
+                  ? "bg-blue-50 dark:bg-blue-950 text-blue-mars dark:text-blue-400"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
               )}
             >
@@ -88,7 +87,7 @@ export default function Navbar() {
               className={cn(
                 "hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
-                  ? "bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400"
+                  ? "bg-blue-50 dark:bg-blue-950 text-blue-mars dark:text-blue-400"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
               )}
             >
@@ -119,10 +118,10 @@ export default function Navbar() {
               href={item.href}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors rounded-xl",
-                active ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"
+                active ? "text-blue-mars dark:text-blue-400" : "text-slate-500 dark:text-slate-400"
               )}
             >
-              <item.icon className={cn("w-5 h-5", active && "stroke-red-600 dark:stroke-red-400")} />
+              <item.icon className={cn("w-5 h-5", active && "stroke-[color:var(--color-blue-mars)] dark:stroke-blue-400")} />
               <span className="truncate">{item.label}</span>
             </Link>
           );
@@ -133,12 +132,12 @@ export default function Navbar() {
             onClick={toggleMore}
             className={cn(
               "w-full flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors rounded-xl",
-              showMore ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"
+              showMore ? "text-blue-mars dark:text-blue-400" : "text-slate-500 dark:text-slate-400"
             )}
             aria-label="Menu supplémentaire"
             aria-expanded={showMore}
           >
-            <MoreHorizontal className={cn("w-5 h-5", showMore && "stroke-red-600 dark:stroke-red-400")} />
+            <MoreHorizontal className={cn("w-5 h-5", showMore && "stroke-[color:var(--color-blue-mars)] dark:stroke-blue-400")} />
             <span className="truncate">Plus</span>
           </button>
           {/* Overlay pour capturer les clics à l'extérieur */}
@@ -159,7 +158,7 @@ export default function Navbar() {
                     onClick={closeMore}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      active ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      active ? "text-blue-mars dark:text-blue-400 bg-blue-50 dark:bg-blue-950" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     )}
                   >
                     <item.icon className="w-4 h-4" />

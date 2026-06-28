@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { SettingsSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });

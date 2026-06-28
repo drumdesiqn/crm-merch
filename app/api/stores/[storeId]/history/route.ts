@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ storeId: string }> }
@@ -11,7 +13,27 @@ export async function GET(
     const visits = await prisma.visit.findMany({
       where: { storeId },
       orderBy: { visitDate: "desc" },
-      include: {
+      select: {
+        id: true,
+        weekId: true,
+        assortment: true,
+        storeId: true,
+        storeName: true,
+        storeAddress: true,
+        storeZipcode: true,
+        storeCity: true,
+        visitType: true,
+        visitFrequence: true,
+        visitDate: true,
+        merchandiser: true,
+        remarks: true,
+        salesRep: true,
+        materials: true,
+        sortOrder: true,
+        status: true,
+        materialType: true,
+        latitude: true,
+        longitude: true,
         week: { select: { label: true } },
       },
     });

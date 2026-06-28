@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { Wrench, StickyNote, Image } from "lucide-react";
+import { Wrench, StickyNote, Image as ImageIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VISIT_TYPE_COLORS, formatDateShort } from "@/lib/utils";
 import type { StoreHistoryVisit } from "@/types/visit";
@@ -21,7 +22,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
 
       {!historyLoaded && (
         <div className="flex justify-center py-8">
-          <div className="w-6 h-6 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -35,7 +36,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
         const hTypeColor = VISIT_TYPE_COLORS[v.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
         return (
           <Link key={v.id} href={`/planning/${v.id}`}>
-            <Card className="hover:shadow-md hover:border-red-200 transition-all cursor-pointer">
+            <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
@@ -49,11 +50,11 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
                       <span className="text-xs text-slate-400">{v.week.label}</span>
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                      {v.materialType && (
-                        <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full">
-                          <Wrench className="w-3 h-3" /> {v.materialType}
+                      {v.materialType && v.materialType.split(", ").filter(Boolean).map((type, idx) => (
+                        <span key={idx} className="flex items-center gap-1 text-xs text-blue-mars bg-blue-mars-light dark:bg-blue-mars/20 px-2 py-0.5 rounded-full">
+                          <Wrench className="w-3 h-3" /> {type}
                         </span>
-                      )}
+                      ))}
                       {(v.notes?.length || 0) > 0 && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
                           <StickyNote className="w-3 h-3" /> {v.notes!.length} note{v.notes!.length > 1 ? "s" : ""}
@@ -61,10 +62,10 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
                       )}
                       {(v.photos?.length || 0) > 0 && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
-                          <Image className="w-3 h-3" /> {v.photos!.length} photo{v.photos!.length > 1 ? "s" : ""}
+                          <ImageIcon className="w-3 h-3" /> {v.photos!.length} photo{v.photos!.length > 1 ? "s" : ""}
                         </span>
                       )}
-                      {(v.notes?.length || 0) === 0 && (v.photos?.length || 0) === 0 && !v.materialType && (
+                      {(v.notes?.length || 0) === 0 && (v.photos?.length || 0) === 0 && (!v.materialType || v.materialType.length === 0) && (
                         <span className="text-xs text-slate-300">Aucune note</span>
                       )}
                     </div>
@@ -76,9 +77,8 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
                     {(v.photos?.length || 0) > 0 && (
                       <div className="flex gap-1 mt-2">
                         {v.photos!.slice(0, 4).map((p) => (
-                          <div key={p.id} className="w-10 h-10 rounded overflow-hidden bg-slate-100 shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={p.url} alt="" className="w-full h-full object-cover" />
+                          <div key={p.id} className="relative w-10 h-10 rounded overflow-hidden bg-slate-100 shrink-0">
+                            <Image src={p.url} alt="" fill className="object-cover" sizes="40px" />
                           </div>
                         ))}
                         {v.photos!.length > 4 && (

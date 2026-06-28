@@ -1,7 +1,9 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSettings } from "@/lib/hooks/useSettings";
 import {
   DndContext,
   closestCenter,
@@ -14,233 +16,30 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Save, CheckCircle, MapPin, Navigation } from "lucide-react";
+import { Save, CheckCircle, Navigation, Route, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { VISIT_TYPE_COLORS } from "@/lib/utils";
 import type { Visit } from "@/types/visit";
+import { fetchApi } from "@/lib/client-api";
+import { showToast } from "@/components/Toast";
+import {
+  SortableVisitItem,
+  LeafletMap,
+  geocodeAddress,
+  sleep,
+  fetchOSRMRoute,
+  fallbackLegDistances,
+  formatKm,
+  formatDuration,
+  optimizeOrder,
+  HOME_FALLBACK,
+  HOME_LABEL_FALLBACK,
+} from "@/components/route";
+import type { LatLng, GeocodedVisit, OSRMRouteData } from "@/components/route";
 
-interface LatLng {
-  lat: number;
-  lng: number;
-}
-
-interface GeocodedVisit extends Visit {
-  coords: LatLng | null;
-}
-
-// Fallback home coordinates — Rue Georges Tourneur 12, Marchienne-au-Pont 6030
-const HOME_FALLBACK: LatLng = { lat: 50.4082, lng: 4.3869 };
-const HOME_LABEL_FALLBACK = "Domicile — Marchienne-au-Pont";
-
-// Geocode using Nominatim OSM (free, no API key)
-// Module-level cache dedupes by address string within a browser session
-const _addressCache: Record<string, LatLng | null> = {};
-
-async function nominatimFetch(q: string): Promise<LatLng | null> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=be`,
-      { headers: { "User-Agent": "MarsmerchApp/1.0" } }
-    );
-    const data = await res.json();
-    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch (err) {
-    console.error("Geocoding error:", err);
-  }
-  return null;
-}
-
-async function geocodeAddress(address: string, city: string, zip: string): Promise<LatLng | null> {
-  const key = `${address} ${zip} ${city}`;
-  if (key in _addressCache) return _addressCache[key];
-
-  // Try 1: full address
-  let result = await nominatimFetch(`${address}, ${zip} ${city}, Belgium`);
-
-  // Try 2: fallback — zip + city only (more reliable for rural or unusual streets)
-  if (!result && zip && city) {
-    await sleep(600);
-    result = await nominatimFetch(`${zip} ${city}, Belgium`);
-  }
-
-  _addressCache[key] = result;
-  return result;
-}
-
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-// ─── Sortable item ─────────────────────────────────────────────────────────
-function SortableVisitItem({
-  visit,
-  index,
-  geocoding,
-}: {
-  visit: GeocodedVisit;
-  index: number;
-  geocoding: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: visit.id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 50 : undefined,
-  };
-
-  const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 p-3 rounded-xl border bg-white transition-shadow ${
-        isDragging ? "shadow-lg border-red-300" : "border-slate-100 hover:border-slate-200"
-      }`}
-    >
-      <button
-        {...attributes}
-        {...listeners}
-        className="text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing touch-none"
-        aria-label="Déplacer"
-      >
-        <GripVertical className="w-5 h-5" />
-      </button>
-
-      <div
-        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-          visit.coords ? "bg-red-600 text-white" : "bg-slate-200 text-slate-500"
-        }`}
-      >
-        {index + 1}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900 truncate">{visit.storeName}</p>
-        <div className="flex items-center gap-1">
-          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-          <p className="text-xs text-slate-500 truncate">
-            {visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}
-          </p>
-        </div>
-      </div>
-
-      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium shrink-0 ${typeColor}`}>
-        {visit.visitType}
-      </span>
-
-      {!visit.coords && !geocoding && (
-        <span className="text-xs text-slate-400 shrink-0" title="Adresse non géolocalisée">
-          📍?
-        </span>
-      )}
-    </div>
-  );
-}
-
-// ─── Map component (loaded dynamically) ────────────────────────────────────
-function LeafletMap({ visits, home, homeLabel }: { visits: GeocodedVisit[]; home: LatLng; homeLabel: string }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<unknown>(null);
-  const layersRef = useRef<unknown[]>([]);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-
-    // Dynamically import leaflet (client-side only)
-    import("leaflet").then((L) => {
-      // Fix Leaflet default icon path in Next.js
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-
-      if (!mapInstanceRef.current) {
-        const map = L.map(mapRef.current!, { preferCanvas: true }).setView([home.lat, home.lng], 11);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19,
-        }).addTo(map);
-        mapInstanceRef.current = map;
-        // Force Leaflet to recalculate container size (needed in dynamic imports)
-        setTimeout(() => map.invalidateSize(), 100);
-      }
-
-      const map = mapInstanceRef.current as ReturnType<typeof L.map>;
-
-      // Clear old layers
-      layersRef.current.forEach((l) => (l as ReturnType<typeof L.marker>).remove());
-      layersRef.current = [];
-
-      // Home marker
-      const homeIcon = L.divIcon({
-        html: `<div style="background:#dc2626;color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">🏠</div>`,
-        className: "",
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      });
-      const homeMarker = L.marker([home.lat, home.lng], { icon: homeIcon })
-        .addTo(map)
-        .bindPopup(homeLabel);
-      layersRef.current.push(homeMarker);
-
-      // Visit markers with numbers
-      const routePoints: [number, number][] = [[home.lat, home.lng]];
-
-      visits.forEach((v, i) => {
-        if (!v.coords) return;
-        routePoints.push([v.coords.lat, v.coords.lng]);
-
-        const icon = L.divIcon({
-          html: `<div style="background:#1e293b;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${i + 1}</div>`,
-          className: "",
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
-        });
-
-        const marker = L.marker([v.coords.lat, v.coords.lng], { icon })
-          .addTo(map)
-          .bindPopup(`<b>${i + 1}. ${v.storeName}</b><br>${v.storeAddress}<br>${v.storeZipcode} ${v.storeCity}`);
-        layersRef.current.push(marker);
-      });
-
-      // Route polyline
-      if (routePoints.length > 1) {
-        const line = L.polyline(routePoints, { color: "#dc2626", weight: 2.5, opacity: 0.7, dashArray: "6, 6" }).addTo(map);
-        layersRef.current.push(line);
-
-        // Fit map to route
-        map.fitBounds(L.latLngBounds(routePoints), { padding: [40, 40] });
-      }
-    });
-
-    // Cleanup function to prevent memory leak
-    return () => {
-      const map = mapInstanceRef.current as { remove: () => void } | null;
-      if (map) {
-        map.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visits]);
-
-  return <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: "300px" }} />;
-}
-
-type LatLngOrNull = { lat: number; lng: number } | null;
+type LatLngOrNull = LatLng | null;
 
 // ─── Main RouteMapView ──────────────────────────────────────────────────────
 export default function RouteMapView({
@@ -269,34 +68,42 @@ export default function RouteMapView({
   const [saveError, setSaveError] = useState(false);
   const [home, setHome] = useState<LatLng>(HOME_FALLBACK);
   const [homeLabel, setHomeLabel] = useState(HOME_LABEL_FALLBACK);
+  const [optimizing, setOptimizing] = useState(false);
+  const [osrmRoute, setOsrmRoute] = useState<OSRMRouteData | null>(null);
+  const [editingVisit, setEditingVisit] = useState<GeocodedVisit | null>(null);
+  const [editAddress, setEditAddress] = useState({ address: "", zipcode: "", city: "" });
+  const [savingAddress, setSavingAddress] = useState(false);
 
-  // Load home address from settings
+  // Load home address from settings via React Query
+  const { data: settingsData } = useSettings();
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then(async (s) => {
-        if (s.homeAddress && typeof s.homeAddress === "string" && s.homeAddress.trim()) {
-          const coords = await geocodeAddress(s.homeAddress.trim(), "", "");
-          if (coords) {
-            setHome(coords);
-            setHomeLabel(`Domicile — ${s.homeAddress.trim()}`);
-          }
-        }
-      })
-      .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const addr = settingsData?.homeAddress?.trim();
+    if (!addr) return;
+    let cancelled = false;
+    geocodeAddress(addr, "", "").then((coords) => {
+      if (!cancelled && coords) {
+        setHome(coords);
+        setHomeLabel(`Domicile — ${addr}`);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [settingsData?.homeAddress]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // When day changes, load visits for that day
+  // When day changes, load visits for that day — use DB-cached coords first
   useEffect(() => {
     const dayVisits = initialVisits
       .filter((v) => v.visitDate.split("T")[0] === selectedDay)
-      .map((v) => ({ ...v, coords: geocodedMap[v.id] ?? null }));
+      .map((v) => {
+        // Priority: geocodedMap (session cache) > DB cached lat/lng > null
+        const cached = geocodedMap[v.id];
+        const dbCoords = v.latitude != null && v.longitude != null ? { lat: v.latitude, lng: v.longitude } : null;
+        return { ...v, coords: cached ?? dbCoords };
+      });
     setOrderedVisits(dayVisits);
   }, [selectedDay, initialVisits, geocodedMap]);
 
@@ -304,7 +111,10 @@ export default function RouteMapView({
   useEffect(() => {
     if (!selectedDay) return;
     const dayVisitsAll = initialVisits.filter((v) => v.visitDate.split("T")[0] === selectedDay);
-    const toGeocode = dayVisitsAll.filter((v) => !(v.id in geocodedCache));
+    // Skip visits already in session cache OR with DB-cached coords
+    const toGeocode = dayVisitsAll.filter((v) =>
+      !(v.id in geocodedCache) && (v.latitude == null || v.longitude == null)
+    );
     if (toGeocode.length === 0) return;
 
     let cancelled = false;
@@ -318,6 +128,15 @@ export default function RouteMapView({
         if (cancelled) break;
         onGeocodedCacheUpdate((prev) => ({ ...prev, [v.id]: coords }));
         setGeocodingProgress({ done: i + 1, total: toGeocode.length });
+        // Save coords to DB for future cache hits (fire & forget)
+        if (coords) {
+          fetchApi("/api/visits", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: v.id, latitude: coords.lat, longitude: coords.lng }),
+            suppressToast: true,
+          }).catch(() => {});
+        }
         if (i < toGeocode.length - 1) await sleep(1100);
       }
       if (!cancelled) {
@@ -335,6 +154,22 @@ export default function RouteMapView({
       prev.map((v) => ({ ...v, coords: geocodedCache[v.id] ?? null }))
     );
   }, [geocodedCache]);
+
+  // Fetch OSRM driving route when visits are geocoded (debounced)
+  useEffect(() => {
+    if (geocoding) return;
+    const geocoded = orderedVisits.filter((v) => v.coords);
+    if (geocoded.length < 1) { setOsrmRoute(null); return; }
+    const points: LatLng[] = [home, ...geocoded.map((v) => v.coords!)];
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetchOSRMRoute(points).then((data) => {
+        if (!cancelled) setOsrmRoute(data);
+      });
+    }, 800);
+    return () => { cancelled = true; clearTimeout(timer); };
+   
+  }, [orderedVisits, geocoding, home]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -355,13 +190,15 @@ export default function RouteMapView({
     // Snapshot the current display order so the useEffect re-sync doesn't reset it
     const savedOrder = orderedVisits.map((v) => v.id);
     try {
-      const res = await fetch("/api/visits", {
+      const ok = await fetchApi("/api/visits", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orders }),
+        suppressToast: true,
       });
-      if (!res.ok) throw new Error("API error");
+      if (ok === null) throw new Error("API error");
       setSaved(true);
+      showToast("success", "Ordre de visite sauvegardé dans le planning");
       setTimeout(() => setSaved(false), 3000);
       // Build updatedAll with new sortOrders, then re-sort by savedOrder so parent state matches
       const updatedAll = initialVisits.map((v) => {
@@ -376,9 +213,59 @@ export default function RouteMapView({
       onOrderSaved(updatedAll);
     } catch {
       setSaveError(true);
+      showToast("error", "Erreur lors de la sauvegarde de l'ordre");
       setTimeout(() => setSaveError(false), 4000);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOptimize = () => {
+    setOptimizing(true);
+    const optimized = optimizeOrder(home, orderedVisits);
+    setOrderedVisits(optimized);
+    setSaved(false);
+    setOptimizing(false);
+  };
+
+  const handleSaveAddress = async () => {
+    if (!editingVisit) return;
+    setSavingAddress(true);
+    try {
+      const ok = await fetchApi("/api/visits", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingVisit.id,
+          storeAddress: editAddress.address.trim(),
+          storeZipcode: editAddress.zipcode.trim(),
+          storeCity: editAddress.city.trim(),
+        }),
+        suppressToast: true,
+      });
+      if (ok === null) throw new Error("API error");
+
+      // Re-geocode the new address
+      const newCoords = await geocodeAddress(
+        editAddress.address.trim(),
+        editAddress.city.trim(),
+        editAddress.zipcode.trim(),
+      );
+      onGeocodedCacheUpdate((prev) => ({ ...prev, [editingVisit.id]: newCoords }));
+
+      // Update local visit data and notify parent
+      const updatedVisits = orderedVisits.map((v) =>
+        v.id === editingVisit.id
+          ? { ...v, storeAddress: editAddress.address.trim(), storeZipcode: editAddress.zipcode.trim(), storeCity: editAddress.city.trim(), coords: newCoords }
+          : v,
+      );
+      setOrderedVisits(updatedVisits);
+      onOrderSaved(updatedVisits);
+      setEditingVisit(null);
+    } catch {
+      // keep dialog open on error
+    } finally {
+      setSavingAddress(false);
     }
   };
 
@@ -391,6 +278,22 @@ export default function RouteMapView({
     });
   };
 
+  // Show skeleton while initial geocoding starts
+  if (orderedVisits.length === 0 && initialVisits.length > 0 && geocoding) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row gap-4 animate-pulse">
+          <div className="lg:flex-1 rounded-xl bg-slate-200 dark:bg-slate-700 h-[50vh] lg:h-[400px]" />
+          <div className="lg:w-80 space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-16 rounded-xl bg-slate-200 dark:bg-slate-700" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Day tabs */}
@@ -402,8 +305,8 @@ export default function RouteMapView({
               onClick={() => setSelectedDay(day)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors capitalize ${
                 selectedDay === day
-                  ? "bg-red-600 text-white border-red-600"
-                  : "border-slate-200 text-slate-700 hover:bg-slate-100"
+                  ? "bg-blue-mars text-white border-blue-mars"
+                  : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
               {dayLabel(day)}
@@ -413,14 +316,14 @@ export default function RouteMapView({
       )}
 
       {geocoding && geocodingProgress && (
-        <div className="bg-slate-50 rounded-lg px-3 py-2 space-y-1.5">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin shrink-0" />
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 space-y-1.5">
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="w-3 h-3 border-2 border-blue-mars border-t-transparent rounded-full animate-spin shrink-0" />
             Géolocalisation… {geocodingProgress.done}/{geocodingProgress.total} adresses
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
             <div
-              className="bg-red-500 h-1.5 rounded-full transition-all duration-500"
+              className="bg-blue-mars h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${Math.round((geocodingProgress.done / geocodingProgress.total) * 100)}%` }}
             />
           </div>
@@ -430,54 +333,114 @@ export default function RouteMapView({
       {/* Map + list layout */}
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Map */}
-        <div className="lg:flex-1 rounded-xl overflow-hidden border border-slate-200 bg-slate-100" style={{ height: "400px" }}>
-          <LeafletMap visits={orderedVisits} home={home} homeLabel={homeLabel} />
+        <div className="lg:flex-1 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 h-[50vh] lg:h-[400px]">
+          <LeafletMap visits={orderedVisits} home={home} homeLabel={homeLabel} routeGeometry={osrmRoute?.geometry ?? null} />
         </div>
 
         {/* Drag-and-drop list */}
         <div className="lg:w-80 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Navigation className="w-4 h-4 text-red-600" />
-              <p className="text-sm font-semibold text-slate-900">
-                {orderedVisits.length} visite{orderedVisits.length > 1 ? "s" : ""} — glisse pour réordonner
+              <Navigation className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Ton itinéraire du jour
+                <span className="ml-1.5 text-xs font-normal text-slate-400 dark:text-slate-500">({orderedVisits.length})</span>
               </p>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <Button
-                size="sm"
-                onClick={saveOrder}
-                disabled={saving || saved}
-                variant={saved ? "success" : saveError ? "destructive" : "default"}
-              >
-                {saved ? (
-                  <><CheckCircle className="w-4 h-4" /> Sauvegardé</>
-                ) : saveError ? (
-                  <>⚠ Erreur — Réessayer</>
-                ) : (
-                  <><Save className="w-4 h-4" /> {saving ? "..." : "Sauvegarder"}</>
-                )}
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={saveOrder}
+              disabled={saving || saved}
+              variant={saved ? "success" : saveError ? "destructive" : "default"}
+            >
+              {saved ? (
+                <><CheckCircle className="w-4 h-4" /> Sauvegardé</>
+              ) : saveError ? (
+                <>⚠ Réessayer</>
+              ) : (
+                <><Save className="w-4 h-4" /> {saving ? "..." : "Sauvegarder"}</>
+              )}
+            </Button>
           </div>
 
+          {/* Organiser ma journée — CTA principal */}
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={handleOptimize}
+            disabled={optimizing || geocoding || orderedVisits.filter((v) => v.coords).length < 2}
+            title="Trie automatiquement les magasins par distance depuis ton domicile"
+          >
+            {optimizing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Route className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+            )}
+            <span>Organiser ma journée</span>
+          </Button>
+          <p className="text-xs text-slate-400 dark:text-slate-500 text-center -mt-1">
+            Glisse les visites pour modifier l&apos;ordre manuellement
+          </p>
+
+          {/* Route stats */}
+          {orderedVisits.some((v) => v.coords) && !geocoding && (() => {
+            const fallback = !osrmRoute ? fallbackLegDistances(home, orderedVisits) : [];
+            const totalDist = osrmRoute ? osrmRoute.totalDistance : fallback.reduce((s, l) => s + l.distanceM, 0);
+            const totalDur = osrmRoute ? osrmRoute.totalDuration : fallback.reduce((s, l) => s + l.durationS, 0);
+            return (
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+                <span className="font-semibold">{formatKm(totalDist)}</span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span>{formatDuration(totalDur)}</span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span>{orderedVisits.filter((v) => v.coords).length} étapes</span>
+                <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium ${osrmRoute ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400" : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"}`}>
+                  {osrmRoute ? "route réelle" : "estimation"}
+                </span>
+              </div>
+            );
+          })()}
+
           {/* Home point */}
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-red-50 border border-red-100">
-            <div className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center text-sm shrink-0">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-blue-mars-light dark:bg-blue-mars/20 border border-blue-200 dark:border-blue-800">
+            <div className="w-7 h-7 rounded-full bg-blue-mars flex items-center justify-center text-sm shrink-0">
               🏠
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-red-800">Départ domicile</p>
-              <p className="text-xs text-red-600 truncate">{homeLabel.replace("Domicile — ", "")}</p>
+              <p className="text-xs font-semibold text-blue-mars dark:text-blue-400">Départ domicile</p>
+              <p className="text-xs text-blue-cpm dark:text-blue-cpm truncate">{homeLabel.replace("Domicile — ", "")}</p>
             </div>
           </div>
 
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={orderedVisits.map((v) => v.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                {orderedVisits.map((v, i) => (
-                  <SortableVisitItem key={v.id} visit={v} index={i} geocoding={geocoding} />
-                ))}
+              <div className="space-y-0 max-h-[400px] overflow-y-auto pr-1">
+                {(() => {
+                  // Build leg info from OSRM or fallback
+                  const geocodedIndices: number[] = [];
+                  orderedVisits.forEach((v, i) => { if (v.coords) geocodedIndices.push(i); });
+                  const fallback = fallbackLegDistances(home, orderedVisits);
+                  const legMap = new Map<number, { distance: number; duration: number }>();
+                  let fbIdx = 0;
+                  for (const idx of geocodedIndices) {
+                    if (osrmRoute && osrmRoute.legs[fbIdx]) {
+                      legMap.set(idx, { distance: osrmRoute.legs[fbIdx].distance, duration: osrmRoute.legs[fbIdx].duration });
+                    } else if (fallback[fbIdx]) {
+                      legMap.set(idx, { distance: fallback[fbIdx].distanceM, duration: fallback[fbIdx].durationS });
+                    }
+                    fbIdx++;
+                  }
+                  return orderedVisits.map((v, i) => (
+                    <SortableVisitItem
+                      key={v.id}
+                      visit={v}
+                      index={i}
+                      geocoding={geocoding}
+                      legInfo={legMap.get(i) ?? null}
+                      onEditAddress={() => { setEditingVisit(v); setEditAddress({ address: v.storeAddress, zipcode: v.storeZipcode, city: v.storeCity }); }}
+                    />
+                  ));
+                })()}
               </div>
             </SortableContext>
           </DndContext>
@@ -487,13 +450,68 @@ export default function RouteMapView({
           )}
 
           {orderedVisits.length > 0 && !geocoding && orderedVisits.every((v) => !v.coords) && (
-            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
               <span>⚠</span>
               Aucune adresse n&apos;a pu être géolocalisée. Les marqueurs ne s&apos;affichent pas sur la carte.
             </div>
           )}
         </div>
       </div>
+
+      {/* Edit address modal — portaled to body to avoid Leaflet z-index issues */}
+      {editingVisit && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-5 w-full max-w-sm space-y-4 border border-slate-200 dark:border-slate-700">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Modifier l&apos;adresse</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{editingVisit.storeName}</p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Adresse</label>
+                <input
+                  type="text"
+                  value={editAddress.address}
+                  onChange={(e) => setEditAddress((p) => ({ ...p, address: e.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                  placeholder="Rue Example 42"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Code postal</label>
+                  <input
+                    type="text"
+                    value={editAddress.zipcode}
+                    onChange={(e) => setEditAddress((p) => ({ ...p, zipcode: e.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                    placeholder="1000"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Ville</label>
+                  <input
+                    type="text"
+                    value={editAddress.city}
+                    onChange={(e) => setEditAddress((p) => ({ ...p, city: e.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                    placeholder="Bruxelles"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button size="sm" variant="outline" onClick={() => setEditingVisit(null)} disabled={savingAddress}>
+                Annuler
+              </Button>
+              <Button size="sm" onClick={handleSaveAddress} disabled={savingAddress || !editAddress.address.trim()}>
+                {savingAddress ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sauvegarder"}
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }

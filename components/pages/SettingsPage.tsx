@@ -1,138 +1,149 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, RefreshCw, Sun, Moon } from "lucide-react";
+import { useState } from "react";
+import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, RefreshCw, Sun, Moon, Lock, Database } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
-import type { Week } from "@/types/visit";
-
-interface GlossaryTerm {
-  id: string;
-  term: string;
-  definition: string;
-}
+import { fetchApi } from "@/lib/client-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSettings } from "@/lib/hooks/useSettings";
+import { useGlossary } from "@/lib/hooks/useGlossary";
+import { useWeeks } from "@/lib/hooks/useWeeks";
+import type { GlossaryTerm } from "@/lib/hooks/useGlossary";
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
+  const queryClient = useQueryClient();
+
+  const { data: settingsData } = useSettings();
+  const { data: glossary = [] } = useGlossary();
+  const { data: weeks = [] } = useWeeks();
+
   const [openaiKey, setOpenaiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [userName, setUserName] = useState("");
   const [userZone, setUserZone] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [homeAddress, setHomeAddress] = useState("");
+  const [settingsInitialized, setSettingsInitialized] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(false);
 
-  const [glossary, setGlossary] = useState<GlossaryTerm[]>([]);
   const [newTerm, setNewTerm] = useState("");
   const [newDef, setNewDef] = useState("");
   const [addingTerm, setAddingTerm] = useState(false);
 
-  const [weeks, setWeeks] = useState<Week[]>([]);
   const [confirmDeleteWeekId, setConfirmDeleteWeekId] = useState<string | null>(null);
   const [confirmDeleteTermId, setConfirmDeleteTermId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
+  const [backupResult, setBackupResult] = useState<{ counts: Record<string, number>; exportedAt: string } | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/settings").then((r) => r.json()).catch(() => ({})),
-      fetch("/api/glossary").then((r) => r.json()).catch(() => []),
-      fetch("/api/weeks").then((r) => r.json()).catch(() => []),
-    ]).then(([settings, terms, weeksData]) => {
-      setUserName(settings.userName || "");
-      setUserZone(settings.userZone || "");
-      setUserEmail(settings.userEmail || "");
-      setHomeAddress(settings.homeAddress || "");
-      setHasApiKey(settings.hasApiKey || false);
-      if (Array.isArray(terms)) setGlossary(terms);
-      if (Array.isArray(weeksData)) setWeeks(weeksData);
-    });
-  }, []);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  if (settingsData && !settingsInitialized) {
+    setUserName(settingsData.userName || "");
+    setUserZone(settingsData.userZone || "");
+    setUserEmail(settingsData.userEmail || "");
+    setHomeAddress(settingsData.homeAddress || "");
+    setHasApiKey(settingsData.hasApiKey || false);
+    setSettingsInitialized(true);
+  }
 
   const saveSettings = async () => {
     setSavingSettings(true);
     setErrorMsg(null);
     const body: Record<string, string> = { userName, userZone, userEmail, homeAddress };
     if (openaiKey) body.openaiKey = openaiKey;
-    try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur lors de la sauvegarde");
+    const data = await fetchApi<{ hasApiKey: boolean }>("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      suppressToast: true,
+    });
+    if (data) {
       setSettingsSaved(true);
       setHasApiKey(data.hasApiKey);
       if (openaiKey) setOpenaiKey("");
       setTimeout(() => setSettingsSaved(false), 3000);
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Erreur réseau");
-    } finally {
-      setSavingSettings(false);
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+    } else {
+      setErrorMsg("Erreur lors de la sauvegarde");
     }
+    setSavingSettings(false);
   };
 
   const addTerm = async () => {
     if (!newTerm.trim() || !newDef.trim()) return;
     setAddingTerm(true);
     setErrorMsg(null);
-    try {
-      const res = await fetch("/api/glossary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ term: newTerm.trim(), definition: newDef.trim() }),
-      });
-      const term = await res.json();
-      if (!res.ok) throw new Error(term.error || "Erreur ajout terme");
-      setGlossary((prev) => {
-        const existing = prev.findIndex((t) => t.id === term.id);
-        if (existing >= 0) {
-          const updated = [...prev];
-          updated[existing] = term;
-          return updated;
-        }
-        return [...prev, term].sort((a, b) => a.term.localeCompare(b.term));
-      });
+    const term = await fetchApi<GlossaryTerm>("/api/glossary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ term: newTerm.trim(), definition: newDef.trim() }),
+      suppressToast: true,
+    });
+    if (term) {
       setNewTerm("");
       setNewDef("");
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Erreur réseau");
-    } finally {
-      setAddingTerm(false);
+      queryClient.invalidateQueries({ queryKey: ["glossary"] });
+    } else {
+      setErrorMsg("Erreur lors de l'ajout du terme");
     }
+    setAddingTerm(false);
   };
 
   const deleteTerm = async (id: string) => {
-    await fetch("/api/glossary", {
+    const ok = await fetchApi("/api/glossary", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
+      suppressToast: true,
     });
-    setGlossary((prev) => prev.filter((t) => t.id !== id));
+    if (ok !== null) {
+      queryClient.invalidateQueries({ queryKey: ["glossary"] });
+    } else {
+      setErrorMsg("Erreur lors de la suppression du terme");
+    }
     setConfirmDeleteTermId(null);
+  };
+
+  const triggerBackup = async () => {
+    setBackingUp(true);
+    setBackupResult(null);
+    const data = await fetchApi<{ counts: Record<string, number>; exportedAt: string }>("/api/backup", {
+      method: "POST",
+      suppressToast: true,
+    });
+    if (data) {
+      setBackupResult(data);
+    } else {
+      setErrorMsg("Backup échoué — vérifie que CRON_SECRET est configuré sur Vercel");
+    }
+    setBackingUp(false);
   };
 
   const deleteWeek = async (id: string) => {
     setErrorMsg(null);
-    try {
-      const res = await fetch("/api/weeks", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Erreur suppression");
-      }
-      setWeeks((prev) => prev.filter((w) => w.id !== id));
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Erreur réseau");
-    } finally {
-      setConfirmDeleteWeekId(null);
+    const ok = await fetchApi("/api/weeks", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+      suppressToast: true,
+    });
+    if (ok !== null) {
+      queryClient.invalidateQueries({ queryKey: ["weeks"] });
+    } else {
+      setErrorMsg("Erreur lors de la suppression de la semaine");
     }
+    setConfirmDeleteWeekId(null);
   };
 
   return (
@@ -143,9 +154,9 @@ export default function SettingsPage() {
       </div>
 
       {errorMsg && (
-        <div className="flex items-center justify-between gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">
+        <div className="flex items-center justify-between gap-2 rounded-lg bg-red-mars-light border border-red-200 px-3 py-2 text-sm text-red-mars">
           <span>{errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-700 shrink-0">✕</button>
+          <button onClick={() => setErrorMsg(null)} className="text-red-mars hover:text-red-700 shrink-0">✕</button>
         </div>
       )}
 
@@ -153,7 +164,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <RefreshCw className="w-4 h-4 text-red-600" />
+            <RefreshCw className="w-4 h-4 text-blue-mars dark:text-blue-400" />
             Application
           </CardTitle>
         </CardHeader>
@@ -180,6 +191,22 @@ export default function SettingsPage() {
             <Button size="sm" variant="outline" onClick={toggleTheme}>
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               {theme === "dark" ? "Mode clair" : "Mode sombre"}
+            </Button>
+          </div>
+          <div className="h-px bg-slate-100 dark:bg-slate-700" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Backup des données</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Exporte toutes tes données en JSON dans Vercel Blob (cron auto à 02h00)</p>
+              {backupResult && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  ✓ {new Date(backupResult.exportedAt).toLocaleString("fr-BE")} — {backupResult.counts.visits} visites, {backupResult.counts.weeks} semaines
+                </p>
+              )}
+            </div>
+            <Button size="sm" variant="outline" onClick={triggerBackup} disabled={backingUp}>
+              {backingUp ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              {backingUp ? "Backup..." : "Backup"}
             </Button>
           </div>
           <div className="h-px bg-slate-100 dark:bg-slate-700" />
@@ -218,7 +245,7 @@ export default function SettingsPage() {
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Guillaume"
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
             <div className="space-y-1">
@@ -227,7 +254,7 @@ export default function SettingsPage() {
                 value={userZone}
                 onChange={(e) => setUserZone(e.target.value)}
                 placeholder="Bruxelles"
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -237,7 +264,7 @@ export default function SettingsPage() {
               value={homeAddress}
               onChange={(e) => setHomeAddress(e.target.value)}
               placeholder="Rue Georges Tourneur 12, 6030 Marchienne-au-Pont"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
             <p className="text-xs text-slate-400 dark:text-slate-500">Utilisée comme point de départ sur la carte des itinéraires</p>
           </div>
@@ -248,7 +275,7 @@ export default function SettingsPage() {
               onChange={(e) => setUserEmail(e.target.value)}
               placeholder="guillaume@example.com"
               type="email"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </div>
           <div className="space-y-1">
@@ -266,7 +293,7 @@ export default function SettingsPage() {
                 onChange={(e) => setOpenaiKey(e.target.value)}
                 type={showKey ? "text" : "password"}
                 placeholder={hasApiKey ? "Laisser vide pour conserver l'actuelle" : "sk-..."}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <button
                 type="button"
@@ -302,7 +329,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <BookOpen className="w-4 h-4 text-red-600" />
+            <BookOpen className="w-4 h-4 text-blue-mars dark:text-blue-400" />
             Glossaire métier Mars
           </CardTitle>
         </CardHeader>
@@ -318,13 +345,13 @@ export default function SettingsPage() {
               value={newTerm}
               onChange={(e) => setNewTerm(e.target.value)}
               placeholder="Terme (ex: PDV)"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
             <input
               value={newDef}
               onChange={(e) => setNewDef(e.target.value)}
               placeholder="Définition..."
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
             <Button
               size="sm"
@@ -349,7 +376,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => deleteTerm(term.id)}
-                      className="text-xs px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                      className="text-xs px-2 py-0.5 bg-red-mars text-white rounded hover:bg-red-700 transition-colors"
                       aria-label="Confirmer la suppression du terme"
                     >
                       Oui
@@ -365,7 +392,7 @@ export default function SettingsPage() {
                 ) : (
                   <button
                     onClick={() => setConfirmDeleteTermId(term.id)}
-                    className="shrink-0 text-slate-300 hover:text-red-500 transition-colors mt-0.5"
+                    className="shrink-0 text-slate-300 hover:text-red-mars transition-colors mt-0.5"
                     aria-label={`Supprimer le terme ${term.term}`}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -374,6 +401,97 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Security — password change */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Lock className="w-4 h-4 text-slate-500" />
+            Sécurité
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Changer ton mot de passe de connexion</p>
+          <div className="space-y-2">
+            <div className="relative">
+              <input
+                type={showPasswords ? "text" : "password"}
+                placeholder="Mot de passe actuel"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full px-3 py-2 pr-10 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              >
+                {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <input
+              type={showPasswords ? "text" : "password"}
+              placeholder="Nouveau mot de passe (min. 6 caractères)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+            />
+            <input
+              type={showPasswords ? "text" : "password"}
+              placeholder="Confirmer le nouveau mot de passe"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+            />
+          </div>
+          {passwordMsg && (
+            <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
+              passwordMsg.type === "success"
+                ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                : "bg-red-mars-light dark:bg-red-950/30 text-red-mars dark:text-red-400 border border-red-200 dark:border-red-800"
+            }`}>
+              {passwordMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+              {passwordMsg.text}
+            </div>
+          )}
+          <Button
+            size="sm"
+            disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword}
+            onClick={async () => {
+              if (newPassword !== confirmPassword) {
+                setPasswordMsg({ type: "error", text: "Les mots de passe ne correspondent pas" });
+                return;
+              }
+              if (newPassword.length < 6) {
+                setPasswordMsg({ type: "error", text: "Le nouveau mot de passe doit faire au moins 6 caractères" });
+                return;
+              }
+              setSavingPassword(true);
+              setPasswordMsg(null);
+              const data = await fetchApi<{ error?: string }>("/api/auth/password", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ currentPassword, newPassword }),
+                suppressToast: true,
+              });
+              if (data === null) {
+                setPasswordMsg({ type: "error", text: "Erreur réseau" });
+              } else if (data.error) {
+                setPasswordMsg({ type: "error", text: data.error });
+              } else {
+                setPasswordMsg({ type: "success", text: "Mot de passe mis à jour avec succès !" });
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+              }
+              setSavingPassword(false);
+            }}
+          >
+            <Lock className="w-4 h-4" />
+            {savingPassword ? "Enregistrement..." : "Changer le mot de passe"}
+          </Button>
         </CardContent>
       </Card>
 
@@ -395,7 +513,7 @@ export default function SettingsPage() {
                     <span className="text-xs text-slate-500">Confirmer ?</span>
                     <button
                       onClick={() => deleteWeek(w.id)}
-                      className="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                      className="text-xs px-2 py-1 bg-red-mars text-white rounded hover:bg-red-700 transition-colors"
                     >
                       Supprimer
                     </button>
@@ -409,7 +527,7 @@ export default function SettingsPage() {
                 ) : (
                   <button
                     onClick={() => setConfirmDeleteWeekId(w.id)}
-                    className="text-slate-300 hover:text-red-500 transition-colors"
+                    className="text-slate-300 hover:text-red-mars transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

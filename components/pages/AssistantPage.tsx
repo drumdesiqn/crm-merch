@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Send, Bot, User, Sparkles, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useChat, type Message } from "@/lib/hooks/useChat";
+import { useChat } from "@/lib/hooks/useChat";
 
 const QUICK_QUESTIONS = [
   "Qu'est-ce que je dois faire aujourd'hui ?",
@@ -24,7 +24,7 @@ export default function AssistantPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-mars rounded-full flex items-center justify-center">
             <Bot className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -43,8 +43,8 @@ export default function AssistantPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-6 text-center pb-10">
-            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-red-600" />
+            <div className="w-16 h-16 bg-blue-mars-light dark:bg-blue-mars/20 rounded-full flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-blue-mars" />
             </div>
             <div>
               <p className="font-semibold text-slate-800 dark:text-slate-200">Ton assistant Mars</p>
@@ -57,7 +57,7 @@ export default function AssistantPage() {
                 <button
                   key={q}
                   onClick={() => send(q)}
-                  className="text-left text-sm px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 hover:text-red-800 dark:hover:text-red-300 transition-colors"
+                  className="text-left text-sm px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-blue-mars-light dark:hover:bg-blue-mars/20 hover:border-blue-200 dark:hover:border-blue-800 hover:text-blue-mars dark:hover:text-blue-cpm transition-colors"
                 >
                   {q}
                 </button>
@@ -69,14 +69,14 @@ export default function AssistantPage() {
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
-              <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-7 h-7 bg-blue-mars rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <Bot className="w-3.5 h-3.5 text-white" />
               </div>
             )}
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
                 msg.role === "user"
-                  ? "bg-red-600 text-white rounded-tr-sm"
+                  ? "bg-blue-mars text-white rounded-tr-sm"
                   : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-tl-sm"
               }`}
             >
@@ -92,7 +92,7 @@ export default function AssistantPage() {
 
         {loading && (
           <div className="flex gap-3 justify-start">
-            <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 bg-blue-mars rounded-full flex items-center justify-center shrink-0">
               <Bot className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3">
@@ -106,7 +106,7 @@ export default function AssistantPage() {
         )}
 
         {error && (
-          <div className="text-center text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <div className="text-center text-sm text-red-mars dark:text-red-400 bg-red-mars-light dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
             {error}
           </div>
         )}
@@ -129,7 +129,7 @@ export default function AssistantPage() {
             }}
             placeholder="Pose ta question... (Entrée pour envoyer)"
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 max-h-32 overflow-y-auto"
+            className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-mars max-h-32 overflow-y-auto"
             style={{ minHeight: "44px" }}
           />
           <Button

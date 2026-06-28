@@ -23,7 +23,7 @@ export default function VisitNotes({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <StickyNote className="w-4 h-4 text-red-600" /> Ajouter une note
+            <StickyNote className="w-4 h-4 text-blue-mars" /> Ajouter une note
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -31,7 +31,7 @@ export default function VisitNotes({
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
             placeholder="Ex: Facing refait, clipstrip ajouté côté gauche..."
-            className="w-full min-h-[90px] resize-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full min-h-[90px] resize-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
             onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) onAddNote(); }}
           />
           <Button size="sm" onClick={onAddNote} disabled={!noteInput.trim() || addingNote}>
@@ -54,7 +54,7 @@ export default function VisitNotes({
                   <p className="flex-1 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{note.content}</p>
                   <button
                     onClick={() => onDeleteNote(note.id)}
-                    className="text-slate-300 hover:text-red-500 transition-colors shrink-0 mt-0.5"
+                    className="text-slate-300 hover:text-red-mars transition-colors shrink-0 mt-0.5"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -62,7 +62,7 @@ export default function VisitNotes({
                 <p className="text-xs text-slate-400 mt-1">
                   {new Date(note.createdAt).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   {note.visit?.week?.label && (
-                    <span className="ml-2 text-red-500 font-medium">· {note.visit.week.label}</span>
+                    <span className="ml-2 text-blue-mars font-medium">· {note.visit.week.label}</span>
                   )}
                 </p>
               </CardContent>

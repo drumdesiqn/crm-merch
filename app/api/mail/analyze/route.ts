@@ -2,10 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { MailAnalyzeSchema, validate } from "@/lib/validation";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const rateLimit = checkRateLimit(`mail-analyze:${ip}`, 30, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Trop de requêtes. Réessaie dans 1 minute." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const validation = validate(MailAnalyzeSchema, body);
     if (!validation.success) {
@@ -31,6 +43,15 @@ export async function POST(req: NextRequest) {
       ? await prisma.visit.findMany({
           where: { weekId: currentWeek.id },
           orderBy: [{ sortOrder: "asc" }, { visitDate: "asc" }],
+          select: {
+            id: true,
+            storeName: true,
+            storeCity: true,
+            visitDate: true,
+            visitType: true,
+            remarks: true,
+            salesRep: true,
+          },
         })
       : [];
 

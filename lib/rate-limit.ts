@@ -1,11 +1,15 @@
-// Simple in-memory rate limiting
-// WARNING: On serverless platforms (Vercel), each function instance has its own memory.
-// This rate limiter resets on every cold start and doesn't share state across instances.
-// For stricter rate limiting, migrate to Vercel KV, Upstash Redis, or similar.
+// Sliding-window in-memory rate limiting.
+//
+// LIMITATION: On Vercel serverless, each function instance has its own memory.
+// State is NOT shared across instances and resets on cold starts.
+// For production-grade rate limiting shared across instances, replace this with
+// Upstash Redis (@upstash/ratelimit + @upstash/redis) and set UPSTASH_REDIS_REST_URL
+// + UPSTASH_REDIS_REST_TOKEN env vars on Vercel.
+//
+// For a single-user app (personal tool), this in-memory limiter is sufficient.
 
 interface RateLimitEntry {
-  count: number;
-  resetTime: number;
+  timestamps: number[]; // sliding window: list of request timestamps
 }
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
@@ -16,46 +20,37 @@ export function checkRateLimit(
   windowMs: number
 ): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
+  const windowStart = now - windowMs;
   const entry = rateLimitStore.get(identifier);
 
-  if (!entry || now > entry.resetTime) {
-    // Create new entry or reset expired one
-    const newEntry: RateLimitEntry = {
-      count: 1,
-      resetTime: now + windowMs,
-    };
-    rateLimitStore.set(identifier, newEntry);
-    return {
-      allowed: true,
-      remaining: maxRequests - 1,
-      resetTime: newEntry.resetTime,
-    };
+  // Prune timestamps outside the window
+  const timestamps = (entry?.timestamps ?? []).filter((t) => t > windowStart);
+
+  const resetTime = timestamps.length > 0 ? timestamps[0] + windowMs : now + windowMs;
+
+  if (timestamps.length >= maxRequests) {
+    rateLimitStore.set(identifier, { timestamps });
+    return { allowed: false, remaining: 0, resetTime };
   }
 
-  if (entry.count >= maxRequests) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetTime: entry.resetTime,
-    };
-  }
+  timestamps.push(now);
+  rateLimitStore.set(identifier, { timestamps });
 
-  entry.count++;
   return {
     allowed: true,
-    remaining: maxRequests - entry.count,
-    resetTime: entry.resetTime,
+    remaining: maxRequests - timestamps.length,
+    resetTime,
   };
 }
 
-// Clean up expired entries periodically (every 5 minutes)
+// Clean up stale entries every 10 minutes to prevent memory leaks
 if (typeof setInterval !== "undefined") {
   setInterval(() => {
     const now = Date.now();
     for (const [key, entry] of rateLimitStore.entries()) {
-      if (now > entry.resetTime) {
+      if (entry.timestamps.every((t) => t < now - 24 * 60 * 60 * 1000)) {
         rateLimitStore.delete(key);
       }
     }
-  }, 5 * 60 * 1000);
+  }, 10 * 60 * 1000);
 }

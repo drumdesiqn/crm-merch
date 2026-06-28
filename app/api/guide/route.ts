@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 import { MATERIAL_TYPES } from "@/lib/constants";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const existing = await prisma.materialGuide.findMany();

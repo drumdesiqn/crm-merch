@@ -2,8 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { put, del } from "@vercel/blob";
 import { errorResponse } from "@/lib/api-utils";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
+  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const rateLimit = checkRateLimit(`guide-photo:${ip}`, 20, 60 * 60 * 1000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Trop d'uploads. Réessaie dans 1 heure." },
+      { status: 429 }
+    );
+  }
   try {
     const { name } = await params;
     const decodedName = decodeURIComponent(name);

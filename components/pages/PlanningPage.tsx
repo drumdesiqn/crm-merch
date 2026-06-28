@@ -381,8 +381,8 @@ function VisitCard({ visit, totalVisits, completedVisits }: { visit: Visit; tota
               )}
               {visit.materialType && (
                 <div className="flex items-center gap-1 mt-1">
-                  <Wrench className="w-3 h-3 text-red-500 shrink-0" />
-                  <span className="text-xs text-red-600 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full font-medium">
+                  <Wrench className="w-3 h-3 text-red-500 dark:text-red-400 shrink-0" />
+                  <span className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full font-medium">
                     {visit.materialType}
                   </span>
                 </div>

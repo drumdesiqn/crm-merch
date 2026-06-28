@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -15,6 +17,28 @@ export async function GET(req: NextRequest) {
     const visits = await prisma.visit.findMany({
       where: { weekId },
       orderBy: { visitDate: "asc" },
+      select: {
+        id: true,
+        weekId: true,
+        assortment: true,
+        storeId: true,
+        storeName: true,
+        storeAddress: true,
+        storeZipcode: true,
+        storeCity: true,
+        visitType: true,
+        visitFrequence: true,
+        visitDate: true,
+        merchandiser: true,
+        remarks: true,
+        salesRep: true,
+        materials: true,
+        sortOrder: true,
+        status: true,
+        materialType: true,
+        latitude: true,
+        longitude: true,
+      },
     });
 
     if (visits.length === 0) {
@@ -117,12 +141,13 @@ export async function GET(req: NextRequest) {
         remarks: v.remarks,
         materials: v.materials,
         materialType: v.materialType,
+        latitude: v.latitude,
+        longitude: v.longitude,
         photos: photosByVisit[v.id] || [],
         notes: notesByVisit[v.id] || [],
       })),
     });
   } catch (error) {
-    console.error("Export error:", error);
     return errorResponse(error, "GET /api/export");
   }
 }

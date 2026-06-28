@@ -2,6 +2,7 @@ import type { VisitStatus } from "@/lib/utils";
 
 export interface Visit {
   id: string;
+  weekId: string;
   assortment: string;
   storeId: string;
   storeName: string;
@@ -16,6 +17,8 @@ export interface Visit {
   salesRep: string | null;
   materials: string | null;
   materialType: string | null;
+  latitude: number | null;
+  longitude: number | null;
   sortOrder: number;
   status: VisitStatus | string;
   week?: { label: string };
@@ -61,7 +64,9 @@ export interface StoreHistoryVisit {
   status?: string;
   remarks?: string | null;
   materials?: string | null;
-  materialType?: string | null;
+  materialType: string | null;
+  latitude: number | null;
+  longitude: number | null;
   week: { label: string };
   notes?: { id: string; content: string; createdAt: string }[];
   photos?: { id: string; url: string; caption: string | null; createdAt: string }[];

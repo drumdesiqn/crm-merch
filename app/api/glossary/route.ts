@@ -4,6 +4,8 @@ import { DEFAULT_GLOSSARY } from "@/lib/utils";
 import { GlossaryTermSchema, GlossaryIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     let terms = await prisma.glossaryTerm.findMany({ 
