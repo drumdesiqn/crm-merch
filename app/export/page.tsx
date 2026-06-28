@@ -1,6 +1,8 @@
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
-const ExportPage = dynamic(() => import("@/components/pages/ExportPage"), {
+export const dynamic = "force-dynamic";
+
+const ExportPage = nextDynamic(() => import("@/components/pages/ExportPage"), {
   loading: () => (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
