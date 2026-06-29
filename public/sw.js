@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2026.06.22.22.01"; // Bump this on each deploy to bust caches
+const CACHE_VERSION = "v2026.06.29.22.09"; // Bump this on each deploy to bust caches
 const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
 const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
 // Only precache the two most-used pages; others are cached on first visit (stale-while-revalidate)
