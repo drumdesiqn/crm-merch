@@ -1,6 +1,6 @@
-import PlanningPage from "@/components/pages/PlanningPage";
+import { PlanningPage } from "@/components/DynamicClient";
 
-export const metadata = { title: "Planning — Mars Merch" };
+export const metadata = { title: "Planning — CPM Mars" };
 
 export default function Page() {
   return <PlanningPage />;

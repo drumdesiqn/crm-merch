@@ -45,3 +45,5 @@ next-env.d.ts
 # sensitive / dev-only
 ADMIN_CREDENTIALS.txt
 dev.db
+
+.env*
