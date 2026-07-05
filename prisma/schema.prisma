@@ -61,6 +61,7 @@ model Visit {
   updatedAt     DateTime @updatedAt
   notes         VisitNote[]
   photos        VisitPhoto[]
+  modifications Modification[]
 
   @@index([storeId])
   @@index([visitDate])
@@ -107,6 +108,8 @@ model Modification {
   id          String   @id @default(cuid())
   mailLogId   String?
   mailLog     MailLog? @relation(fields: [mailLogId], references: [id])
+  visitId     String?
+  visit       Visit?   @relation(fields: [visitId], references: [id], onDelete: SetNull)
   action      String
   target      String
   field       String?
@@ -115,6 +118,8 @@ model Modification {
   description String
   applied     Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([visitId])
 }
 
 model MaterialGuide {

@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { MailAnalyzeSchema, validate } from "@/lib/validation";
+import { MailAnalyzeResultSchema, MailAnalyzeSchema, validate } from "@/lib/validation";
 import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
@@ -107,27 +107,34 @@ Ne retourne QUE le JSON, sans markdown, sans explication.`;
     });
 
     const raw = completion.choices[0].message.content || "{}";
-    let parsed;
+    let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
     } catch {
       parsed = { summary: raw, actions: [], replyDraft: "" };
     }
 
+    const parsedValidation = validate(MailAnalyzeResultSchema, parsed);
+    const normalized = parsedValidation.success
+      ? parsedValidation.data
+      : { summary: String((parsed as { summary?: string } | null)?.summary || raw), actions: [], replyDraft: "" };
+    const actions = normalized.actions ?? [];
+
     const mailLog = await prisma.mailLog.create({
       data: {
         rawContent: content.slice(0, 10000),
-        summary: parsed.summary || "",
-        replyDraft: parsed.replyDraft || "",
+        summary: normalized.summary,
+        replyDraft: normalized.replyDraft,
         status: "analyzed",
       },
     });
 
-    if (parsed.actions?.length > 0) {
+    if (actions.length > 0) {
       await prisma.modification.createMany({
-        data: parsed.actions.map((a: Record<string, string>) => ({
+        data: actions.map((a) => ({
           mailLogId: mailLog.id,
-          action: a.action || "modify",
+          visitId: a.visitId || null,
+          action: a.action,
           target: a.target || "",
           field: a.field || null,
           oldValue: a.oldValue || null,
@@ -144,8 +151,8 @@ Ne retourne QUE le JSON, sans markdown, sans explication.`;
 
     return NextResponse.json({
       mailLogId: mailLog.id,
-      summary: parsed.summary,
-      replyDraft: parsed.replyDraft,
+      summary: normalized.summary,
+      replyDraft: normalized.replyDraft,
       modifications,
     });
   } catch (error) {

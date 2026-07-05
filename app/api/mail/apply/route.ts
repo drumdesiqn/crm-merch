@@ -8,6 +8,32 @@ import { getClientIp } from "@/lib/request-ip";
 export const dynamic = 'force-dynamic';
 
 const ALLOWED_FIELDS = ["remarks", "salesRep", "visitType", "materials", "visitDate", "visitFrequence", "status", "materialType"];
+const ALLOWED_STATUSES = new Set(["pending", "done", "cancelled", "postponed"]);
+
+function toUtcNoon(value: string): Date | null {
+  const [y, m, d] = value.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const dt = new Date(Date.UTC(y, m - 1, d, 12, 0, 0, 0));
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+function normalizeFieldValue(field: string, newValue: string): { ok: true; value: unknown } | { ok: false; error: string } {
+  if (field === "visitDate") {
+    const date = toUtcNoon(newValue.trim());
+    if (!date) return { ok: false, error: "Date invalide (format attendu YYYY-MM-DD)" };
+    return { ok: true, value: date };
+  }
+
+  if (field === "status") {
+    const status = newValue.trim();
+    if (!ALLOWED_STATUSES.has(status)) {
+      return { ok: false, error: `Statut non supporté: ${status}` };
+    }
+    return { ok: true, value: status };
+  }
+
+  return { ok: true, value: newValue };
+}
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
@@ -50,54 +76,64 @@ export async function POST(req: NextRequest) {
               results.push({ id: mod.id, success: false, error: `Field "${mod.field}" is not allowed` });
               continue;
             }
-            if (mod.target) {
+            const normalizedValue = normalizeFieldValue(mod.field, mod.newValue);
+            if (!normalizedValue.ok) {
+              results.push({ id: mod.id, success: false, error: normalizedValue.error });
+              continue;
+            }
+
+            let visits: { id: string; storeId: string; storeName: string }[] = [];
+
+            if (mod.visitId) {
+              const byId = await prisma.visit.findUnique({
+                where: { id: mod.visitId },
+                select: { id: true, storeId: true, storeName: true, weekId: true },
+              });
+              if (byId && (!currentWeek || byId.weekId === currentWeek.id)) {
+                visits = [{ id: byId.id, storeId: byId.storeId, storeName: byId.storeName }];
+              }
+            }
+
+            if (visits.length === 0 && mod.target) {
               const targetClean = mod.target.replace(/\s*\([^)]*\)\s*$/, "").trim();
               const targetLower = mod.target.toLowerCase();
               const targetCleanLower = targetClean.toLowerCase();
 
-              // First try exact id/storeId match
-              let visits = await prisma.visit.findMany({
+              visits = await prisma.visit.findMany({
                 where: {
                   ...(currentWeek ? { weekId: currentWeek.id } : {}),
-                  OR: [
-                    { id: mod.target },
-                    { storeId: mod.target },
-                  ],
+                  OR: [{ id: mod.target }, { storeId: mod.target }],
                 },
-                select: {
-                  id: true,
-                  storeId: true,
-                  storeName: true,
-                },
+                select: { id: true, storeId: true, storeName: true },
               });
 
-              // Fallback: case-insensitive name match in JS
               if (visits.length === 0 && currentWeek) {
                 const weekVisits = await prisma.visit.findMany({
                   where: { weekId: currentWeek.id },
-                  select: {
-                    id: true,
-                    storeId: true,
-                    storeName: true,
-                  },
+                  select: { id: true, storeId: true, storeName: true },
                 });
                 visits = weekVisits.filter((v) => {
                   const name = v.storeName.toLowerCase();
                   return name.includes(targetLower) || name.includes(targetCleanLower);
                 });
               }
+            }
 
-              if (visits.length === 0) {
-                results.push({ id: mod.id, success: false, error: `No visit found for target "${mod.target}"` });
-                continue;
-              }
+            if (visits.length === 0) {
+              results.push({ id: mod.id, success: false, error: `No visit found for target "${mod.target}"` });
+              continue;
+            }
 
-              for (const visit of visits) {
-                await prisma.visit.update({
-                  where: { id: visit.id },
-                  data: { [mod.field]: mod.newValue },
-                });
-              }
+            if (visits.length > 1 && !mod.visitId) {
+              results.push({ id: mod.id, success: false, error: "Modification ambiguë: plusieurs visites correspondent. Spécifie une visite unique." });
+              continue;
+            }
+
+            for (const visit of visits) {
+              await prisma.visit.update({
+                where: { id: visit.id },
+                data: { [mod.field]: normalizedValue.value },
+              });
             }
           }
         }

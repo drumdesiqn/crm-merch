@@ -254,6 +254,19 @@ const migrations = [
     ],
   },
   {
+    name: "20260705020000_add_modification_visit_id",
+    sql: [
+      `ALTER TABLE "Modification" ADD COLUMN IF NOT EXISTS "visitId" TEXT`,
+      `CREATE INDEX IF NOT EXISTS "Modification_visitId_idx" ON "Modification"("visitId")`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Modification_visitId_fkey') THEN
+          ALTER TABLE "Modification" ADD CONSTRAINT "Modification_visitId_fkey"
+            FOREIGN KEY ("visitId") REFERENCES "Visit"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+    ],
+  },
+  {
     name: "20260627000000_add_store_model",
     sql: [
       `CREATE TABLE IF NOT EXISTS "Store" (

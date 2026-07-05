@@ -8,6 +8,13 @@ import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
 
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/heic": "heic",
+};
+
 function photoRateLimit(req: NextRequest) {
   const ip = getClientIp(req);
   const rateLimit = checkRateLimit(`visit-photos:${ip}`, 30, 60 * 1000);
@@ -68,23 +75,26 @@ export async function POST(
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
-    if (!allowedTypes.includes(file.type)) {
+    const ext = MIME_TO_EXT[file.type];
+    if (!ext) {
       return NextResponse.json({ error: "Format d'image non supporté" }, { status: 400 });
     }
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: "Fichier trop volumineux (max 10 Mo)" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop() || "jpg";
+    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    if (!visit) {
+      return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
+    }
+
     const filename = `visits/${id}/${Date.now()}.${ext}`;
 
     const blob = await put(filename, file, {
       access: "public",
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: true,
     });
-
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
 
     const photo = await prisma.visitPhoto.create({
       data: {

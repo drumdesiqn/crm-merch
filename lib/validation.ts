@@ -152,6 +152,34 @@ export const MailAnalyzeSchema = z.object({
   content: z.string().min(1, "Contenu du mail requis").max(50000, "Mail trop long (max 50 000 caractères)"),
 });
 
+export const MailActionSchema = z.enum(["modify", "add", "delete", "add_remark"]);
+export const MailFieldSchema = z.enum([
+  "remarks",
+  "salesRep",
+  "visitType",
+  "materials",
+  "visitDate",
+  "visitFrequence",
+  "status",
+  "materialType",
+]);
+
+export const MailAnalyzeActionItemSchema = z.object({
+  action: MailActionSchema,
+  target: z.string().max(300).optional().default(""),
+  visitId: z.string().min(1).max(100).nullable().optional(),
+  field: MailFieldSchema.nullable().optional(),
+  oldValue: z.string().max(5000).nullable().optional(),
+  newValue: z.string().max(5000).nullable().optional(),
+  description: z.string().max(1000).optional().default(""),
+});
+
+export const MailAnalyzeResultSchema = z.object({
+  summary: z.string().max(2000).default(""),
+  actions: z.array(MailAnalyzeActionItemSchema).max(50).default([]),
+  replyDraft: z.string().max(10000).default(""),
+});
+
 // Helper function to validate and return error response if invalid
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
   const result = schema.safeParse(data);
