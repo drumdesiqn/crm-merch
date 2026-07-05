@@ -48,6 +48,7 @@ export default function VisitDetailPage() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDeleteNoteId, setConfirmDeleteNoteId] = useState<string | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<VisitStatus | null>(null);
 
   const visitId = params?.id as string;
 
@@ -187,8 +188,18 @@ export default function VisitDetailPage() {
     }
   };
 
+  const IRREVERSIBLE_STATUSES: VisitStatus[] = ["done", "cancelled"];
+
   const updateStatus = async (newStatus: VisitStatus) => {
     if (newStatus === status) return;
+    if (IRREVERSIBLE_STATUSES.includes(newStatus) && status !== "done" && status !== "cancelled") {
+      setPendingStatus(newStatus);
+      return;
+    }
+    await applyStatus(newStatus);
+  };
+
+  const applyStatus = async (newStatus: VisitStatus) => {
     const previousStatus = status;
     setSavingStatus(true);
     setStatus(newStatus);
@@ -624,10 +635,10 @@ export default function VisitDetailPage() {
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-slate-200" />
               <div className="flex items-center gap-2">
-                <StickyNote className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+                <StickyNote className="w-4 h-4 text-blue-mars" />
                 <p className="text-sm font-semibold text-slate-600">Notes & Photos</p>
                 {(notes.length + photos.length) > 0 && (
-                  <span className="text-xs bg-blue-mars-light dark:bg-blue-900/40 text-blue-mars dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">{notes.length + photos.length}</span>
+                  <span className="text-xs bg-blue-mars-light text-blue-mars px-1.5 py-0.5 rounded-full font-semibold">{notes.length + photos.length}</span>
                 )}
               </div>
               <div className="flex-1 h-px bg-slate-200" />
@@ -677,6 +688,33 @@ export default function VisitDetailPage() {
       {/* Lightbox */}
       {lightboxUrl && (
         <PhotoLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
+      )}
+
+      {/* Status confirmation modal */}
+      {pendingStatus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                {pendingStatus === "done" ? "Marquer comme effectuée ?" : "Annuler cette visite ?"}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                {pendingStatus === "done"
+                  ? "La visite sera marquée comme effectuée."
+                  : "La visite sera marquée comme annulée."}
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button
+                className={`flex-1 text-white ${pendingStatus === "done" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
+                onClick={() => { applyStatus(pendingStatus); setPendingStatus(null); }}
+              >
+                Confirmer
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setPendingStatus(null)}>Annuler</Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Delete note confirmation modal */}

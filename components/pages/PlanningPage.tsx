@@ -4,18 +4,27 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Upload, Calendar, MapPin, User, AlertCircle, ChevronRight, X, CheckCircle, List, Map, Navigation, FileDown, Wrench } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Upload, Calendar, MapPin, User, AlertCircle, ChevronRight, X, CheckCircle, List, Navigation, FileDown, Wrench, Route, Plus, CalendarDays, Trash2, Search } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, VisitStatus } from "@/lib/utils";
+import { VISIT_TYPE_COLORS, VISIT_TYPE_DARK_STYLES, ASSORTMENT_COLORS, ASSORTMENT_DARK_STYLES, VisitStatus } from "@/lib/utils";
+import { useTheme } from "@/components/ThemeProvider";
 import { StatusBadge } from "@/components/StatusBadge";
+import { useQueryClient } from "@tanstack/react-query";
+import { useWeeks } from "@/lib/hooks/useWeeks";
+import { useVisits } from "@/lib/hooks/useVisits";
+import { useSummary } from "@/lib/hooks/useSummary";
+import { useImport } from "@/lib/hooks/useImport";
+import { useStores } from "@/lib/hooks/useStores";
+import { useCreateVisit } from "@/lib/hooks/useCreateVisit";
+import { useUpdateVisit } from "@/lib/hooks/useUpdateVisit";
+import { useDeleteVisit } from "@/lib/hooks/useDeleteVisit";
 import { showToast } from "@/components/Toast";
-import { Skeleton, VisitRowSkeleton } from "@/components/Skeleton";
+import FrenchDatePicker from "@/components/FrenchDatePicker";
 import type { Visit, Week } from "@/types/visit";
 
 const RouteMapView = dynamic(() => import("@/components/pages/RouteMapView"), { ssr: false, loading: () => (
-  <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" /></div>
+  <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" /></div>
 ) });
 
 interface DayGroup {
@@ -25,140 +34,174 @@ interface DayGroup {
 }
 
 export default function PlanningPage() {
-  const [state, setState] = useState<{
-    weeks: Week[];
-    selectedWeekId: string;
-    visits: Visit[];
-  }>({
-    weeks: [],
-    selectedWeekId: "",
-    visits: [],
-  });
-  const [allVisits, setAllVisits] = useState<Visit[]>([]);
+  const [selectedWeekId, setSelectedWeekId] = useState("");
+  const [localVisits, setLocalVisits] = useState<Visit[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [pendingImport, setPendingImport] = useState<{ file: File; count: number; label: string } | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [geocodedCache, setGeocodedCache] = useState<Record<string, { lat: number; lng: number } | null>>({});
+  const [visitsTruncated, setVisitsTruncated] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+
+  const { data: weeks = [] } = useWeeks();
+  const effectiveWeekId = selectedWeekId || (weeks[0]?.id ?? "");
+  const { data: visitsResult } = useVisits(effectiveWeekId);
+  const visits: Visit[] = visitsResult?.visits ?? [];
+  const allVisitsTruncated = visitsResult?.truncated ?? false;
+  const { data: summaryStores = {} } = useSummary();
+  const { data: stores = [] } = useStores();
+  const importMutation = useImport();
+  const createVisit = useCreateVisit();
+  const updateVisit = useUpdateVisit();
+  const deleteVisit = useDeleteVisit();
+
+  const [showPlanForm, setShowPlanForm] = useState(false);
+  const [planStoreId, setPlanStoreId] = useState("");
+  const [planDate, setPlanDate] = useState("");
+  const [editingVisit, setEditingVisit] = useState<{ id: string; date: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  const [confirmDeleteWeek, setConfirmDeleteWeek] = useState(false);
+  const [deletingWeek, setDeletingWeek] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-    
-    const loadData = async () => {
-      try {
-        const [weeksRes, allVisitsRes] = await Promise.all([
-          fetch("/api/weeks"),
-          fetch("/api/visits")
-        ]);
-        const weeks = await weeksRes.json();
-        const allVisits = await allVisitsRes.json();
-        if (!isMounted) return;
-        
-        const weeksArray = Array.isArray(weeks) ? weeks : [];
-        const allVisitsArray = Array.isArray(allVisits) ? allVisits : [];
-        
-        setAllVisits(allVisitsArray);
-        
-        if (weeksArray.length > 0) {
-          const visitsRes = await fetch(`/api/visits?weekId=${weeksArray[0].id}`);
-          const visits = await visitsRes.json();
-          if (!isMounted) return;
-          
-          setState({
-            weeks: weeksArray,
-            selectedWeekId: weeksArray[0].id,
-            visits: Array.isArray(visits) ? visits : [],
-          });
-          setIsReady(true);
-        } else {
-          setState({
-            weeks: weeksArray,
-            selectedWeekId: "",
-            visits: [],
-          });
-          setIsReady(true);
-        }
-      } catch (error) {
-        showToast("error", "Erreur lors du chargement");
-        setTimeout(() => {
-          if (isMounted) setIsReady(true);
-        }, 0);
-      }
-    };
-    
-    loadData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    if (weeks.length > 0 && !selectedWeekId) {
+      setSelectedWeekId(weeks[0].id);
+    }
+    setIsReady(true);
+  }, [weeks, selectedWeekId]);
+
+  useEffect(() => {
+    setLocalVisits(visits);
+    if (allVisitsTruncated) setVisitsTruncated(true);
+  }, [visits, allVisitsTruncated]);
+
+  const handlePlanVisit = async () => {
+    if (!planStoreId || !planDate) {
+      showToast("error", "Sélectionne un magasin et une date");
+      return;
+    }
+    try {
+      await createVisit.mutateAsync({ storeId: planStoreId, weekId: effectiveWeekId, visitDate: planDate });
+      showToast("success", "Magasin planifié");
+      setShowPlanForm(false);
+      setPlanStoreId("");
+      setPlanDate("");
+      await queryClient.invalidateQueries({ queryKey: ["visits"] });
+      await queryClient.invalidateQueries({ queryKey: ["weeks"] });
+    } catch {
+      showToast("error", "Erreur lors de la planification");
+    }
+  };
+
+  const handleUpdateDate = async (id: string, newDate: string) => {
+    try {
+      await updateVisit.mutateAsync({ id, visitDate: newDate });
+      showToast("success", "Date mise à jour");
+      setEditingVisit(null);
+    } catch {
+      showToast("error", "Erreur lors du changement de date");
+    }
+  };
 
   const handleWeekChange = (weekId: string) => {
-    setState(prev => ({ ...prev, selectedWeekId: weekId }));
+    setSelectedWeekId(weekId);
     setGeocodedCache({});
-    fetch(`/api/visits?weekId=${weekId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setState(prev => ({ ...prev, visits: Array.isArray(data) ? data : [] }));
-      })
-      .catch(() => {
-        showToast("error", "Erreur lors du chargement des visites");
+  };
+
+  const handleDeleteWeek = async () => {
+    if (!effectiveWeekId) return;
+    setDeletingWeek(true);
+    try {
+      const res = await fetch("/api/weeks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: effectiveWeekId }),
       });
+      if (!res.ok) throw new Error();
+      showToast("success", "Semaine supprimée");
+      setConfirmDeleteWeek(false);
+      setSelectedWeekId("");
+      await queryClient.invalidateQueries({ queryKey: ["weeks"] });
+      await queryClient.invalidateQueries({ queryKey: ["visits"] });
+    } catch {
+      showToast("error", "Erreur lors de la suppression de la semaine");
+    } finally {
+      setDeletingWeek(false);
+    }
   };
 
   const handleFile = async (file: File, mode: "check" | "replace" | "merge" = "check") => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("mode", mode);
-    setImporting(true);
-
-    let res: Response;
-    let data: Record<string, unknown>;
     try {
-      res = await fetch("/api/import", { method: "POST", body: formData });
-      data = await res.json();
+      const data = await importMutation.mutateAsync({ file, mode });
+
+      if (data.error) {
+        setImportMsg({ type: "error", text: data.error });
+        return;
+      }
+
+      if (mode === "check" && data.exists) {
+        setPendingImport({ file, count: data.count || 0, label: data.label || "" });
+        return;
+      }
+
+      const warnings = data.warnings;
+      const warningText = warnings && warnings.length > 0 ? ` ⚠ ${warnings.join(" ")}` : "";
+      setImportMsg({ type: "success", text: `✓ ${data.count} visites importées — ${data.label}${warningText}` });
+      setPendingImport(null);
+
+      await queryClient.invalidateQueries({ queryKey: ["weeks"] });
+      const newWeeks = queryClient.getQueryData<Week[]>(["weeks"]);
+      const imported = newWeeks?.find((w) => w.label === data.label);
+      if (imported) {
+        setSelectedWeekId(imported.id);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["visits"] });
     } catch {
-      setImporting(false);
       setImportMsg({ type: "error", text: "Erreur réseau lors de l'import" });
-      return;
-    }
-    setImporting(false);
-
-    if (!res.ok) {
-      setImportMsg({ type: "error", text: (data.error as string) || "Erreur lors de l'import" });
-      return;
-    }
-
-    if (mode === "check" && data.exists) {
-      setPendingImport({ file, count: data.count as number, label: data.label as string });
-      return;
-    }
-
-    const warnings = data.warnings as string[] | undefined;
-    const warningText = warnings && warnings.length > 0 ? ` ⚠ ${warnings.join(" ")}` : "";
-    setImportMsg({ type: "success", text: `✓ ${data.count} visites importées — ${data.label}${warningText}` });
-    setPendingImport(null);
-
-    try {
-      const weeksRes = await fetch("/api/weeks");
-      const newWeeks = await weeksRes.json();
-      setState(prev => ({ ...prev, weeks: newWeeks }));
-      const imported = newWeeks.find((w: Week) => w.label === data.label);
-      if (imported) setState(prev => ({ ...prev, selectedWeekId: imported.id }));
-    } catch {
-      // weeks refresh failed, ignore
     }
   };
 
-  const dayGroups = useMemo(() => state.visits.reduce((acc, v) => {
+  const storeVisitCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    Object.entries(summaryStores).forEach(([id, s]) => { counts[id] = s.total; });
+    return counts;
+  }, [summaryStores]);
+
+  const storeCompletedCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    Object.entries(summaryStores).forEach(([id, s]) => { counts[id] = s.completed; });
+    return counts;
+  }, [summaryStores]);
+
+  const filteredVisits = useMemo(() => {
+    let result = localVisits;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((v) =>
+        v.storeName?.toLowerCase().includes(q) ||
+        v.storeCity?.toLowerCase().includes(q) ||
+        v.storeAddress?.toLowerCase().includes(q) ||
+        v.storeZipcode?.toLowerCase().includes(q)
+      );
+    }
+    if (filterStatus !== "all") result = result.filter((v) => v.status === filterStatus);
+    if (filterType !== "all") result = result.filter((v) => v.visitType === filterType);
+    return result;
+  }, [localVisits, searchQuery, filterStatus, filterType]);
+
+  const visitTypes = useMemo(() => Array.from(new Set(localVisits.map((v) => v.visitType).filter(Boolean))), [localVisits]);
+
+  const dayGroups = useMemo(() => filteredVisits.reduce((acc: Record<string, Visit[]>, v: Visit) => {
     const day = v.visitDate.split("T")[0];
     if (!acc[day]) acc[day] = [];
     acc[day].push(v);
     return acc;
-  }, {} as Record<string, Visit[]>), [state.visits]);
+  }, {} as Record<string, Visit[]>), [filteredVisits]);
 
   const sortedDays: DayGroup[] = useMemo(() => Object.entries(dayGroups)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -173,53 +216,42 @@ export default function PlanningPage() {
       visits: dayVisits,
     })), [dayGroups]);
 
-  // Calculate visit count per store (using all visits, not just current week)
-  const storeVisitCount = useMemo(() => {
-    const counts: Record<string, number> = {};
-    allVisits.forEach((v) => {
-      const key = v.storeId || v.storeName;
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    return counts;
-  }, [allVisits]);
-
-  // Calculate completed visit count per store (using all visits, not just current week)
-  const storeCompletedCount = useMemo(() => {
-    const counts: Record<string, number> = {};
-    allVisits.forEach((v) => {
-      if (v.status === "done") {
-        const key = v.storeId || v.storeName;
-        counts[key] = (counts[key] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [allVisits]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      {!isReady || state.weeks.length === 0 || state.selectedWeekId === "" ? (
+      {!isReady || weeks.length === 0 || effectiveWeekId === "" ? (
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         // Actual content
         <>
+          {visitsTruncated && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>Affichage limité à 500 visites. Utilise le filtre par semaine pour voir toutes les visites.</span>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Planning</h1>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
-              {state.visits.length > 0 && (
+              {localVisits.length > 0 && (
                 <div className="flex rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden shrink-0">
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === "list" ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === "list" ? "bg-blue-mars text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
                   >
                     <List className="w-4 h-4" /> Liste
                   </button>
                   <button
                     onClick={() => setViewMode("map")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-slate-600 whitespace-nowrap ${viewMode === "map" ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
+                    title="Organise et optimise ton itinéraire de la journée sur la carte"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-slate-600 whitespace-nowrap ${viewMode === "map" ? "bg-blue-mars text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
                   >
-                    <Map className="w-4 h-4" /> Carte
+                    <Route className="w-4 h-4" />
+                    <span className="hidden sm:inline">Routing journée</span>
+                    <span className="sm:hidden">Routing</span>
                   </button>
                 </div>
               )}
@@ -230,10 +262,15 @@ export default function PlanningPage() {
                   <span className="sm:hidden">PDF</span>
                 </Button>
               </Link>
-              <Button size="sm" onClick={() => fileRef.current?.click()} disabled={importing} className="shrink-0 whitespace-nowrap" aria-label="Importer un fichier Excel">
+              <Button size="sm" onClick={() => fileRef.current?.click()} disabled={importMutation.isPending} className="shrink-0 whitespace-nowrap" aria-label="Importer un fichier Excel">
                 <Upload className="w-4 h-4 mr-1" />
-                {importing ? "..." : <span className="hidden sm:inline">Importer Excel</span>}
-                {importing ? "" : <span className="sm:hidden">Import</span>}
+                {importMutation.isPending ? "..." : <span className="hidden sm:inline">Importer Excel</span>}
+                {importMutation.isPending ? "" : <span className="sm:hidden">Import</span>}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setShowPlanForm(true)} className="shrink-0 whitespace-nowrap" aria-label="Ajouter un magasin au planning">
+                <Plus className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Ajouter magasin</span>
+                <span className="sm:hidden">Ajouter</span>
               </Button>
             </div>
           </div>
@@ -250,7 +287,7 @@ export default function PlanningPage() {
           />
 
           {/* Drop zone — hidden when visits are already loaded */}
-          {state.visits.length === 0 && (
+          {localVisits.length === 0 && (
             <div
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
@@ -260,7 +297,7 @@ export default function PlanningPage() {
                 const f = e.dataTransfer.files[0];
                 if (f) handleFile(f, "check");
               }}
-              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${dragging ? "border-red-400 bg-red-50 dark:bg-red-950" : "border-slate-200 dark:border-slate-600 hover:border-slate-300"}`}
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${dragging ? "border-blue-cpm bg-blue-mars-light dark:bg-blue-mars/20" : "border-slate-200 dark:border-slate-600 hover:border-slate-300"}`}
               onClick={() => fileRef.current?.click()}
             >
               <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
@@ -270,7 +307,7 @@ export default function PlanningPage() {
 
           {/* Import feedback */}
           {importMsg && (
-            <div className={`flex items-center gap-3 rounded-lg p-3 text-sm ${importMsg.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+            <div className={`flex items-center gap-3 rounded-lg p-3 text-sm ${importMsg.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-mars-light text-red-mars border border-red-200"}`}>
               {importMsg.type === "success" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
               <span>{importMsg.text}</span>
               <button onClick={() => setImportMsg(null)} className="ml-auto"><X className="w-4 h-4" /></button>
@@ -292,32 +329,88 @@ export default function PlanningPage() {
           )}
 
           {/* Week selector */}
-          {state.weeks.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {state.weeks.map((w) => (
+          {weeks.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {weeks.map((w) => (
                 <button
                   key={w.id}
                   onClick={() => handleWeekChange(w.id)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${state.selectedWeekId === w.id ? "bg-red-600 text-white border-red-600" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${(selectedWeekId || weeks[0]?.id) === w.id ? "bg-blue-mars text-white border-blue-mars" : "border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
                 >
                   {w.label} · {w._count.visits} visites
                 </button>
               ))}
+              {effectiveWeekId && (
+                <button
+                  onClick={() => setConfirmDeleteWeek(true)}
+                  title="Supprimer cette semaine"
+                  className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full border border-red-200 text-red-400 hover:border-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors ml-1"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Search + filters */}
+          {localVisits.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un magasin, ville..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              >
+                <option value="all">Tous statuts</option>
+                <option value="pending">À faire</option>
+                <option value="done">Terminé</option>
+                <option value="cancelled">Annulé</option>
+                <option value="postponed">Reporté</option>
+              </select>
+              {visitTypes.length > 1 && (
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                >
+                  <option value="all">Tous types</option>
+                  {visitTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              )}
+              {(searchQuery || filterStatus !== "all" || filterType !== "all") && (
+                <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap self-center">
+                  {filteredVisits.length} / {localVisits.length} visite{localVisits.length > 1 ? "s" : ""}
+                </div>
+              )}
             </div>
           )}
 
           {/* Visits — list or map view */}
-          {state.visits.length === 0 && state.weeks.length > 0 && state.selectedWeekId !== "" ? (
+          {localVisits.length === 0 && weeks.length > 0 && selectedWeekId !== "" ? (
             <div className="text-center py-12 text-slate-500">
               <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
               <p>Aucune visite. Importe ton planning Excel.</p>
             </div>
           ) : viewMode === "map" ? (
             <RouteMapView
-              visits={state.visits}
+              visits={localVisits}
               geocodedCache={geocodedCache}
               onGeocodedCacheUpdate={setGeocodedCache}
-              onOrderSaved={(reordered) => setState(prev => ({ ...prev, visits: reordered }))}
+              onOrderSaved={(reordered) => setLocalVisits(reordered)}
             />
           ) : (
             sortedDays.map((day) => (
@@ -329,42 +422,153 @@ export default function PlanningPage() {
                   </div>
                   <span className="text-xs text-slate-400 dark:text-slate-500">{day.visits.length} visite{day.visits.length > 1 ? "s" : ""}</span>
                 </div>
-                {day.visits.map((v) => <VisitCard key={v.id} visit={v} totalVisits={storeVisitCount[v.storeId || v.storeName] || 0} completedVisits={storeCompletedCount[v.storeId || v.storeName] || 0} />)}
+                {day.visits.map((v) => (
+                  <VisitCard
+                    key={v.id}
+                    visit={v}
+                    totalVisits={storeVisitCount[v.storeId || v.storeName] || 0}
+                    completedVisits={storeCompletedCount[v.storeId || v.storeName] || 0}
+                    onUpdateDate={(id, date) => setEditingVisit({ id, date })}
+                    onDelete={async (id) => {
+                      try {
+                        await deleteVisit.mutateAsync(id);
+                        showToast("success", "Visite supprimée");
+                      } catch {
+                        showToast("error", "Erreur lors de la suppression");
+                      }
+                    }}
+                  />
+                ))}
               </div>
             ))
           )}
+
+          {/* Plan visit modal */}
+          {showPlanForm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Ajouter un magasin</h2>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Magasin</label>
+                  <select
+                    value={planStoreId}
+                    onChange={(e) => setPlanStoreId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  >
+                    <option value="">Choisir un magasin</option>
+                    {stores.map((s) => (
+                      <option key={s.storeId} value={s.storeId}>{s.storeName} ({s.storeCity})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Date</label>
+                  <div className="border border-slate-200 dark:border-slate-600 rounded-lg p-3">
+                    <FrenchDatePicker value={planDate} onChange={setPlanDate} />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button className="flex-1" onClick={handlePlanVisit} disabled={createVisit.isPending}>
+                    {createVisit.isPending ? "..." : "Planifier"}
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => setShowPlanForm(false)}>Annuler</Button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
+      )}
+
+      {/* Delete week confirmation modal */}
+      {confirmDeleteWeek && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
+                <Trash2 className="w-4 h-4 text-red-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">Supprimer la semaine ?</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Toutes les visites, notes et photos seront supprimées. Irréversible.</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={deletingWeek}
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+                onClick={handleDeleteWeek}
+              >
+                {deletingWeek ? "Suppression..." : "Supprimer"}
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => setConfirmDeleteWeek(false)}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit date modal */}
+      {editingVisit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Changer de jour</h2>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nouvelle date</label>
+              <div className="border border-slate-200 dark:border-slate-600 rounded-lg p-3">
+                <FrenchDatePicker
+                  value={editingVisit.date}
+                  onChange={(d) => setEditingVisit({ ...editingVisit, date: d })}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1" onClick={() => handleUpdateDate(editingVisit.id, editingVisit.date)} disabled={updateVisit.isPending}>
+                {updateVisit.isPending ? "..." : "Enregistrer"}
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setEditingVisit(null)}>Annuler</Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-function VisitCard({ visit, totalVisits, completedVisits }: { visit: Visit; totalVisits?: number; completedVisits?: number }) {
+function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete }: { visit: Visit; totalVisits?: number; completedVisits?: number; onUpdateDate?: (id: string, date: string) => void; onDelete?: (id: string) => void }) {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
+  const typeDarkStyle = isDark ? (VISIT_TYPE_DARK_STYLES[visit.visitType] || {}) : {};
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
+  const assortDarkStyle = isDark ? (ASSORTMENT_DARK_STYLES[visit.assortment] || {}) : {};
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
 
   return (
     <div onClick={() => router.push(`/planning/${visit.id}`)} className="cursor-pointer">
-      <Card className="hover:shadow-md hover:border-red-200 transition-all">
+      <Card className="hover:shadow-md hover:border-blue-200 transition-all">
         <CardContent className="p-3">
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{visit.storeName}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${typeColor}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${typeColor}`} style={typeDarkStyle}>
                   {visit.visitType}
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${assortColor}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${assortColor}`} style={assortDarkStyle}>
                   {visit.assortment}
                 </span>
               </div>
               <div className="flex items-center gap-1 mt-1">
                 <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                <p className="text-xs text-slate-500 dark:text-slate-400">{visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}</p>
-                {totalVisits !== undefined && totalVisits > 1 && (
-                  <span className="text-xs text-slate-400 ml-1">· {completedVisits || 0}/{totalVisits} visites</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}</p>
+                {totalVisits !== undefined && totalVisits > 0 && (
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 shrink-0 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full">{completedVisits || 0}/{totalVisits} visites</span>
                 )}
               </div>
               {visit.salesRep && (
@@ -376,21 +580,39 @@ function VisitCard({ visit, totalVisits, completedVisits }: { visit: Visit; tota
               {visit.remarks && (
                 <div className="flex items-start gap-1 mt-1">
                   <AlertCircle className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-orange-700 line-clamp-2">{visit.remarks}</p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-2">{visit.remarks}</p>
                 </div>
               )}
               {visit.materialType && (
-                <div className="flex items-center gap-1 mt-1">
-                  <Wrench className="w-3 h-3 text-red-500 dark:text-red-400 shrink-0" />
-                  <span className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full font-medium">
-                    {visit.materialType}
-                  </span>
+                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                  <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
+                  {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
+                    <span key={idx} className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-medium" style={isDark ? { backgroundColor: "rgba(37,99,235,0.2)", color: "rgb(147,197,253)" } : {}}>
+                      {type}
+                    </span>
+                  ))}
                 </div>
               )}
               {visit.status && visit.status !== "pending" && (
                 <StatusBadge status={visit.status as VisitStatus} size="sm" className="mt-1" />
               )}
             </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onUpdateDate?.(visit.id, visit.visitDate.split("T")[0]); }}
+              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+              title="Changer de jour"
+              aria-label="Changer de jour"
+            >
+              <CalendarDays className="w-4 h-4 text-slate-500" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              title="Supprimer la visite"
+              aria-label="Supprimer la visite"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
             <a
               href={wazeUrl}
               target="_blank"
@@ -398,6 +620,7 @@ function VisitCard({ visit, totalVisits, completedVisits }: { visit: Visit; tota
               onClick={(e) => e.stopPropagation()}
               className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-[#00bfff]/10 hover:bg-[#00bfff]/20 transition-colors"
               title="Naviguer avec Waze"
+              aria-label="Naviguer avec Waze"
             >
               <Navigation className="w-4 h-4 text-[#00bfff]" />
             </a>
@@ -405,6 +628,35 @@ function VisitCard({ visit, totalVisits, completedVisits }: { visit: Visit; tota
           </div>
         </CardContent>
       </Card>
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
+                <Trash2 className="w-4 h-4 text-red-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">Supprimer {visit.storeName} ?</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Notes et photos incluses. Irréversible.</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
+                onClick={(e) => { e.stopPropagation(); onDelete?.(visit.id); setConfirmDelete(false); }}
+              >
+                Supprimer
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

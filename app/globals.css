@@ -3,6 +3,12 @@
 
 @theme inline {
   --font-sans: var(--font-geist-sans);
+
+  --color-blue-mars: #0010A4;
+  --color-blue-mars-light: #eef2ff;
+  --color-blue-cpm: #0055FF;
+  --color-red-mars: #C8102E;
+  --color-red-mars-light: #fee2e2;
 }
 
 body {

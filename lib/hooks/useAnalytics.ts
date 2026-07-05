@@ -16,11 +16,12 @@ export interface AnalyticsData {
   visitsBySalesRep: { name: string; count: number }[];
 }
 
-export function useAnalytics() {
+export function useAnalytics(weekId?: string) {
   return useQuery<AnalyticsData>({
-    queryKey: ["analytics"],
+    queryKey: ["analytics", weekId ?? "all"],
     queryFn: async () => {
-      const data = await fetchApi<AnalyticsData>("/api/analytics");
+      const url = weekId ? `/api/analytics?weekId=${encodeURIComponent(weekId)}` : "/api/analytics";
+      const data = await fetchApi<AnalyticsData>(url);
       if (!data) throw new Error("Failed to load analytics");
       return data;
     },

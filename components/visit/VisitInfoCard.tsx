@@ -162,14 +162,14 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
       </Card>
 
       {visit.materials && (
-        <Card className="border-purple-200 bg-purple-50">
+        <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base text-purple-800">
+            <CardTitle className="flex items-center gap-2 text-base text-purple-800 dark:text-purple-300">
               <Wrench className="w-4 h-4" /> Matériel nécessaire
             </CardTitle>
           </CardHeader>
           <CardContent className="py-0 pb-4">
-            <p className="text-sm text-purple-900 whitespace-pre-wrap">{visit.materials}</p>
+            <p className="text-sm text-purple-900 dark:text-purple-200 whitespace-pre-wrap">{visit.materials}</p>
           </CardContent>
         </Card>
       )}

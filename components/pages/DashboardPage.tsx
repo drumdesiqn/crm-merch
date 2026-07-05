@@ -1,65 +1,35 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
-import { showToast } from "@/components/Toast";
+import { formatDateShort, VISIT_TYPE_COLORS, VISIT_TYPE_DARK_STYLES, VisitStatus, parseLocalDate } from "@/lib/utils";
+import { useTheme } from "@/components/ThemeProvider";
 import { StatusBadge } from "@/components/StatusBadge";
-import type { Visit, Week } from "@/types/visit";
+import type { Visit } from "@/types/visit";
 import { Search } from "lucide-react";
 import { DashboardSkeleton } from "@/components/Skeleton";
+import { useWeeks } from "@/lib/hooks/useWeeks";
+import { useVisits } from "@/lib/hooks/useVisits";
+import { useSummary } from "@/lib/hooks/useSummary";
 
 export default function DashboardPage() {
-  const [weeks, setWeeks] = useState<Week[]>([]);
-  const [visits, setVisits] = useState<Visit[]>([]);
-  const [allVisits, setAllVisits] = useState<Visit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Guillaume");
-  const [showPast, setShowPast] = useState(false);
+  const [showPast, setShowPast] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/weeks").then((r) => r.json()).catch((err) => {
-        console.error("Weeks fetch error:", err);
-        showToast("error", "Erreur lors du chargement des semaines");
-        return [];
-      }),
-      fetch("/api/settings").then((r) => r.json()).catch((err) => {
-        console.error("Settings fetch error:", err);
-        showToast("error", "Erreur lors du chargement des paramètres");
-        return {};
-      }),
-      fetch("/api/visits").then((r) => r.json()).catch((err) => {
-        console.error("All visits fetch error:", err);
-        return [];
-      }),
-    ]).then(([weeksData, settingsData, allVisitsData]) => {
-      const allV = Array.isArray(allVisitsData) ? allVisitsData : [];
-      setWeeks(Array.isArray(weeksData) ? weeksData : []);
-      if (settingsData.userName) setUserName(settingsData.userName);
-      setAllVisits(allV);
-      // Derive current week visits from allVisits instead of a second API call
-      if (Array.isArray(weeksData) && weeksData.length > 0) {
-        const currentWeekId = weeksData[0].id;
-        setVisits(allV.filter((v) => (v as unknown as { weekId: string }).weekId === currentWeekId));
-      }
-      setLoading(false);
-    }).catch((err) => {
-      console.error("Dashboard load error:", err);
-      showToast("error", "Erreur lors du chargement des données");
-      setLoading(false);
-    });
-  }, []);
-
+  const { data: weeks = [], isLoading: weeksLoading } = useWeeks();
   const currentWeek = weeks[0];
+  const { data: visitsResult, isLoading: visitsLoading } = useVisits(currentWeek?.id);
+  const visits: Visit[] = visitsResult?.visits ?? [];
+  const { data: summaryStores = {}, isLoading: summaryLoading } = useSummary();
+
+  const loading = weeksLoading || visitsLoading || summaryLoading;
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -128,27 +98,22 @@ export default function DashboardPage() {
   const adHocCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Ad Hoc").length, [filteredVisits]);
   const doneCount = useMemo(() => filteredVisits.filter((v) => v.status === "done").length, [filteredVisits]);
 
-  // Calculate visit count per store (using all visits, not just current week)
+  // Cross-week store stats from summary endpoint
   const storeVisitCount = useMemo(() => {
     const counts = new Map<string, number>();
-    allVisits.forEach((v) => {
-      const key = v.storeId || v.storeName;
-      counts.set(key, (counts.get(key) || 0) + 1);
+    Object.entries(summaryStores).forEach(([storeId, data]) => {
+      counts.set(storeId, data.total);
     });
     return counts;
-  }, [allVisits]);
+  }, [summaryStores]);
 
-  // Calculate completed visit count per store (using all visits, not just current week)
   const storeCompletedCount = useMemo(() => {
     const counts = new Map<string, number>();
-    allVisits.forEach((v) => {
-      if (v.status === "done") {
-        const key = v.storeId || v.storeName;
-        counts.set(key, (counts.get(key) || 0) + 1);
-      }
+    Object.entries(summaryStores).forEach(([storeId, data]) => {
+      counts.set(storeId, data.completed);
     });
     return counts;
-  }, [allVisits]);
+  }, [summaryStores]);
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -158,21 +123,15 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Bonjour, {userName} 👋</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            {today.toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
-          </p>
-        </div>
         {currentWeek && (
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-64 ml-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Rechercher un magasin..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars focus:border-transparent"
               aria-label="Rechercher un magasin"
             />
             {searchQuery && (
@@ -207,18 +166,18 @@ export default function DashboardPage() {
       {currentWeek && (
         <>
           {/* Current week banner */}
-          <Card className="bg-red-600 text-white border-0">
+          <Card className="bg-gradient-to-r from-blue-mars to-blue-cpm dark:from-blue-800 dark:to-blue-600 text-white border-0">
             <CardContent className="py-4 flex items-center justify-between">
               <div>
-                <p className="text-red-100 text-xs font-medium uppercase tracking-wide">Semaine en cours</p>
+                <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Semaine en cours</p>
                 <p className="text-xl font-bold">{currentWeek.label}</p>
-                <p className="text-red-100 text-sm">{currentWeek._count.visits} visites</p>
+                <p className="text-white/80 text-sm">{currentWeek._count.visits} visites</p>
               </div>
               <div className="flex gap-2">
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
                   aria-label="Filtrer par type"
                 >
                   <option value="all">Tous types</option>
@@ -228,7 +187,7 @@ export default function DashboardPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
                   aria-label="Filtrer par statut"
                 >
                   <option value="all">Tous statuts</option>
@@ -263,17 +222,25 @@ export default function DashboardPage() {
               <CardContent className="py-4 text-center">
                 <p className="text-3xl font-bold text-green-600 dark:text-green-400">{doneCount}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Effectuées</p>
+                {filteredVisits.length > 0 && (
+                  <div className="mt-2 w-full bg-green-100 dark:bg-green-900/40 rounded-full h-1.5">
+                    <div
+                      className="bg-green-500 h-1.5 rounded-full transition-all"
+                      style={{ width: `${Math.round((doneCount / filteredVisits.length) * 100)}%` }}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 text-center">Stats pour {currentWeek.label}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 text-center">Stats pour {currentWeek.label} · {Math.round((doneCount / (filteredVisits.length || 1)) * 100)}% complété</p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Today's visits */}
             <Card className="h-fit">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Calendar className="w-4 h-4 text-red-600" />
+                  <Calendar className="w-4 h-4 text-blue-mars dark:text-blue-400" />
                   Aujourd&apos;hui
                   {todayVisits.length > 0 && (
                     <Badge variant="blue" className="ml-auto">{todayVisits.length}</Badge>
@@ -314,7 +281,7 @@ export default function DashboardPage() {
                     <VisitRow key={v.id} visit={v} showDate totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {upcomingVisits.length > 5 && (
-                    <Link href="/planning" className="block text-center text-sm text-red-600 hover:underline pt-1">
+                    <Link href="/planning" className="block text-center text-sm text-blue-mars dark:text-blue-400 hover:underline pt-1">
                       Voir toutes les visites →
                     </Link>
                   )}
@@ -333,7 +300,8 @@ export default function DashboardPage() {
                 aria-controls="past-visits"
               >
                 <ChevronRight className={`w-4 h-4 transition-transform ${showPast ? "rotate-90" : ""}`} />
-                Visites effectuées ({pastVisits.length})
+                Visites passées
+                <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-normal">{pastVisits.length}</span>
               </button>
               {showPast && (
                 <div id="past-visits" className="mt-2 space-y-2">
@@ -341,7 +309,7 @@ export default function DashboardPage() {
                     <VisitRow key={v.id} visit={v} showDate totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {pastVisits.length > 10 && (
-                    <Link href="/planning" className="block text-center text-sm text-red-600 hover:underline pt-1">
+                    <Link href="/planning" className="block text-center text-sm text-blue-mars dark:text-blue-400 hover:underline pt-1">
                       Voir toutes →
                     </Link>
                   )}
@@ -357,10 +325,13 @@ export default function DashboardPage() {
   );
 }
 
-function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number }) {
+function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number; }) {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
-  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeCity}`)}&navigate=yes`;
+  const darkStyle = isDark ? (VISIT_TYPE_DARK_STYLES[visit.visitType] || {}) : {};
+  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
   return (
     <div 
       onClick={() => router.push(`/planning/${visit.id}`)} 
@@ -373,7 +344,7 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{visit.storeName}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${colorClass}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${colorClass}`} style={darkStyle}>
               {visit.visitType}
             </span>
           </div>
@@ -388,14 +359,16 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
             )}
           </div>
           {visit.remarks && (
-            <p className="text-xs text-orange-600 mt-1 line-clamp-1">⚠ {visit.remarks}</p>
+            <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 line-clamp-1">⚠ {visit.remarks}</p>
           )}
           {visit.materialType && (
-            <div className="flex items-center gap-1 mt-1">
-              <Wrench className="w-3 h-3 text-red-500 dark:text-red-400 shrink-0" />
-              <span className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full font-medium">
-                {visit.materialType}
-              </span>
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
+              {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
+                <span key={idx} className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-medium border border-blue-200" style={isDark ? { backgroundColor: "rgba(37,99,235,0.2)", color: "rgb(147,197,253)", borderColor: "rgba(37,99,235,0.4)" } : {}}>
+                  {type}
+                </span>
+              ))}
             </div>
           )}
         </div>

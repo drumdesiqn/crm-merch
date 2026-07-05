@@ -29,12 +29,6 @@ export const UpdateStatusSchema = z.object({
   status: VisitStatusSchema,
 });
 
-// Schema for updating visit material type
-export const UpdateMaterialSchema = z.object({
-  id: z.string().min(1, "ID de visite requis"),
-  materialType: z.array(z.string().max(100)).default([]),
-});
-
 // Schema for bulk visit order update
 export const UpdateOrderSchema = z.object({
   weekId: z.string().min(1, "ID de semaine requis"),

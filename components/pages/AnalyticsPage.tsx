@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, BarChart3, Camera, MapPin, Store, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
+import { useWeeks } from "@/lib/hooks/useWeeks";
 import {
   ResponsiveContainer,
   LineChart,
@@ -40,7 +42,9 @@ const BAR_CITY_COLOR = "#0010A4";
 const BAR_MATERIAL_COLOR = "#0055FF";
 
 export default function AnalyticsPage() {
-  const { data, isLoading, isError } = useAnalytics();
+  const [selectedWeek, setSelectedWeek] = useState<string>("");
+  const { data: weeks = [] } = useWeeks();
+  const { data, isLoading, isError } = useAnalytics(selectedWeek || undefined);
 
   if (isLoading) {
     return (
@@ -81,16 +85,28 @@ export default function AnalyticsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/">
-          <Button variant="outline" size="icon" aria-label="Retour">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Analytics</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Vue d&apos;ensemble de l&apos;activité</p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Link href="/">
+            <Button variant="outline" size="icon" aria-label="Retour">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Analytics</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Vue d&apos;ensemble de l&apos;activité</p>
+          </div>
         </div>
+        <select
+          value={selectedWeek}
+          onChange={(e) => setSelectedWeek(e.target.value)}
+          className="text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+        >
+          <option value="">Toutes les semaines</option>
+          {weeks.map((w) => (
+            <option key={w.id} value={w.id}>{w.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Summary cards */}
