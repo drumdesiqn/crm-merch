@@ -10,7 +10,6 @@ import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfNoteItem, pdfFooter, pdfB
 import { showToast } from "@/components/Toast";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useExportVisits } from "@/lib/hooks/useExportVisits";
-import type { ExportVisit } from "@/types/visit";
 
 export default function ExportPage() {
   const [selectedWeek, setSelectedWeek] = useState<string>("");
@@ -219,7 +218,7 @@ export default function ExportPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+            <Calendar className="w-4 h-4 text-blue-mars" />
             1. Choisir une semaine
           </CardTitle>
         </CardHeader>
@@ -252,7 +251,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Store className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+              <Store className="w-4 h-4 text-blue-mars" />
               2. Choisir une visite
             </CardTitle>
           </CardHeader>
@@ -299,7 +298,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+              <FileText className="w-4 h-4 text-blue-mars" />
               3. Générer le PDF
             </CardTitle>
           </CardHeader>
@@ -333,7 +332,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileSpreadsheet className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+              <FileSpreadsheet className="w-4 h-4 text-blue-mars" />
               Exporter toutes les visites
             </CardTitle>
           </CardHeader>

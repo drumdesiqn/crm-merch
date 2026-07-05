@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { fetchApi } from "@/lib/client-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMailLogs } from "@/lib/hooks/useMailLogs";
-import type { MailLog, MailLogModification } from "@/lib/hooks/useMailLogs";
+import type { MailLogModification } from "@/lib/hooks/useMailLogs";
 
-interface Modification extends MailLogModification {}
+type Modification = MailLogModification;
 
 interface AnalysisResult {
   mailLogId: string;
@@ -120,7 +120,7 @@ export default function MailsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-blue-mars-light dark:bg-blue-mars/20 flex items-center justify-center">
-            <Mail className="w-5 h-5 text-blue-mars dark:text-blue-400" />
+            <Mail className="w-5 h-5 text-blue-mars" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Traitement des mails</h1>

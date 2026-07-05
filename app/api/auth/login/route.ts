@@ -3,6 +3,7 @@ import { verifyPassword } from "@/lib/auth-simple";
 import { SignJWT } from "jose";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/api-utils";
+import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 export async function POST(req: NextRequest) {
   try {
     // Rate limiting: 5 attempts per minute per IP
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const ip = getClientIp(req);
     const rateLimit = checkRateLimit(`login:${ip}`, 5, 60 * 1000);
     
     if (!rateLimit.allowed) {

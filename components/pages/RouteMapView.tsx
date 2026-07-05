@@ -19,7 +19,7 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
-import { Save, CheckCircle, Navigation, Route, Loader2, MapPin } from "lucide-react";
+import { Save, CheckCircle, Navigation, Route, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Visit } from "@/types/visit";
 import { fetchApi } from "@/lib/client-api";
@@ -341,7 +341,7 @@ export default function RouteMapView({
         <div className="lg:w-80 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Navigation className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+              <Navigation className="w-4 h-4 text-blue-mars" />
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 Ton itinéraire du jour
                 <span className="ml-1.5 text-xs font-normal text-slate-400 dark:text-slate-500">({orderedVisits.length})</span>
@@ -374,7 +374,7 @@ export default function RouteMapView({
             {optimizing ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Route className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+              <Route className="w-4 h-4 text-blue-mars" />
             )}
             <span>Organiser ma journée</span>
           </Button>
@@ -407,7 +407,7 @@ export default function RouteMapView({
               🏠
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-blue-mars dark:text-blue-400">Départ domicile</p>
+              <p className="text-xs font-semibold text-blue-mars dark:text-blue-cpm">Départ domicile</p>
               <p className="text-xs text-blue-cpm dark:text-blue-cpm truncate">{homeLabel.replace("Domicile — ", "")}</p>
             </div>
           </div>

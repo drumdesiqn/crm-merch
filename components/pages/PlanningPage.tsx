@@ -23,6 +23,8 @@ import { showToast } from "@/components/Toast";
 import FrenchDatePicker from "@/components/FrenchDatePicker";
 import type { Visit, Week } from "@/types/visit";
 
+const EMPTY_VISITS: Visit[] = [];
+
 const RouteMapView = dynamic(() => import("@/components/pages/RouteMapView"), { ssr: false, loading: () => (
   <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" /></div>
 ) });
@@ -49,7 +51,7 @@ export default function PlanningPage() {
   const { data: weeks = [] } = useWeeks();
   const effectiveWeekId = selectedWeekId || (weeks[0]?.id ?? "");
   const { data: visitsResult } = useVisits(effectiveWeekId);
-  const visits: Visit[] = visitsResult?.visits ?? [];
+  const visits: Visit[] = visitsResult?.visits ?? EMPTY_VISITS;
   const allVisitsTruncated = visitsResult?.truncated ?? false;
   const { data: summaryStores = {} } = useSummary();
   const { data: stores = [] } = useStores();

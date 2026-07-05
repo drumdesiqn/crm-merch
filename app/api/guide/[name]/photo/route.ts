@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { put, del } from "@vercel/blob";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = getClientIp(req);
   const rateLimit = checkRateLimit(`guide-photo:${ip}`, 20, 60 * 60 * 1000);
   if (!rateLimit.allowed) {
     return NextResponse.json(

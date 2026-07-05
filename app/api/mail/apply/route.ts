@@ -3,13 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { ModificationIdsSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
 
 const ALLOWED_FIELDS = ["remarks", "salesRep", "visitType", "materials", "visitDate", "visitFrequence", "status", "materialType"];
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = getClientIp(req);
   const rateLimit = checkRateLimit(`mail-apply:${ip}`, 30, 60 * 1000);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: "Trop de requêtes. Réessaie dans 1 minute." }, { status: 429 });

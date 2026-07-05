@@ -4,13 +4,14 @@ import { verifyPassword, hashPassword } from "@/lib/auth-simple";
 import { jwtVerify } from "jose";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/api-utils";
+import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = "force-dynamic";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function PATCH(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const ip = getClientIp(req);
   const rateLimit = checkRateLimit(`password-change:${ip}`, 5, 60 * 60 * 1000);
   if (!rateLimit.allowed) {
     return NextResponse.json(

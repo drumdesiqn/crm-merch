@@ -5,6 +5,7 @@ import { ImportSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { geocodeAddressServer } from "@/lib/geocode-server";
+import { getClientIp } from "@/lib/request-ip";
 import { del } from "@vercel/blob";
 import { waitUntil } from "@vercel/functions";
 
@@ -12,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const ip = getClientIp(req);
     const rateLimit = checkRateLimit(`import:${ip}`, 10, 60 * 60 * 1000);
     if (!rateLimit.allowed) {
       return NextResponse.json(

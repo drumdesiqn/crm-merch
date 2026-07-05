@@ -3,6 +3,16 @@ const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
 const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
 // Only precache the two most-used pages; others are cached on first visit (stale-while-revalidate)
 const PRECACHE_URLS = ["/", "/planning"];
+const CACHEABLE_API_GET_PREFIXES = [
+  "/api/weeks",
+  "/api/visits",
+  "/api/stores",
+  "/api/visits/summary",
+];
+
+function isCacheableApiGet(pathname) {
+  return CACHEABLE_API_GET_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
 
 // Install - precache critical pages only
 self.addEventListener("install", (event) => {
@@ -39,20 +49,27 @@ self.addEventListener("fetch", (event) => {
   // API calls - network first with offline queue for mutations
   if (url.pathname.startsWith("/api/")) {
     if (event.request.method !== "GET") {
-      // Try network first, queue for retry if offline
+      // Never queue critical mutations automatically (imports, deletes, uploads, etc.).
       event.respondWith(
         fetch(event.request)
-          .then((response) => {
-            // Success - return real response
-            return response;
-          })
-          .catch(async () => {
-            // Offline - queue for retry
-            await queueForRetry(event.request);
-            return new Response(JSON.stringify({ queued: true, offline: true }), { 
+          .catch(() => {
+            return new Response(JSON.stringify({ offline: true, error: "Action indisponible hors ligne" }), {
+              status: 503,
               headers: { "Content-Type": "application/json" } 
             });
           })
+      );
+      return;
+    }
+
+    if (!isCacheableApiGet(url.pathname)) {
+      event.respondWith(
+        fetch(event.request).catch(() =>
+          new Response(JSON.stringify({ offline: true, error: "Données non disponibles hors ligne" }), {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          })
+        )
       );
       return;
     }
@@ -95,26 +112,6 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
-// Queue pending actions for retry
-async function queueForRetry(request) {
-  const body = await request.clone().text();
-  const pending = await getPendingActions();
-  pending.push({
-    url: request.url,
-    method: request.method,
-    body,
-    headers: Array.from(request.headers),
-    timestamp: Date.now()
-  });
-  await savePendingActions(pending);
-  
-  // Notify clients
-  const clients = await self.clients.matchAll();
-  clients.forEach((client) => {
-    client.postMessage({ type: "PENDING_ACTIONS_UPDATED", count: pending.length });
-  });
-}
-
 // Sync pending actions when back online
 async function syncPendingActions() {
   const pending = await getPendingActions();
@@ -128,7 +125,7 @@ async function syncPendingActions() {
         body: action.body,
         headers
       });
-    } catch (e) {
+    } catch {
       remaining.push(action);
     }
   }

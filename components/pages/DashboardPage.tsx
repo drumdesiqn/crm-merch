@@ -17,6 +17,8 @@ import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useVisits } from "@/lib/hooks/useVisits";
 import { useSummary } from "@/lib/hooks/useSummary";
 
+const EMPTY_VISITS: Visit[] = [];
+
 export default function DashboardPage() {
   const [showPast, setShowPast] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,7 +28,7 @@ export default function DashboardPage() {
   const { data: weeks = [], isLoading: weeksLoading } = useWeeks();
   const currentWeek = weeks[0];
   const { data: visitsResult, isLoading: visitsLoading } = useVisits(currentWeek?.id);
-  const visits: Visit[] = visitsResult?.visits ?? [];
+  const visits: Visit[] = visitsResult?.visits ?? EMPTY_VISITS;
   const { data: summaryStores = {}, isLoading: summaryLoading } = useSummary();
 
   const loading = weeksLoading || visitsLoading || summaryLoading;

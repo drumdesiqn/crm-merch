@@ -27,8 +27,6 @@ export default function FrenchDatePicker({ value, onChange }: Props) {
   const initial = value ? parseYMD(value) : new Date();
   const [view, setView] = useState({ year: initial.getFullYear(), month: initial.getMonth() });
 
-  const selected = value ? parseYMD(value) : null;
-
   const days = useMemo(() => {
     const first = new Date(view.year, view.month, 1);
     // Monday-based: 0=Mon … 6=Sun

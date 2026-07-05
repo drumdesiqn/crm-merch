@@ -4,15 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { PhotoIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
 
-function getIp(req: NextRequest) {
-  return req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-}
-
 function photoRateLimit(req: NextRequest) {
-  const ip = getIp(req);
+  const ip = getClientIp(req);
   const rateLimit = checkRateLimit(`visit-photos:${ip}`, 30, 60 * 1000);
   if (!rateLimit.allowed) {
     return NextResponse.json(

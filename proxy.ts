@@ -10,15 +10,13 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 const publicPaths = ["/login", "/api/auth/login"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public paths
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
-  // Allow static files and Next.js internals
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/static") ||
@@ -27,7 +25,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check authentication for API routes
   if (pathname.startsWith("/api")) {
     const token = request.cookies.get("auth-token")?.value;
 
@@ -49,11 +46,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Check authentication for pages
   const token = request.cookies.get("auth-token")?.value;
 
   if (!token) {
-    // Don't redirect if already on login page
     if (pathname === "/login") {
       return NextResponse.next();
     }
@@ -65,7 +60,6 @@ export async function middleware(request: NextRequest) {
 
   try {
     await jwtVerify(token, JWT_SECRET);
-    // Redirect to home if authenticated user tries to access login
     if (pathname === "/login") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
@@ -73,7 +67,6 @@ export async function middleware(request: NextRequest) {
     }
     return NextResponse.next();
   } catch {
-    // Invalid token - redirect to login
     if (pathname === "/login") {
       return NextResponse.next();
     }
@@ -85,13 +78,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -87,7 +87,12 @@ describe('parseExcelBuffer', () => {
   });
 
   it('handles missing optional fields gracefully', () => {
-    const { Merchandiser, Remarks, Materials, materialType, 'Visit Frequence': _, ...minimal } = BASE_ROW;
+    const minimal = { ...BASE_ROW } as Record<string, unknown>;
+    delete minimal.Merchandiser;
+    delete minimal.Remarks;
+    delete minimal.Materials;
+    delete minimal.materialType;
+    delete minimal["Visit Frequence"];
     const buf = makeBuffer([{ ...minimal, 'Day Period 2': '2026-06-23' }]);
     const result = parseExcelBuffer(buf);
     const v = result.visits[0];
@@ -125,7 +130,8 @@ describe('parseExcelBuffer', () => {
   });
 
   it('defaults visitType to Maintenance when missing', () => {
-    const { visit_type, ...row } = BASE_ROW as Record<string, unknown>;
+    const row = { ...(BASE_ROW as Record<string, unknown>) };
+    delete row.visit_type;
     const buf = makeBuffer([{ ...row, 'Day Period 2': '2026-06-23' }]);
     const result = parseExcelBuffer(buf);
     expect(result.visits[0].visitType).toBe('Maintenance');

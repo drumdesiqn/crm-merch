@@ -4,12 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/api-utils";
 import { ChatSchema, validate } from "@/lib/validation";
+import { getClientIp } from "@/lib/request-ip";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const ip = getClientIp(req);
     const rateLimit = checkRateLimit(`chat:${ip}`, 20, 60 * 1000);
     if (!rateLimit.allowed) {
       return NextResponse.json(
