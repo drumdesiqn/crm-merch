@@ -4,6 +4,8 @@ import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { CreateStoreSchema, PatchStoreSchema, validate } from "@/lib/validation";
 import { getClientIp } from "@/lib/request-ip";
+import { geocodeAddressServer } from "@/lib/geocode-server";
+import { waitUntil } from "@vercel/functions";
 
 export const dynamic = 'force-dynamic';
 
@@ -171,6 +173,33 @@ export async function PATCH(req: NextRequest) {
         where: { storeId, visitDate: { gte: new Date() } },
         data: { salesRep: data.salesRep },
       });
+    }
+
+    // Re-geocode if address changed
+    const addressChanged = data.storeAddress || data.storeZipcode || data.storeCity;
+    if (addressChanged) {
+      // Get the full address from the updated store or visits
+      const refVisit = await prisma.visit.findFirst({ where: { storeId }, select: { storeAddress: true, storeZipcode: true, storeCity: true } });
+      if (refVisit) {
+        const addr = (data.storeAddress || refVisit.storeAddress) as string;
+        const zip = (data.storeZipcode || refVisit.storeZipcode) as string;
+        const city = (data.storeCity || refVisit.storeCity) as string;
+        waitUntil(
+          (async () => {
+            try {
+              const coords = await geocodeAddressServer(addr, zip, city);
+              if (coords) {
+                await prisma.visit.updateMany({
+                  where: { storeId },
+                  data: { latitude: coords.lat, longitude: coords.lng },
+                });
+              }
+            } catch {
+              // silently ignore geocoding failures
+            }
+          })()
+        );
+      }
     }
 
     return NextResponse.json(updated || { storeId, ...data });

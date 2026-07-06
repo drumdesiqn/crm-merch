@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { PatchVisitSchema, BulkReorderSchema, CreateVisitSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 import { getISOWeek } from "@/lib/utils";
+import { geocodeAddressServer } from "@/lib/geocode-server";
+import { waitUntil } from "@vercel/functions";
 
 export const dynamic = 'force-dynamic';
 
@@ -147,6 +149,30 @@ export async function PATCH(req: NextRequest) {
 
       return visit;
     });
+
+    // Re-geocode if address changed
+    const addressChanged = data.storeAddress || data.storeZipcode || data.storeCity;
+    if (addressChanged && result.storeId) {
+      const addr = result.storeAddress;
+      const zip = result.storeZipcode;
+      const city = result.storeCity;
+      const storeId = result.storeId;
+      waitUntil(
+        (async () => {
+          try {
+            const coords = await geocodeAddressServer(addr, zip, city);
+            if (coords) {
+              await prisma.visit.updateMany({
+                where: { storeId },
+                data: { latitude: coords.lat, longitude: coords.lng },
+              });
+            }
+          } catch {
+            // silently ignore geocoding failures
+          }
+        })()
+      );
+    }
 
     return NextResponse.json(result);
   } catch (error) {
