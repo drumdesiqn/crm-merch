@@ -36,7 +36,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
         const hTypeColor = VISIT_TYPE_COLORS[v.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
         return (
           <Link key={v.id} href={`/planning/${v.id}`}>
-            <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
+            <Card className="hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer">
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">

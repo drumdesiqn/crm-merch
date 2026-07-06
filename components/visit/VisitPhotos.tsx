@@ -45,7 +45,7 @@ export default function VisitPhotos({
             <button
               onClick={() => photoRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-blue-cpm hover:bg-blue-mars-light transition-colors text-sm text-slate-500 hover:text-blue-mars disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-blue-cpm dark:hover:border-blue-cpm hover:bg-blue-mars-light dark:hover:bg-blue-950/40 transition-colors text-sm text-slate-500 dark:text-slate-400 hover:text-blue-mars dark:hover:text-blue-400 disabled:opacity-50"
               aria-label="Prendre une photo"
             >
               {uploadingPhoto ? (
@@ -58,7 +58,7 @@ export default function VisitPhotos({
             <button
               onClick={() => galleryRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 hover:border-blue-cpm hover:bg-blue-mars-light transition-colors text-sm text-slate-500 hover:text-blue-mars disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-blue-cpm dark:hover:border-blue-cpm hover:bg-blue-mars-light dark:hover:bg-blue-950/40 transition-colors text-sm text-slate-500 dark:text-slate-400 hover:text-blue-mars dark:hover:text-blue-400 disabled:opacity-50"
               aria-label="Choisir depuis la galerie"
             >
               {uploadingPhoto ? (
@@ -123,8 +123,8 @@ export default function VisitPhotos({
               return (
                 <div
                   key={photo.id}
-                  className={`relative group rounded-lg overflow-hidden bg-slate-100 border-2 transition-all ${
-                    isSelected ? "border-blue-mars ring-2 ring-blue-mars/20" : "border-slate-200"
+                  className={`relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 transition-all ${
+                    isSelected ? "border-blue-mars ring-2 ring-blue-mars/20" : "border-slate-200 dark:border-slate-700"
                   }`}
                 >
                   {/* Selection checkbox */}

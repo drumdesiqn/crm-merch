@@ -369,8 +369,8 @@ export default function StoreHistoryPage() {
 
       {/* Edit store modal */}
       {showEditStore && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowEditStore(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Modifier {storeData?.storeName}</h2>
             <div className="space-y-3">
               <div>
