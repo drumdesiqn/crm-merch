@@ -132,49 +132,61 @@ export async function POST(req: NextRequest) {
         storeId: { in: storeIds },
       },
       orderBy: { visitDate: "desc" },
-      select: { storeId: true, materialType: true },
+      select: { storeId: true, materialType: true, latitude: true, longitude: true },
     });
 
     const latestMaterialTypes: Record<string, string | null> = {};
+    const latestCoords: Record<string, { lat: number; lng: number } | null> = {};
     latestVisits.forEach((v) => {
       if (!latestMaterialTypes[v.storeId] && v.materialType) {
         latestMaterialTypes[v.storeId] = v.materialType;
       }
+      if (!latestCoords[v.storeId] && v.latitude && v.longitude) {
+        latestCoords[v.storeId] = { lat: v.latitude, lng: v.longitude };
+      }
     });
 
-    // Pre-load salesRep from Store table to override Excel value (store-level source of truth)
-    const storeSalesRepMap: Record<string, string | null> = {};
+    // Pre-load Store table data: salesRep + corrected addresses (source of truth over Excel)
+    const storeDataMap: Record<string, { salesRep: string | null; storeAddress: string; storeZipcode: string; storeCity: string }> = {};
     try {
       const storeRecords = await prisma.store.findMany({
         where: { storeId: { in: storeIds } },
-        select: { storeId: true, salesRep: true },
+        select: { storeId: true, salesRep: true, storeAddress: true, storeZipcode: true, storeCity: true },
       });
-      storeRecords.forEach((s: { storeId: string; salesRep: string | null }) => { storeSalesRepMap[s.storeId] = s.salesRep ?? null; });
+      storeRecords.forEach((s) => { storeDataMap[s.storeId] = { salesRep: s.salesRep ?? null, storeAddress: s.storeAddress, storeZipcode: s.storeZipcode, storeCity: s.storeCity }; });
     } catch {
       // Store table may not exist yet — gracefully ignore
     }
 
     await prisma.visit.createMany({
-      data: visitsToCreate.map((v) => ({
-        weekId: week!.id,
-        assortment: v.assortment,
-        storeId: v.storeId,
-        storeName: v.storeName,
-        storeAddress: v.storeAddress,
-        storeZipcode: v.storeZipcode,
-        storeCity: v.storeCity,
-        visitType: v.visitType,
-        visitFrequence: v.visitFrequence,
-        visitDate: v.visitDate,
-        merchandiser: v.merchandiser,
-        remarks: v.remarks,
-        salesRep: storeSalesRepMap[v.storeId] ?? v.salesRep ?? null,
-        materials: v.materials,
-        materialType: v.materialType || latestMaterialTypes[v.storeId] || null,
-      })),
+      data: visitsToCreate.map((v) => {
+        const storeData = storeDataMap[v.storeId];
+        const coords = latestCoords[v.storeId];
+        return {
+          weekId: week!.id,
+          assortment: v.assortment,
+          storeId: v.storeId,
+          storeName: v.storeName,
+          // Use corrected address from Store table if available, otherwise fall back to Excel
+          storeAddress: storeData?.storeAddress || v.storeAddress,
+          storeZipcode: storeData?.storeZipcode || v.storeZipcode,
+          storeCity: storeData?.storeCity || v.storeCity,
+          visitType: v.visitType,
+          visitFrequence: v.visitFrequence,
+          visitDate: v.visitDate,
+          merchandiser: v.merchandiser,
+          remarks: v.remarks,
+          salesRep: storeData?.salesRep ?? v.salesRep ?? null,
+          materials: v.materials,
+          materialType: v.materialType || latestMaterialTypes[v.storeId] || null,
+          // Carry over existing geocoding
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+        };
+      }),
     });
 
-    // K: Upsert Store table — keep name/address/city in sync with Excel (best-effort)
+    // Upsert Store table — only create new stores from Excel, do NOT overwrite addresses on existing stores
     const uniqueVisits = Array.from(new Map(visitsToCreate.map((v) => [v.storeId, v])).values());
     try {
       await Promise.all(
@@ -182,10 +194,7 @@ export async function POST(req: NextRequest) {
           prisma.store.upsert({
             where: { storeId: v.storeId },
             update: {
-              storeName: v.storeName,
-              storeAddress: v.storeAddress,
-              storeZipcode: v.storeZipcode,
-              storeCity: v.storeCity,
+              // Only update non-address fields; address corrections are preserved
               ...(v.assortment ? { assortment: v.assortment } : {}),
               ...(v.visitType ? { visitType: v.visitType } : {}),
               ...(v.visitFrequence ? { visitFrequence: v.visitFrequence } : {}),
