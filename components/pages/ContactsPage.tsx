@@ -279,25 +279,25 @@ export default function ContactsPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-mars to-blue-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
-                      {getInitials(c.name)}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{c.name}</p>
-                        <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${c.teamColor}`}>
-                          {c.teamName}
-                        </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    {/* Top row: avatar + info */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-mars to-blue-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
+                        {getInitials(c.name)}
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{c.email}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{c.name}</p>
+                          <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${c.teamColor}`}>
+                            {c.teamName}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{c.email}</p>
+                      </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Actions row */}
+                    <div className="flex items-center gap-1.5 pl-[52px] sm:pl-0 shrink-0">
                       <a
                         href={`tel:${c.phone.replace(/\s/g, "")}`}
                         className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
@@ -326,7 +326,7 @@ export default function ContactsPage() {
                       </a>
                       <button
                         onClick={() => startEdit(c)}
-                        className="flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-blue-mars hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                        className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-blue-mars hover:bg-blue-50 dark:hover:bg-blue-950/30"
                         title="Modifier ce contact"
                         aria-label={`Modifier ${c.name}`}
                       >
@@ -353,7 +353,7 @@ export default function ContactsPage() {
                       ) : (
                         <button
                           onClick={() => setConfirmDeleteId(c.id)}
-                          className="flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                          className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
                           title="Supprimer ce contact"
                           aria-label={`Supprimer ${c.name}`}
                         >

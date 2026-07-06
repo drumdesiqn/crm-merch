@@ -59,7 +59,7 @@ export default function RootLayout({
             <ToastContainer />
             <ChatWidget />
             <Navbar />
-            <main id="main-content" className="pt-[calc(3.5rem+env(safe-area-inset-top))] md:pt-14 pb-20 md:pb-4 min-h-screen">
+            <main id="main-content" className="pt-[env(safe-area-inset-top)] md:pt-14 pb-20 md:pb-4 min-h-screen">
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
