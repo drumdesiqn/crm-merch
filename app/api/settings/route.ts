@@ -7,12 +7,15 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });
+    const settings = await prisma.settings.findUnique({
+      where: { id: "singleton" },
+      select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true },
+    });
+    const hasEnvApiKey = Boolean(process.env.OPENAI_API_KEY);
     if (!settings) {
-      return NextResponse.json({ id: "singleton", openaiKey: null, userName: null, userZone: null, userEmail: null, hasApiKey: false });
+      return NextResponse.json({ id: "singleton", userName: null, userZone: null, userEmail: null, hasApiKey: hasEnvApiKey });
     }
-    const { openaiKey, ...safeSettings } = settings;
-    return NextResponse.json({ ...safeSettings, hasApiKey: !!openaiKey });
+    return NextResponse.json({ ...settings, hasApiKey: hasEnvApiKey });
   } catch (error) {
     return errorResponse(error, "GET /api/settings");
   }
@@ -28,21 +31,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
     
-    const { userName, userZone, userEmail, homeAddress, openaiKey } = validation.data;
+    const { userName, userZone, userEmail, homeAddress } = validation.data;
     const allowed: Record<string, string | undefined> = {};
     if (userName !== undefined) allowed.userName = userName;
     if (userZone !== undefined) allowed.userZone = userZone;
     if (userEmail !== undefined) allowed.userEmail = userEmail;
     if (homeAddress !== undefined) allowed.homeAddress = homeAddress;
-    if (openaiKey !== undefined && openaiKey.trim()) allowed.openaiKey = openaiKey.trim();
 
     const settings = await prisma.settings.upsert({
       where: { id: "singleton" },
       create: { id: "singleton", ...allowed },
       update: allowed,
+      select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true },
     });
-    const { openaiKey: savedKey, ...safeSettings } = settings;
-    return NextResponse.json({ ...safeSettings, hasApiKey: !!savedKey });
+    return NextResponse.json({ ...settings, hasApiKey: Boolean(process.env.OPENAI_API_KEY) });
   } catch (error) {
     return errorResponse(error, "POST /api/settings");
   }

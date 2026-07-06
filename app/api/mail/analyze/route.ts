@@ -26,14 +26,10 @@ export async function POST(req: NextRequest) {
     }
     const { content } = validation.data;
 
-    const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });
-    const apiKey = process.env.OPENAI_API_KEY || settings?.openaiKey;
-    if (!process.env.OPENAI_API_KEY && settings?.openaiKey) {
-      console.warn("[mail/analyze] Using OpenAI key from DB. Consider setting OPENAI_API_KEY env var instead.");
-    }
+    const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: "OpenAI API key not configured. Go to Settings." }, { status: 400 });
+      return NextResponse.json({ error: "OPENAI_API_KEY non configurée sur le serveur." }, { status: 400 });
     }
 
     const currentWeek = await prisma.week.findFirst({

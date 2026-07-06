@@ -22,6 +22,10 @@ const applied = await sql.query(`SELECT "name" FROM "_MigrationLog"`);
 const appliedRows = Array.isArray(applied) ? applied : (applied.rows ?? []);
 const appliedSet = new Set(appliedRows.map((r) => r.name));
 console.log(`Already applied: ${appliedSet.size} migrations`);
+const strictMode = process.env.MIGRATIONS_STRICT !== "false";
+if (!strictMode) {
+  console.warn("⚠ MIGRATIONS_STRICT=false: statement failures will not abort the full script.");
+}
 
 const migrations = [
   {
@@ -308,6 +312,9 @@ for (const migration of migrations) {
     } catch (err) {
       console.warn(`  ⚠ Statement failed: ${err.message}`);
       success = false;
+      if (strictMode) {
+        throw new Error(`Migration failed in strict mode (${migration.name}): ${err.message}`);
+      }
     }
   }
   if (success) {

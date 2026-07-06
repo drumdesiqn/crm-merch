@@ -82,7 +82,6 @@ export const SettingsSchema = z.object({
   userZone: z.string().max(100).optional(),
   userEmail: z.string().email("Email invalide").max(100).optional(),
   homeAddress: z.string().max(200).optional(),
-  openaiKey: z.string().max(200).optional(),
 });
 
 // Schema for week ID (DELETE /api/weeks)

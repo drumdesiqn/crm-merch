@@ -20,8 +20,6 @@ export default function SettingsPage() {
   const { data: glossary = [] } = useGlossary();
   const { data: weeks = [] } = useWeeks();
 
-  const [openaiKey, setOpenaiKey] = useState("");
-  const [showKey, setShowKey] = useState(false);
   const [userName, setUserName] = useState("");
   const [userZone, setUserZone] = useState("");
   const [userEmail, setUserEmail] = useState("");
@@ -61,7 +59,6 @@ export default function SettingsPage() {
     setSavingSettings(true);
     setErrorMsg(null);
     const body: Record<string, string> = { userName, userZone, userEmail, homeAddress };
-    if (openaiKey) body.openaiKey = openaiKey;
     const data = await fetchApi<{ hasApiKey: boolean }>("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -71,7 +68,6 @@ export default function SettingsPage() {
     if (data) {
       setSettingsSaved(true);
       setHasApiKey(data.hasApiKey);
-      if (openaiKey) setOpenaiKey("");
       setTimeout(() => setSettingsSaved(false), 3000);
       queryClient.invalidateQueries({ queryKey: ["settings"] });
     } else {
@@ -280,28 +276,15 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
-              Clé API OpenAI
+              IA (OpenAI)
               {hasApiKey && (
                 <span className="ml-2 text-green-600 font-normal">
                   <CheckCircle2 className="w-3 h-3 inline mr-0.5" />Configurée
                 </span>
               )}
             </label>
-            <div className="relative">
-              <input
-                value={openaiKey}
-                onChange={(e) => setOpenaiKey(e.target.value)}
-                type={showKey ? "text" : "password"}
-                placeholder={hasApiKey ? "Laisser vide pour conserver l'actuelle" : "sk-..."}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 p-3 text-sm text-slate-700 dark:text-slate-200">
+              La clé OpenAI n&apos;est plus modifiable ici. Configure <code>OPENAI_API_KEY</code> uniquement dans les variables d&apos;environnement serveur.
             </div>
             {!hasApiKey && (
               <p className="flex items-center gap-1 text-xs text-orange-600">
@@ -311,7 +294,7 @@ export default function SettingsPage() {
             )}
             {hasApiKey && (
               <p className="text-xs text-slate-400 dark:text-slate-500">
-                La clé est stockée en base de données. Pour plus de sécurité, configure-la comme variable d&apos;env <code>OPENAI_API_KEY</code> sur Vercel.
+                Clé détectée via la variable d&apos;environnement <code>OPENAI_API_KEY</code>.
               </p>
             )}
           </div>

@@ -65,6 +65,8 @@ export async function POST(req: NextRequest) {
 
     for (const mod of modifications) {
       try {
+        const modVisitId = (mod as { visitId?: string | null }).visitId ?? null;
+
         if (mod.action === "add" || mod.action === "delete") {
           results.push({ id: mod.id, success: false, error: `Action "${mod.action}" non supportée — applique manuellement depuis le planning` });
           continue;
@@ -84,9 +86,9 @@ export async function POST(req: NextRequest) {
 
             let visits: { id: string; storeId: string; storeName: string }[] = [];
 
-            if (mod.visitId) {
+            if (modVisitId) {
               const byId = await prisma.visit.findUnique({
-                where: { id: mod.visitId },
+                where: { id: modVisitId },
                 select: { id: true, storeId: true, storeName: true, weekId: true },
               });
               if (byId && (!currentWeek || byId.weekId === currentWeek.id)) {
@@ -124,7 +126,7 @@ export async function POST(req: NextRequest) {
               continue;
             }
 
-            if (visits.length > 1 && !mod.visitId) {
+            if (visits.length > 1 && !modVisitId) {
               results.push({ id: mod.id, success: false, error: "Modification ambiguë: plusieurs visites correspondent. Spécifie une visite unique." });
               continue;
             }
