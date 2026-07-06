@@ -6,7 +6,7 @@ import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { geocodeAddressServer } from "@/lib/geocode-server";
 import { getClientIp } from "@/lib/request-ip";
-import { del } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { waitUntil } from "@vercel/functions";
 
 export const dynamic = 'force-dynamic';
@@ -108,6 +108,21 @@ export async function POST(req: NextRequest) {
       week = await prisma.week.create({ data: { weekNum, year, label } });
     } else {
       week = existingWeek;
+    }
+
+    // Store the Excel file in Vercel Blob for later preview
+    try {
+      const excelBlob = await put(`excels/${week!.id}/${file.name || "planning.xlsx"}`, file, {
+        access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        addRandomSuffix: true,
+      });
+      await prisma.week.update({
+        where: { id: week!.id },
+        data: { excelUrl: excelBlob.url },
+      });
+    } catch (blobErr) {
+      console.error("[import] Failed to store Excel blob, continuing:", blobErr);
     }
 
     // Pre-load latest materialType per storeId to carry it over to new visits (single query optimization)

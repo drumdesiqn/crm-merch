@@ -29,6 +29,7 @@ model Week {
   weekNum   Int
   year      Int
   label     String
+  excelUrl  String?
   createdAt DateTime @default(now())
   visits    Visit[]
 

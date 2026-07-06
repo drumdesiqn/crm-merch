@@ -29,6 +29,7 @@ export interface Week {
   label: string;
   weekNum: number;
   year: number;
+  excelUrl?: string | null;
   _count: { visits: number };
 }
 

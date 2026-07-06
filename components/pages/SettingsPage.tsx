@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, RefreshCw, Sun, Moon, Lock, Database } from "lucide-react";
+import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, RefreshCw, Sun, Moon, Lock, Database, FileSpreadsheet, X, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
@@ -45,6 +45,18 @@ export default function SettingsPage() {
   const [showPasswords, setShowPasswords] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [excelPreview, setExcelPreview] = useState<{ label: string; headers: string[]; rows: string[][]; totalRows: number; truncated: boolean } | null>(null);
+  const [loadingExcel, setLoadingExcel] = useState<string | null>(null);
+
+  const openExcelPreview = async (weekId: string) => {
+    setLoadingExcel(weekId);
+    const data = await fetchApi<{ label: string; headers: string[]; rows: string[][]; totalRows: number; truncated: boolean }>(`/api/weeks/${weekId}/excel`);
+    setLoadingExcel(null);
+    if (data) {
+      setExcelPreview(data);
+    }
+  };
 
   if (settingsData && !settingsInitialized) {
     setUserName(settingsData.userName || "");
@@ -498,34 +510,98 @@ export default function SettingsPage() {
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{w.label}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{w._count.visits} visites</p>
                 </div>
-                {confirmDeleteWeekId === w.id ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500">Confirmer ?</span>
+                <div className="flex items-center gap-2">
+                  {w.excelUrl && (
                     <button
-                      onClick={() => deleteWeek(w.id)}
-                      className="text-xs px-2 py-1 bg-red-mars text-white rounded hover:bg-red-700 transition-colors"
+                      onClick={() => openExcelPreview(w.id)}
+                      disabled={loadingExcel === w.id}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                      title="Voir l'Excel importé"
                     >
-                      Supprimer
+                      {loadingExcel === w.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
+                      <span className="hidden sm:inline">Excel</span>
                     </button>
+                  )}
+                  {confirmDeleteWeekId === w.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Confirmer ?</span>
+                      <button
+                        onClick={() => deleteWeek(w.id)}
+                        className="text-xs px-2 py-1 bg-red-mars text-white rounded hover:bg-red-700 transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteWeekId(null)}
+                        className="text-xs px-2 py-1 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  ) : (
                     <button
-                      onClick={() => setConfirmDeleteWeekId(null)}
-                      className="text-xs px-2 py-1 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      onClick={() => setConfirmDeleteWeekId(w.id)}
+                      className="text-slate-300 hover:text-red-mars transition-colors"
                     >
-                      Annuler
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDeleteWeekId(w.id)}
-                    className="text-slate-300 hover:text-red-mars transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </CardContent>
         </Card>
+      )}
+
+      {/* Excel Preview Modal */}
+      {excelPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setExcelPreview(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-5xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{excelPreview.label}</h3>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {excelPreview.totalRows} ligne{excelPreview.totalRows > 1 ? "s" : ""}
+                  {excelPreview.truncated && " (aperçu limité à 500)"}
+                </span>
+              </div>
+              <button
+                onClick={() => setExcelPreview(null)}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+                aria-label="Fermer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4">
+              <table className="w-full text-xs border-collapse">
+                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800 z-10">
+                  <tr>
+                    <th className="px-2 py-1.5 text-left font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">#</th>
+                    {excelPreview.headers.map((h) => (
+                      <th key={h} className="px-2 py-1.5 text-left font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {excelPreview.rows.map((row, i) => (
+                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                      <td className="px-2 py-1 text-slate-400 dark:text-slate-500 font-mono">{i + 1}</td>
+                      {row.map((cell, j) => (
+                        <td key={j} className="px-2 py-1 text-slate-700 dark:text-slate-300 max-w-[200px] truncate" title={cell}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
