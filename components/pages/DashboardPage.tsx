@@ -185,7 +185,7 @@ export default function DashboardPage() {
                   <p className="text-white/80 text-sm">{todayVisits.filter((v) => v.status === "done").length} terminée{todayVisits.filter((v) => v.status === "done").length > 1 ? "s" : ""} · {todayVisits.filter((v) => v.status === "pending" || !v.status).length} restante{todayVisits.filter((v) => v.status === "pending" || !v.status).length > 1 ? "s" : ""}</p>
                 </div>
                 <Link href="/planning">
-                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 shrink-0">
+                  <Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20 shrink-0">
                     <Route className="w-4 h-4 mr-1.5" />
                     <span className="hidden sm:inline">Voir le planning</span>
                     <span className="sm:hidden">Planning</span>
