@@ -271,6 +271,12 @@ const migrations = [
     ],
   },
   {
+    name: "20260707000000_add_excel_url_to_week",
+    sql: [
+      `ALTER TABLE "Week" ADD COLUMN IF NOT EXISTS "excelUrl" TEXT;`,
+    ],
+  },
+  {
     name: "20260627000000_add_store_model",
     sql: [
       `CREATE TABLE IF NOT EXISTS "Store" (
