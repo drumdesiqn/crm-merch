@@ -449,8 +449,8 @@ export default function PlanningPage() {
 
           {/* Plan visit modal */}
           {showPlanForm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowPlanForm(false)}>
+              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Ajouter un magasin</h2>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Magasin</label>
@@ -485,8 +485,8 @@ export default function PlanningPage() {
 
       {/* Delete week confirmation modal */}
       {confirmDeleteWeek && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setConfirmDeleteWeek(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
                 <Trash2 className="w-4 h-4 text-red-600" />
@@ -517,8 +517,8 @@ export default function PlanningPage() {
 
       {/* Edit date modal */}
       {editingVisit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setEditingVisit(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Changer de jour</h2>
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nouvelle date</label>
@@ -599,7 +599,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); onUpdateDate?.(visit.id, visit.visitDate.split("T")[0]); }}
-              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               title="Changer de jour"
               aria-label="Changer de jour"
             >

@@ -240,7 +240,12 @@ export default function StoresPage() {
         </Link>
       </div>
 
-      {/* Stores list */}
+      {/* Stores list + count */}
+      {(searchQuery || filterCity) && (
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          {filteredStores.length} résultat{filteredStores.length !== 1 ? "s" : ""} sur {stores.length}
+        </p>
+      )}
       <div className="grid gap-2 sm:gap-3">
         {filteredStores.length === 0 ? (
           <Card>
@@ -340,8 +345,8 @@ export default function StoresPage() {
 
       {/* Create store modal */}
       {showStoreForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowStoreForm(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Ajouter un magasin</h2>
             <div className="space-y-3">
               <div>
@@ -447,8 +452,8 @@ export default function StoresPage() {
 
       {/* Plan visit modal */}
       {showPlanForm && planStore && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowPlanForm(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Planifier {planStore.storeName}</h2>
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Date de visite</label>
@@ -488,8 +493,8 @@ export default function StoresPage() {
 
       {/* Edit store modal */}
       {editingStore && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setEditingStore(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Modifier {editingStore.storeName}</h2>
             <div className="space-y-3">
               <div>

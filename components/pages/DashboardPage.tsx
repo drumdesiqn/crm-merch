@@ -3,32 +3,34 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench } from "lucide-react";
+import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
 import type { Visit } from "@/types/visit";
-import { Search } from "lucide-react";
 import { DashboardSkeleton } from "@/components/Skeleton";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useVisits } from "@/lib/hooks/useVisits";
 import { useSummary } from "@/lib/hooks/useSummary";
+import { useSettings } from "@/lib/hooks/useSettings";
 
 const EMPTY_VISITS: Visit[] = [];
 
 export default function DashboardPage() {
-  const [showPast, setShowPast] = useState(true);
+  const [showPast, setShowPast] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const { data: weeks = [], isLoading: weeksLoading } = useWeeks();
+  const { data: settingsData } = useSettings();
   const currentWeek = weeks[0];
   const { data: visitsResult, isLoading: visitsLoading } = useVisits(currentWeek?.id);
   const visits: Visit[] = visitsResult?.visits ?? EMPTY_VISITS;
   const { data: summaryStores = {}, isLoading: summaryLoading } = useSummary();
+  const userName = settingsData?.userName?.split(" ")[0] || "";
 
   const loading = weeksLoading || visitsLoading || summaryLoading;
   const today = useMemo(() => {
@@ -122,17 +124,25 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header with greeting */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            {userName ? `Salut ${userName} 👋` : "Tableau de bord"}
+          </h1>
+          {currentWeek && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{currentWeek.label} · {currentWeek._count.visits} visites</p>
+          )}
+        </div>
         {currentWeek && (
-          <div className="relative w-full sm:w-64 ml-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Rechercher un magasin..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars focus:border-transparent"
+              className="w-full pl-9 pr-9 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
               aria-label="Rechercher un magasin"
             />
             {searchQuery && (
@@ -141,7 +151,7 @@ export default function DashboardPage() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 aria-label="Effacer la recherche"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -166,38 +176,61 @@ export default function DashboardPage() {
 
       {currentWeek && (
         <>
-          {/* Current week banner */}
-          <Card className="bg-gradient-to-r from-blue-mars to-blue-cpm text-white border-0">
-            <CardContent className="py-4 flex items-center justify-between">
-              <div>
-                <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Semaine en cours</p>
-                <p className="text-xl font-bold">{currentWeek.label}</p>
-                <p className="text-white/80 text-sm">{currentWeek._count.visits} visites</p>
-              </div>
-              <div className="flex gap-2">
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
-                  aria-label="Filtrer par type"
-                >
-                  <option value="all">Tous types</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Ad Hoc">Ad Hoc</option>
-                </select>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
-                  aria-label="Filtrer par statut"
-                >
-                  <option value="all">Tous statuts</option>
-                  <option value="pending">À faire</option>
-                  <option value="done">Terminé</option>
-                </select>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Quick action: start my day */}
+          {todayVisits.length > 0 && (
+            <Card className="bg-gradient-to-r from-blue-mars to-blue-cpm text-white border-0">
+              <CardContent className="py-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-lg font-bold">{todayVisits.length} visite{todayVisits.length > 1 ? "s" : ""} aujourd&apos;hui</p>
+                  <p className="text-white/80 text-sm">{todayVisits.filter((v) => v.status === "done").length} terminée{todayVisits.filter((v) => v.status === "done").length > 1 ? "s" : ""} · {todayVisits.filter((v) => v.status === "pending" || !v.status).length} restante{todayVisits.filter((v) => v.status === "pending" || !v.status).length > 1 ? "s" : ""}</p>
+                </div>
+                <Link href="/planning">
+                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 shrink-0">
+                    <Route className="w-4 h-4 mr-1.5" />
+                    <span className="hidden sm:inline">Voir le planning</span>
+                    <span className="sm:hidden">Planning</span>
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Filters row */}
+          <div className="flex flex-wrap gap-2">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              aria-label="Filtrer par type"
+            >
+              <option value="all">Tous types</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Ad Hoc">Ad Hoc</option>
+            </select>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              aria-label="Filtrer par statut"
+            >
+              <option value="all">Tous statuts</option>
+              <option value="pending">À faire</option>
+              <option value="done">Terminé</option>
+            </select>
+            {(filterType !== "all" || filterStatus !== "all") && (
+              <button
+                onClick={() => { setFilterType("all"); setFilterStatus("all"); }}
+                className="px-3 py-1.5 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Réinitialiser
+              </button>
+            )}
+            {(searchQuery || filterType !== "all" || filterStatus !== "all") && (
+              <span className="self-center text-xs text-slate-400 dark:text-slate-500">
+                {filteredVisits.length} / {visits.length} visite{visits.length > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3">
