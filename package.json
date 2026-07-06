@@ -10,6 +10,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "test": "vitest",
+    "test:run": "vitest run",
+    "test:ci": "npm run lint && npm run test:run && npx playwright test --list",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"

@@ -22,7 +22,7 @@ if (process.env.DATABASE_URL) {
 run("node scripts/gen-icons.mjs");
 
 run("npm run lint");
-run("npm test -- --run");
+run("npm run test:run");
 
 console.log("\n▶ Cleaning .next cache…");
 rmSync(".next", { recursive: true, force: true });
