@@ -54,19 +54,19 @@ export default function ChatWidget() {
       {open && (
         <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
-            <div className="w-8 h-8 bg-blue-mars rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-blue-mars shrink-0">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">MerchandiserGPT</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">Contexte Mars injecté automatiquement</p>
+              <p className="text-sm font-semibold text-white">MerchandiserGPT</p>
+              <p className="text-xs text-white/60">Contexte Mars injecté automatiquement</p>
             </div>
             <div className="flex items-center gap-1">
               {messages.length > 0 && (
                 <button
                   onClick={handleReset}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                   title="Effacer la conversation"
                   aria-label="Effacer la conversation"
                 >
@@ -75,7 +75,7 @@ export default function ChatWidget() {
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Fermer le chat"
               >
                 <X className="w-4 h-4" />
@@ -211,7 +211,7 @@ export default function ChatWidget() {
           <MessageCircle className="w-6 h-6 text-white" />
         )}
         {!open && unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 text-slate-900 text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-mars text-white text-xs font-bold rounded-full flex items-center justify-center">
             {unread}
           </span>
         )}

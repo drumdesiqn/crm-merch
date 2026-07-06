@@ -2,9 +2,9 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn } from "lucide-react";
 
 export default function LoginPage() {
   return (
@@ -53,8 +53,9 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-mars-light to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-blue-mars rounded-full flex items-center justify-center mb-4">
-            <LogIn className="w-6 h-6 text-white" />
+          <div className="mx-auto mb-4">
+            <Image src="/logo-cpm-mars.png" alt="CPM Mars" width={140} height={45} className="h-10 w-auto dark:hidden" style={{ width: "auto", height: "auto" }} priority />
+            <Image src="/logo-cpm-mars-white.png" alt="CPM Mars" width={140} height={45} className="h-10 w-auto hidden dark:block" style={{ width: "auto", height: "auto" }} priority />
           </div>
           <CardTitle className="text-2xl font-bold">CPM Mars</CardTitle>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">

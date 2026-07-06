@@ -262,8 +262,9 @@ export default function StoreHistoryPage() {
         {filteredVisits.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400">Aucune visite trouvée</p>
+              <Calendar className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="font-semibold text-slate-700 dark:text-slate-300">Aucune visite trouvée</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Modifie les filtres ou importe un planning pour voir les visites</p>
             </CardContent>
           </Card>
         ) : (
@@ -378,7 +379,7 @@ export default function StoreHistoryPage() {
                   type="text"
                   value={editForm.storeName}
                   onChange={(e) => setEditForm({ ...editForm, storeName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base text-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
@@ -387,7 +388,7 @@ export default function StoreHistoryPage() {
                   type="text"
                   value={editForm.storeAddress}
                   onChange={(e) => setEditForm({ ...editForm, storeAddress: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base text-slate-900 dark:text-slate-100"
                 />
               </div>
               <div className="flex gap-2">
@@ -397,7 +398,7 @@ export default function StoreHistoryPage() {
                     type="text"
                     value={editForm.storeZipcode}
                     onChange={(e) => setEditForm({ ...editForm, storeZipcode: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base text-slate-900 dark:text-slate-100"
                   />
                 </div>
                 <div className="flex-[2]">
@@ -406,7 +407,7 @@ export default function StoreHistoryPage() {
                     type="text"
                     value={editForm.storeCity}
                     onChange={(e) => setEditForm({ ...editForm, storeCity: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base text-slate-900 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -416,7 +417,7 @@ export default function StoreHistoryPage() {
                   type="text"
                   value={editForm.salesRep}
                   onChange={(e) => setEditForm({ ...editForm, salesRep: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base text-slate-900 dark:text-slate-100"
                   placeholder="Nom du représentant"
                 />
               </div>

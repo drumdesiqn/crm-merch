@@ -245,8 +245,9 @@ export default function StoresPage() {
         {filteredStores.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Store className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400">Aucun magasin trouvé</p>
+              <Store className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="font-semibold text-slate-700 dark:text-slate-300">Aucun magasin trouvé</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Les magasins apparaissent automatiquement après import du planning</p>
             </CardContent>
           </Card>
         ) : (

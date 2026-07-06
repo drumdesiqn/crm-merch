@@ -41,7 +41,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-slate-900 capitalize">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">
                         {formatDateShort(v.visitDate)}
                       </p>
                       <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${hTypeColor}`}>

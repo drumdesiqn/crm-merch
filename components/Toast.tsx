@@ -50,12 +50,13 @@ export default function ToastContainer() {
       {visibleToasts.map((toast) => (
         <div
           key={toast.id}
+          role="alert"
           className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border animate-in slide-in-from-right ${
             toast.type === "success"
-              ? "bg-green-50 border-green-200 text-green-800"
+              ? "bg-green-50 border-green-200 text-green-800 dark:bg-green-950/80 dark:border-green-800 dark:text-green-300"
               : toast.type === "error"
-              ? "bg-red-mars-light border-red-200 text-red-mars"
-              : "bg-amber-50 border-amber-200 text-amber-800"
+              ? "bg-red-mars-light border-red-200 text-red-mars dark:bg-red-950/80 dark:border-red-800 dark:text-red-400"
+              : "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/80 dark:border-amber-800 dark:text-amber-300"
           }`}
         >
           {toast.type === "success" ? (
@@ -68,7 +69,8 @@ export default function ToastContainer() {
           <p className="text-sm font-medium">{toast.message}</p>
           <button
             onClick={() => removeToast(toast.id)}
-            className="ml-2 p-1 rounded hover:bg-black/5 transition-colors"
+            className="ml-2 p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            aria-label="Fermer"
           >
             <X className="w-4 h-4" />
           </button>

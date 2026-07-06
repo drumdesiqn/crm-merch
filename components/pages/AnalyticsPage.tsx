@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useWeeks } from "@/lib/hooks/useWeeks";
+import { useTheme } from "@/components/ThemeProvider";
 import {
   ResponsiveContainer,
   LineChart,
@@ -45,6 +46,10 @@ export default function AnalyticsPage() {
   const [selectedWeek, setSelectedWeek] = useState<string>("");
   const { data: weeks = [] } = useWeeks();
   const { data, isLoading, isError } = useAnalytics(selectedWeek || undefined);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const gridStroke = isDark ? "#334155" : "#e2e8f0";
+  const tooltipStyle = { borderRadius: 8, fontSize: 12, backgroundColor: isDark ? "#1e293b" : "#fff", border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`, color: isDark ? "#e2e8f0" : "#1e293b" };
 
   if (isLoading) {
     return (
@@ -143,12 +148,12 @@ export default function AnalyticsPage() {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.visitsByWeek} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                   <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
                   <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 11 }} unit="%" />
                   <Tooltip
-                    contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                    contentStyle={tooltipStyle}
                     formatter={(value, name) => [
                       value,
                       name === "total" ? "Total" : name === "done" ? "Effectuées" : "Taux %",
@@ -191,7 +196,7 @@ export default function AnalyticsPage() {
                         <Cell key={entry.status} fill={STATUS_COLORS[entry.status] || "#94a3b8"} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [value, "Visites"]} />
+                    <Tooltip formatter={(value) => [value, "Visites"]} contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -225,7 +230,7 @@ export default function AnalyticsPage() {
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [value, "Visites"]} />
+                    <Tooltip formatter={(value) => [value, "Visites"]} contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -247,10 +252,10 @@ export default function AnalyticsPage() {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.visitsByCity} layout="vertical" margin={{ top: 5, right: 20, bottom: 5, left: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis dataKey="city" type="category" tick={{ fontSize: 11 }} width={55} />
-                  <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(value) => [value, "Visites"]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Visites"]} />
                   <Bar dataKey="count" fill={BAR_CITY_COLOR} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -269,10 +274,10 @@ export default function AnalyticsPage() {
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.materialCounts} margin={{ top: 5, right: 20, bottom: 30, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                   <XAxis dataKey="type" tick={{ fontSize: 10, angle: -30 }} textAnchor="end" height={50} />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(value) => [value, "Visites"]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Visites"]} />
                   <Bar dataKey="count" fill={BAR_MATERIAL_COLOR} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -294,10 +299,10 @@ export default function AnalyticsPage() {
             <div style={{ height: Math.max(180, data.visitsBySalesRep.length * 36) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.visitsBySalesRep} layout="vertical" margin={{ top: 5, right: 20, bottom: 5, left: 100 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={95} />
-                  <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(value) => [value, "Visites"]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Visites"]} />
                   <Bar dataKey="count" fill="#0055FF" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>

@@ -119,11 +119,11 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
           <div className="h-px bg-slate-100 dark:bg-slate-700" />
           <div className="flex gap-2 pt-1">
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-              className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-colors">
+              className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-colors">
               <ExternalLink className="w-4 h-4" /> Google Maps
             </a>
             <a href={wazeUrl} target="_blank" rel="noopener noreferrer"
-              className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 text-sm font-medium hover:bg-sky-100 transition-colors">
+              className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 text-sm font-medium hover:bg-sky-100 dark:bg-sky-950/30 dark:border-sky-800 dark:text-sky-400 dark:hover:bg-sky-900/40 transition-colors">
               <ExternalLink className="w-4 h-4" /> Waze
             </a>
           </div>

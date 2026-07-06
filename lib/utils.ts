@@ -1,4 +1,3 @@
-import type React from "react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -43,19 +42,9 @@ export const VISIT_TYPE_COLORS: Record<string, string> = {
   "Ad Hoc": "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800",
 };
 
-export const VISIT_TYPE_DARK_STYLES: Record<string, React.CSSProperties> = {
-  Maintenance: { backgroundColor: "rgba(37,99,235,0.2)", color: "rgb(96,165,250)", borderColor: "rgba(37,99,235,0.4)" },
-  "Ad Hoc": { backgroundColor: "rgba(124,45,18,0.4)", color: "rgb(253,186,116)", borderColor: "rgba(124,45,18,0.5)" },
-};
-
 export const ASSORTMENT_COLORS: Record<string, string> = {
   Snacking: "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300",
   "Grocery Pet Nutrition": "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300",
-};
-
-export const ASSORTMENT_DARK_STYLES: Record<string, React.CSSProperties> = {
-  Snacking: { backgroundColor: "rgba(88,28,135,0.4)", color: "rgb(216,180,254)" },
-  "Grocery Pet Nutrition": { backgroundColor: "rgba(20,83,45,0.4)", color: "rgb(134,239,172)" },
 };
 
 // DEFAULT_GLOSSARY moved to lib/constants.ts

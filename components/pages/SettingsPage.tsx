@@ -150,7 +150,7 @@ export default function SettingsPage() {
       </div>
 
       {errorMsg && (
-        <div className="flex items-center justify-between gap-2 rounded-lg bg-red-mars-light border border-red-200 px-3 py-2 text-sm text-red-mars">
+        <div className="flex items-center justify-between gap-2 rounded-lg bg-red-mars-light dark:bg-red-950/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-mars dark:text-red-400">
           <span>{errorMsg}</span>
           <button onClick={() => setErrorMsg(null)} className="text-red-mars hover:text-red-700 shrink-0">✕</button>
         </div>
@@ -236,8 +236,9 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Prénom</label>
+              <label htmlFor="settings-name" className="text-xs font-medium text-slate-600 dark:text-slate-400">Prénom</label>
               <input
+                id="settings-name"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Guillaume"
@@ -245,8 +246,9 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Zone</label>
+              <label htmlFor="settings-zone" className="text-xs font-medium text-slate-600 dark:text-slate-400">Zone</label>
               <input
+                id="settings-zone"
                 value={userZone}
                 onChange={(e) => setUserZone(e.target.value)}
                 placeholder="Bruxelles"
@@ -255,8 +257,9 @@ export default function SettingsPage() {
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Adresse domicile</label>
+            <label htmlFor="settings-home" className="text-xs font-medium text-slate-600 dark:text-slate-400">Adresse domicile</label>
             <input
+              id="settings-home"
               value={homeAddress}
               onChange={(e) => setHomeAddress(e.target.value)}
               placeholder="Rue Georges Tourneur 12, 6030 Marchienne-au-Pont"
@@ -265,8 +268,9 @@ export default function SettingsPage() {
             <p className="text-xs text-slate-400 dark:text-slate-500">Utilisée comme point de départ sur la carte des itinéraires</p>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Email</label>
+            <label htmlFor="settings-email" className="text-xs font-medium text-slate-600 dark:text-slate-400">Email</label>
             <input
+              id="settings-email"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               placeholder="guillaume@example.com"
@@ -366,7 +370,7 @@ export default function SettingsPage() {
                     </button>
                     <button
                       onClick={() => setConfirmDeleteTermId(null)}
-                      className="text-xs px-2 py-0.5 border border-slate-200 rounded hover:bg-slate-50 transition-colors"
+                      className="text-xs px-2 py-0.5 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                       aria-label="Annuler la suppression"
                     >
                       Non
@@ -402,6 +406,7 @@ export default function SettingsPage() {
               <input
                 type={showPasswords ? "text" : "password"}
                 placeholder="Mot de passe actuel"
+                aria-label="Mot de passe actuel"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-full px-3 py-2 pr-10 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
@@ -417,6 +422,7 @@ export default function SettingsPage() {
             <input
               type={showPasswords ? "text" : "password"}
               placeholder="Nouveau mot de passe (min. 6 caractères)"
+              aria-label="Nouveau mot de passe"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
@@ -424,6 +430,7 @@ export default function SettingsPage() {
             <input
               type={showPasswords ? "text" : "password"}
               placeholder="Confirmer le nouveau mot de passe"
+              aria-label="Confirmer le nouveau mot de passe"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
@@ -502,7 +509,7 @@ export default function SettingsPage() {
                     </button>
                     <button
                       onClick={() => setConfirmDeleteWeekId(null)}
-                      className="text-xs px-2 py-1 border border-slate-200 rounded hover:bg-slate-50 transition-colors"
+                      className="text-xs px-2 py-1 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                     >
                       Annuler
                     </button>

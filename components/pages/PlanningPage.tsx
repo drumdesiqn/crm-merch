@@ -7,8 +7,7 @@ import Link from "next/link";
 import { Upload, Calendar, MapPin, User, AlertCircle, ChevronRight, X, CheckCircle, List, Navigation, FileDown, Wrench, Route, Plus, CalendarDays, Trash2, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { VISIT_TYPE_COLORS, VISIT_TYPE_DARK_STYLES, ASSORTMENT_COLORS, ASSORTMENT_DARK_STYLES, VisitStatus } from "@/lib/utils";
-import { useTheme } from "@/components/ThemeProvider";
+import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, VisitStatus } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWeeks } from "@/lib/hooks/useWeeks";
@@ -311,7 +310,7 @@ export default function PlanningPage() {
 
           {/* Import feedback */}
           {importMsg && (
-            <div className={`flex items-center gap-3 rounded-lg p-3 text-sm ${importMsg.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-mars-light text-red-mars border border-red-200"}`}>
+            <div className={`flex items-center gap-3 rounded-lg p-3 text-sm ${importMsg.type === "success" ? "bg-green-50 text-green-800 border border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800" : "bg-red-mars-light text-red-mars border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"}`}>
               {importMsg.type === "success" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
               <span>{importMsg.text}</span>
               <button onClick={() => setImportMsg(null)} className="ml-auto"><X className="w-4 h-4" /></button>
@@ -320,8 +319,8 @@ export default function PlanningPage() {
 
           {/* Confirm overwrite dialog */}
           {pendingImport && (
-            <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-4 space-y-3">
-              <p className="text-sm font-medium text-yellow-900">
+            <div className="rounded-xl border border-yellow-300 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-950/30 p-4 space-y-3">
+              <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                 La semaine <strong>{pendingImport.label}</strong> existe déjà ({pendingImport.count} visites détectées).
               </p>
               <div className="flex gap-2">
@@ -405,9 +404,10 @@ export default function PlanningPage() {
 
           {/* Visits — list or map view */}
           {localVisits.length === 0 && weeks.length > 0 && selectedWeekId !== "" ? (
-            <div className="text-center py-12 text-slate-500">
-              <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-              <p>Aucune visite. Importe ton planning Excel.</p>
+            <div className="text-center py-12">
+              <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+              <p className="font-semibold text-slate-700 dark:text-slate-300">Aucune visite pour cette semaine</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Importe ton fichier Excel ou ajoute une visite manuellement</p>
             </div>
           ) : viewMode === "map" ? (
             <RouteMapView
@@ -544,13 +544,9 @@ export default function PlanningPage() {
 
 function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete }: { visit: Visit; totalVisits?: number; completedVisits?: number; onUpdateDate?: (id: string, date: string) => void; onDelete?: (id: string) => void }) {
   const router = useRouter();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const [confirmDelete, setConfirmDelete] = useState(false);
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
-  const typeDarkStyle = isDark ? (VISIT_TYPE_DARK_STYLES[visit.visitType] || {}) : {};
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
-  const assortDarkStyle = isDark ? (ASSORTMENT_DARK_STYLES[visit.assortment] || {}) : {};
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
 
   return (
@@ -561,10 +557,10 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{visit.storeName}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${typeColor}`} style={typeDarkStyle}>
+                <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${typeColor}`}>
                   {visit.visitType}
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${assortColor}`} style={assortDarkStyle}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${assortColor}`}>
                   {visit.assortment}
                 </span>
               </div>
@@ -591,7 +587,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
                 <div className="flex items-center gap-1 mt-1 flex-wrap">
                   <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
                   {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                    <span key={idx} className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-medium" style={isDark ? { backgroundColor: "rgba(37,99,235,0.2)", color: "rgb(147,197,253)" } : {}}>
+                    <span key={idx} className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">
                       {type}
                     </span>
                   ))}

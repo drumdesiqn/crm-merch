@@ -155,7 +155,7 @@ export default function VisitPhotos({
                   {!selectMode && (
                     <button
                       onClick={() => onDeletePhoto(photo.id)}
-                      className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                     >
                       <X className="w-3 h-3" />
                     </button>

@@ -1,40 +1,52 @@
 "use client";
 
-import { useState } from "react";
-import { Phone, Mail, ChevronDown, ChevronUp, Search, Users, Plus, Trash2, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Phone, Mail, Search, Users, Plus, Trash2, Loader2, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useContacts, type ContactTeamWithContacts } from "@/lib/hooks/useContacts";
+import { useContacts } from "@/lib/hooks/useContacts";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchApi } from "@/lib/client-api";
 import { showToast } from "@/components/Toast";
+import { cn } from "@/lib/utils";
 
 const EMPTY_FORM = { name: "", phone: "", email: "" };
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export default function ContactsPage() {
   const { data: teams = [], isLoading } = useContacts();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [openTeams, setOpenTeams] = useState<Set<string>>(new Set());
+  const [activeTeam, setActiveTeam] = useState<string | null>(null);
   const [addingToTeam, setAddingToTeam] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  const toggleTeam = (id: string) => {
-    setOpenTeams((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) { next.delete(id); } else { next.add(id); }
-      return next;
-    });
-  };
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const q = search.toLowerCase().trim();
-  const filtered: ContactTeamWithContacts[] = q
-    ? teams
-        .map((t) => ({ ...t, contacts: t.contacts.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)) }))
-        .filter((t) => t.contacts.length > 0)
-    : teams;
+
+  const allContacts = useMemo(() => {
+    return teams.flatMap((t) =>
+      t.contacts.map((c) => ({ ...c, teamName: t.name, teamColor: t.color, teamId: t.id }))
+    );
+  }, [teams]);
+
+  const filteredContacts = useMemo(() => {
+    let list = allContacts;
+    if (activeTeam) list = list.filter((c) => c.teamId === activeTeam);
+    if (q) list = list.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.phone.includes(q));
+    return list;
+  }, [allContacts, activeTeam, q]);
 
   const handleAdd = async (teamId: string) => {
     if (!form.name.trim() || !form.phone.trim() || !form.email.trim()) {
@@ -68,6 +80,7 @@ export default function ContactsPage() {
       suppressToast: true,
     });
     setDeletingId(null);
+    setConfirmDeleteId(null);
     if (result !== null) {
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
       showToast("success", "Contact supprimé");
@@ -85,10 +98,24 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <Users className="w-5 h-5 text-blue-mars dark:text-blue-400" />
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Contacts Mars</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-blue-mars dark:text-blue-400" />
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Contacts</h1>
+          <span className="text-sm text-slate-400 dark:text-slate-500 ml-1">{allContacts.length}</span>
+        </div>
+        {teams.length > 0 && (
+          <Button
+            size="sm"
+            onClick={() => setAddingToTeam(addingToTeam ? null : (activeTeam || teams[0].id))}
+            className="h-8 text-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline ml-1">Ajouter</span>
+          </Button>
+        )}
       </div>
 
       {/* Search */}
@@ -96,87 +123,180 @@ export default function ContactsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            if (e.target.value) setOpenTeams(new Set(teams.map((t) => t.id)));
-          }}
-          placeholder="Rechercher un contact..."
-          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher par nom, email ou téléphone..."
+          className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
         />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            aria-label="Effacer la recherche"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      {filtered.length === 0 && (
-        <p className="text-center text-sm text-slate-500 dark:text-slate-400 py-8">Aucun contact trouvé</p>
+      {/* Team filter pills */}
+      {teams.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            onClick={() => setActiveTeam(null)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors",
+              !activeTeam
+                ? "bg-blue-mars text-white border-blue-mars"
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-blue-mars hover:text-blue-mars dark:hover:text-blue-400"
+            )}
+          >
+            Tous ({allContacts.length})
+          </button>
+          {teams.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTeam(activeTeam === t.id ? null : t.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors",
+                activeTeam === t.id
+                  ? "bg-blue-mars text-white border-blue-mars"
+                  : `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:border-blue-mars hover:text-blue-mars dark:hover:text-blue-400 ${t.color}`
+              )}
+            >
+              {t.name} ({t.contacts.length})
+            </button>
+          ))}
+        </div>
       )}
 
-      {filtered.map((team) => {
-        const isOpen = q ? true : openTeams.has(team.id);
-        const isAddingHere = addingToTeam === team.id;
-        return (
-          <Card key={team.id}>
-            <CardHeader className="pb-0 pt-3 px-4">
-              <button onClick={() => toggleTeam(team.id)} className="flex items-center justify-between w-full">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${team.color}`}>
-                    {team.name}
-                  </span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">{team.contacts.length} contacts</span>
-                </CardTitle>
-                {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
+      {/* Add contact form */}
+      {addingToTeam && (
+        <Card className="border-blue-200 dark:border-blue-800">
+          <CardContent className="py-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nouveau contact</p>
+              <button onClick={() => { setAddingToTeam(null); setForm(EMPTY_FORM); }} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <X className="w-4 h-4" />
               </button>
-            </CardHeader>
-            {isOpen && (
-              <CardContent className="pt-2 pb-3 px-0">
-                <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                  {team.contacts.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100 flex-1 min-w-0 truncate pr-2">{c.name}</p>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 text-xs font-medium hover:bg-green-100 dark:hover:bg-green-900 transition-colors" title={c.phone}>
-                          <Phone className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">{c.phone}</span>
-                        </a>
-                        <a href={`mailto:${c.email}`} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors" title={c.email}>
-                          <Mail className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline truncate max-w-[160px]">{c.email}</span>
-                        </a>
+            </div>
+            {teams.length > 1 && (
+              <div>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Équipe</label>
+                <select
+                  value={addingToTeam}
+                  onChange={(e) => setAddingToTeam(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                >
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom complet *" aria-label="Nom complet" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone *" aria-label="Téléphone" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+              <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" aria-label="Email" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" className="h-8 text-xs" onClick={() => handleAdd(addingToTeam)} disabled={saving}>
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Ajouter"}
+              </Button>
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAddingToTeam(null); setForm(EMPTY_FORM); }}>Annuler</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty state */}
+      {filteredContacts.length === 0 && (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Users className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+            <p className="font-semibold text-slate-700 dark:text-slate-300">Aucun contact trouvé</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {q ? "Essaie un autre terme de recherche" : "Les contacts sont importés avec le planning Excel"}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Contact list */}
+      {filteredContacts.length > 0 && (
+        <div className="space-y-2">
+          {filteredContacts.map((c) => (
+            <Card key={c.id} className="group hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all">
+              <CardContent className="py-3 px-4">
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-mars to-blue-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    {getInitials(c.name)}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{c.name}</p>
+                      <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${c.teamColor}`}>
+                        {c.teamName}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{c.email}</p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <a
+                      href={`tel:${c.phone.replace(/\s/g, "")}`}
+                      className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+                      title={`Appeler ${c.phone}`}
+                      aria-label={`Appeler ${c.name}`}
+                    >
+                      <Phone className="w-4 h-4" />
+                    </a>
+                    <a
+                      href={`mailto:${c.email}`}
+                      className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                      title={`Email ${c.email}`}
+                      aria-label={`Envoyer un email à ${c.name}`}
+                    >
+                      <Mail className="w-4 h-4" />
+                    </a>
+                    {confirmDeleteId === c.id ? (
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleDelete(c.id)}
                           disabled={deletingId === c.id}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                          title="Supprimer ce contact"
+                          className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-mars text-white hover:bg-red-700 transition-colors"
+                          aria-label="Confirmer la suppression"
                         >
-                          {deletingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                          {deletingId === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                          aria-label="Annuler la suppression"
+                        >
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
-                    </div>
-                  ))}
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(c.id)}
+                        className="flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        title="Supprimer ce contact"
+                        aria-label={`Supprimer ${c.name}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-                {isAddingHere ? (
-                  <div className="px-4 pt-3 space-y-2">
-                    <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom complet" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-                    <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone (+32 ...)" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-                    <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email (@effem.com)" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-                    <div className="flex gap-2">
-                      <Button size="sm" className="h-8 text-xs" onClick={() => handleAdd(team.id)} disabled={saving}>
-                        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Ajouter"}
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAddingToTeam(null); setForm(EMPTY_FORM); }}>Annuler</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-4 pt-2">
-                    <button onClick={() => { setAddingToTeam(team.id); setForm(EMPTY_FORM); }} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-blue-mars transition-colors">
-                      <Plus className="w-3.5 h-3.5" /> Ajouter un contact
-                    </button>
-                  </div>
-                )}
               </CardContent>
-            )}
-          </Card>
-        );
-      })}
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -7,8 +7,7 @@ import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench } from
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDateShort, VISIT_TYPE_COLORS, VISIT_TYPE_DARK_STYLES, VisitStatus, parseLocalDate } from "@/lib/utils";
-import { useTheme } from "@/components/ThemeProvider";
+import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
 import type { Visit } from "@/types/visit";
 import { Search } from "lucide-react";
@@ -168,7 +167,7 @@ export default function DashboardPage() {
       {currentWeek && (
         <>
           {/* Current week banner */}
-          <Card className="bg-gradient-to-r from-blue-mars to-blue-cpm dark:from-blue-800 dark:to-blue-600 text-white border-0">
+          <Card className="bg-gradient-to-r from-blue-mars to-blue-cpm text-white border-0">
             <CardContent className="py-4 flex items-center justify-between">
               <div>
                 <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Semaine en cours</p>
@@ -329,10 +328,7 @@ export default function DashboardPage() {
 
 function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number; }) {
   const router = useRouter();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
-  const darkStyle = isDark ? (VISIT_TYPE_DARK_STYLES[visit.visitType] || {}) : {};
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
   return (
     <div 
@@ -346,7 +342,7 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{visit.storeName}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${colorClass}`} style={darkStyle}>
+            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${colorClass}`}>
               {visit.visitType}
             </span>
           </div>
@@ -367,7 +363,7 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
             <div className="flex items-center gap-1 mt-1 flex-wrap">
               <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
               {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                <span key={idx} className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-medium border border-blue-200" style={isDark ? { backgroundColor: "rgba(37,99,235,0.2)", color: "rgb(147,197,253)", borderColor: "rgba(37,99,235,0.4)" } : {}}>
+                <span key={idx} className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium border border-blue-200 dark:border-blue-800">
                   {type}
                 </span>
               ))}

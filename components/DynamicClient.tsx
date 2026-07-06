@@ -27,10 +27,6 @@ export const StoreHistoryPage = dynamic(
   { ssr: false }
 );
 
-export const MailsPage = dynamic(
-  () => import("@/components/pages/MailsPage"),
-  { ssr: false }
-);
 
 export const SettingsPage = dynamic(
   () => import("@/components/pages/SettingsPage"),

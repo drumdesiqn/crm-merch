@@ -633,15 +633,15 @@ export default function VisitDetailPage() {
           {/* ── Notes & Photos divider ── */}
           <div className="space-y-4 pt-1">
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-slate-200" />
+              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
               <div className="flex items-center gap-2">
                 <StickyNote className="w-4 h-4 text-blue-mars" />
-                <p className="text-sm font-semibold text-slate-600">Notes & Photos</p>
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">Notes & Photos</p>
                 {(notes.length + photos.length) > 0 && (
                   <span className="text-xs bg-blue-mars-light text-blue-mars px-1.5 py-0.5 rounded-full font-semibold">{notes.length + photos.length}</span>
                 )}
               </div>
-              <div className="flex-1 h-px bg-slate-200" />
+              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
             </div>
 
             <VisitNotes

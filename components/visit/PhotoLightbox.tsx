@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { X, Share2 } from "lucide-react";
 import { showToast } from "@/components/Toast";
 
@@ -9,6 +10,14 @@ interface PhotoLightboxProps {
 }
 
 export default function PhotoLightbox({ url, onClose }: PhotoLightboxProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
