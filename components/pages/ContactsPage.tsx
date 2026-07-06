@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Phone, Mail, Search, Users, Plus, Trash2, Loader2, X, MessageCircle } from "lucide-react";
+import { Phone, Mail, Search, Users, Plus, Trash2, Loader2, X, MessageCircle, Pencil, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/lib/hooks/useContacts";
@@ -32,6 +32,8 @@ export default function ContactsPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState(EMPTY_FORM);
 
   const q = search.toLowerCase().trim();
 
@@ -68,6 +70,35 @@ export default function ContactsPage() {
       showToast("success", "Contact ajouté");
     } else {
       showToast("error", "Erreur lors de l'ajout");
+    }
+  };
+
+  const startEdit = (contact: { id: string; name: string; phone: string; email: string }) => {
+    setEditingId(contact.id);
+    setEditForm({ name: contact.name, phone: contact.phone, email: contact.email });
+  };
+
+  const handleEdit = async () => {
+    if (!editingId) return;
+    if (!editForm.name.trim() || !editForm.phone.trim() || !editForm.email.trim()) {
+      showToast("error", "Tous les champs sont requis");
+      return;
+    }
+    setSaving(true);
+    const result = await fetchApi("/api/contacts", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editingId, ...editForm }),
+      suppressToast: true,
+    });
+    setSaving(false);
+    if (result) {
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      setEditingId(null);
+      setEditForm(EMPTY_FORM);
+      showToast("success", "Contact modifié");
+    } else {
+      showToast("error", "Erreur lors de la modification");
     }
   };
 
@@ -225,83 +256,113 @@ export default function ContactsPage() {
       {filteredContacts.length > 0 && (
         <div className="space-y-2">
           {filteredContacts.map((c) => (
-            <Card key={c.id} className="group hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all">
+            <Card key={c.id} className={cn("group transition-all", editingId === c.id ? "border-blue-300 dark:border-blue-700 shadow-md" : "hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800")}>
               <CardContent className="py-3 px-4">
-                <div className="flex items-center gap-3">
-                  {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-mars to-blue-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
-                    {getInitials(c.name)}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{c.name}</p>
-                      <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${c.teamColor}`}>
-                        {c.teamName}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{c.email}</p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <a
-                      href={`tel:${c.phone.replace(/\s/g, "")}`}
-                      className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
-                      title={`Appeler ${c.phone}`}
-                      aria-label={`Appeler ${c.name}`}
-                    >
-                      <Phone className="w-4 h-4" />
-                    </a>
-                    <a
-                      href={`https://wa.me/${c.phone.replace(/[\s+\-()]/g, "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
-                      title={`WhatsApp ${c.phone}`}
-                      aria-label={`WhatsApp ${c.name}`}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                    </a>
-                    <a
-                      href={`mailto:${c.email}`}
-                      className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                      title={`Email ${c.email}`}
-                      aria-label={`Envoyer un email à ${c.name}`}
-                    >
-                      <Mail className="w-4 h-4" />
-                    </a>
-                    {confirmDeleteId === c.id ? (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleDelete(c.id)}
-                          disabled={deletingId === c.id}
-                          className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-mars text-white hover:bg-red-700 transition-colors"
-                          aria-label="Confirmer la suppression"
-                        >
-                          {deletingId === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                          aria-label="Annuler la suppression"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmDeleteId(c.id)}
-                        className="flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                        title="Supprimer ce contact"
-                        aria-label={`Supprimer ${c.name}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
+                {editingId === c.id ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Modifier le contact</p>
+                      <button onClick={() => { setEditingId(null); setEditForm(EMPTY_FORM); }} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                        <X className="w-4 h-4" />
                       </button>
-                    )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom *" aria-label="Nom" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+                      <input value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone *" aria-label="Téléphone" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+                      <input value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" aria-label="Email" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-8 text-xs" onClick={handleEdit} disabled={saving}>
+                        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5 mr-1" />Enregistrer</>}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setEditingId(null); setEditForm(EMPTY_FORM); }}>Annuler</Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-mars to-blue-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
+                      {getInitials(c.name)}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{c.name}</p>
+                        <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${c.teamColor}`}>
+                          {c.teamName}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{c.email}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <a
+                        href={`tel:${c.phone.replace(/\s/g, "")}`}
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+                        title={`Appeler ${c.phone}`}
+                        aria-label={`Appeler ${c.name}`}
+                      >
+                        <Phone className="w-4 h-4" />
+                      </a>
+                      <a
+                        href={`https://wa.me/${c.phone.replace(/[\s+\-()]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+                        title={`WhatsApp ${c.phone}`}
+                        aria-label={`WhatsApp ${c.name}`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </a>
+                      <a
+                        href={`mailto:${c.email}`}
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                        title={`Email ${c.email}`}
+                        aria-label={`Envoyer un email à ${c.name}`}
+                      >
+                        <Mail className="w-4 h-4" />
+                      </a>
+                      <button
+                        onClick={() => startEdit(c)}
+                        className="flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-blue-mars hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                        title="Modifier ce contact"
+                        aria-label={`Modifier ${c.name}`}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      {confirmDeleteId === c.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDelete(c.id)}
+                            disabled={deletingId === c.id}
+                            className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-mars text-white hover:bg-red-700 transition-colors"
+                            aria-label="Confirmer la suppression"
+                          >
+                            {deletingId === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            aria-label="Annuler la suppression"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(c.id)}
+                          className="flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                          title="Supprimer ce contact"
+                          aria-label={`Supprimer ${c.name}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
