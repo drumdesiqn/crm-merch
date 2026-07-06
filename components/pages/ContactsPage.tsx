@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Phone, Mail, Search, Users, Plus, Trash2, Loader2, X } from "lucide-react";
+import { Phone, Mail, Search, Users, Plus, Trash2, Loader2, X, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/lib/hooks/useContacts";
@@ -253,6 +253,16 @@ export default function ContactsPage() {
                       aria-label={`Appeler ${c.name}`}
                     >
                       <Phone className="w-4 h-4" />
+                    </a>
+                    <a
+                      href={`https://wa.me/${c.phone.replace(/[\s+\-()]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+                      title={`WhatsApp ${c.phone}`}
+                      aria-label={`WhatsApp ${c.name}`}
+                    >
+                      <MessageCircle className="w-4 h-4" />
                     </a>
                     <a
                       href={`mailto:${c.email}`}
