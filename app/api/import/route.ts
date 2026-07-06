@@ -11,6 +11,13 @@ import { waitUntil } from "@vercel/functions";
 
 export const dynamic = 'force-dynamic';
 
+const MAX_IMPORT_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_EXCEL_MIME_TYPES = new Set([
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+  "application/octet-stream",
+]);
+
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
@@ -34,6 +41,17 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    const fileName = (file.name || "").toLowerCase();
+    const hasValidExtension = fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
+    const hasValidMimeType = ALLOWED_EXCEL_MIME_TYPES.has(file.type);
+    if (!hasValidExtension && !hasValidMimeType) {
+      return NextResponse.json({ error: "Format de fichier invalide. Utilise un fichier Excel (.xlsx ou .xls)." }, { status: 400 });
+    }
+
+    if (file.size <= 0 || file.size > MAX_IMPORT_FILE_SIZE) {
+      return NextResponse.json({ error: `Fichier invalide: taille maximale ${MAX_IMPORT_FILE_SIZE / (1024 * 1024)}MB.` }, { status: 400 });
     }
 
     const buffer = await file.arrayBuffer();

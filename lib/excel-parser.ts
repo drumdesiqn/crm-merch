@@ -1,6 +1,14 @@
 import * as XLSX from "xlsx";
 import { getISOWeek } from "./utils";
 
+const MAX_IMPORT_ROWS = 5000;
+const MAX_CELL_STRING_LENGTH = 5000;
+
+function normalizeString(value: unknown, maxLen = MAX_CELL_STRING_LENGTH): string {
+  const str = String(value ?? "").trim();
+  return str.length > maxLen ? str.slice(0, maxLen) : str;
+}
+
 export interface ParsedVisit {
   assortment: string;
   storeId: string;
@@ -27,9 +35,41 @@ export interface ParseResult {
 }
 
 export function parseExcelBuffer(buffer: ArrayBuffer): ParseResult {
-  const wb = XLSX.read(buffer, { type: "array", cellDates: true });
+  const wb = XLSX.read(buffer, {
+    type: "array",
+    cellDates: true,
+    cellFormula: false,
+    bookVBA: false,
+    dense: true,
+  });
+
+  if (!wb.SheetNames.length) {
+    throw new Error("Le fichier Excel ne contient aucune feuille.");
+  }
+
   const sheetName = wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
+  if (!ws) {
+    throw new Error("Impossible de lire la première feuille Excel.");
+  }
+
+  const ref = ws["!ref"];
+  if (!ref) {
+    return {
+      visits: [],
+      weekNum: getISOWeek(new Date()),
+      year: new Date().getUTCFullYear(),
+      label: `W${getISOWeek(new Date())} ${new Date().getUTCFullYear()}`,
+      warnings: [],
+    };
+  }
+
+  const range = XLSX.utils.decode_range(ref);
+  const estimatedRows = range.e.r - range.s.r;
+  if (estimatedRows > MAX_IMPORT_ROWS) {
+    throw new Error(`Fichier trop volumineux: ${estimatedRows} lignes détectées (max ${MAX_IMPORT_ROWS}).`);
+  }
+
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, {
     raw: false,
     dateNF: "yyyy-mm-dd",
@@ -64,20 +104,20 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ParseResult {
     if (!storeId) missingStoreIdCount++;
 
     return {
-      assortment: String(row["assortment"] || ""),
+      assortment: normalizeString(row["assortment"], 200),
       storeId,
-      storeName: String(row["store_name"] || ""),
-      storeAddress: String(row["store_address"] || ""),
-      storeZipcode: String(row["store_zipcode"] || ""),
-      storeCity: String(row["store_city"] || ""),
-      visitType: String(row["visit_type"] || "Maintenance"),
-      visitFrequence: row["Visit Frequence"] ? String(row["Visit Frequence"]) : null,
+      storeName: normalizeString(row["store_name"], 200),
+      storeAddress: normalizeString(row["store_address"], 300),
+      storeZipcode: normalizeString(row["store_zipcode"], 20),
+      storeCity: normalizeString(row["store_city"], 100),
+      visitType: normalizeString(row["visit_type"] || "Maintenance", 100) || "Maintenance",
+      visitFrequence: row["Visit Frequence"] ? normalizeString(row["Visit Frequence"], 100) : null,
       visitDate,
-      merchandiser: row["Merchandiser"] ? String(row["Merchandiser"]) : null,
-      remarks: row["Remarks"] ? String(row["Remarks"]).trim() : null,
-      salesRep: row["Sales rep"] ? String(row["Sales rep"]) : null,
-      materials: row["Materials"] ? String(row["Materials"]).trim() : null,
-      materialType: row["materialType"] ? String(row["materialType"]).trim() : null,
+      merchandiser: row["Merchandiser"] ? normalizeString(row["Merchandiser"], 200) : null,
+      remarks: row["Remarks"] ? normalizeString(row["Remarks"], 5000) : null,
+      salesRep: row["Sales rep"] ? normalizeString(row["Sales rep"], 200) : null,
+      materials: row["Materials"] ? normalizeString(row["Materials"], 2000) : null,
+      materialType: row["materialType"] ? normalizeString(row["materialType"], 100) : null,
     };
   });
 
