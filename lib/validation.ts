@@ -179,6 +179,26 @@ export const MailAnalyzeResultSchema = z.object({
   replyDraft: z.string().max(10000).default(""),
 });
 
+// Contacts schemas
+export const CreateContactSchema = z.object({
+  teamId: z.string().min(1, "Équipe requise"),
+  name: z.string().min(1, "Nom requis").max(200),
+  phone: z.string().min(1, "Téléphone requis").max(50),
+  email: z.string().email("Email invalide").max(200),
+});
+
+export const PatchContactSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(200).optional(),
+  phone: z.string().min(1).max(50).optional(),
+  email: z.string().email().max(200).optional(),
+  teamId: z.string().min(1).optional(),
+});
+
+export const DeleteContactSchema = z.object({
+  id: z.string().min(1),
+});
+
 // Helper function to validate and return error response if invalid
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
   const result = schema.safeParse(data);

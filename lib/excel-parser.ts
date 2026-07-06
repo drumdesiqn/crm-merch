@@ -1,8 +1,44 @@
 import * as XLSX from "xlsx";
 import { getISOWeek } from "./utils";
 
+// SECURITY NOTE: xlsx (SheetJS CE) has known prototype-pollution and ReDoS advisories
+// with no upstream fix. We mitigate via:
+// 1. Prototype snapshot + cleanup after parsing (detects and removes pollution)
+// 2. cellFormula:false, bookVBA:false (disable macro/formula execution)
+// 3. Row count limit + string length clamping (limit resource consumption)
+// 4. File size + MIME type validation in the API route layer
+// Consider migrating to a maintained alternative (e.g. ExcelJS) if SheetJS CE remains unpatched.
+
 const MAX_IMPORT_ROWS = 5000;
 const MAX_CELL_STRING_LENGTH = 5000;
+
+/**
+ * Parse an Excel buffer with prototype-pollution detection.
+ * Snapshots Object.prototype keys before parsing and removes any keys
+ * injected by the xlsx library (prototype pollution mitigation).
+ */
+function safeXlsxRead(buffer: ArrayBuffer): XLSX.WorkBook {
+  const keysBefore = new Set(Object.getOwnPropertyNames(Object.prototype));
+
+  const wb = XLSX.read(buffer, {
+    type: "array",
+    cellDates: true,
+    cellFormula: false,
+    bookVBA: false,
+    dense: true,
+  });
+
+  // Detect and clean any prototype pollution
+  const keysAfter = Object.getOwnPropertyNames(Object.prototype);
+  for (const key of keysAfter) {
+    if (!keysBefore.has(key)) {
+      // Polluted property detected — remove it
+      delete (Object.prototype as Record<string, unknown>)[key];
+    }
+  }
+
+  return wb;
+}
 
 function normalizeString(value: unknown, maxLen = MAX_CELL_STRING_LENGTH): string {
   const str = String(value ?? "").trim();
@@ -35,13 +71,7 @@ export interface ParseResult {
 }
 
 export function parseExcelBuffer(buffer: ArrayBuffer): ParseResult {
-  const wb = XLSX.read(buffer, {
-    type: "array",
-    cellDates: true,
-    cellFormula: false,
-    bookVBA: false,
-    dense: true,
-  });
+  const wb = safeXlsxRead(buffer);
 
   if (!wb.SheetNames.length) {
     throw new Error("Le fichier Excel ne contient aucune feuille.");

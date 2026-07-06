@@ -32,13 +32,6 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Background sync for pending actions
-self.addEventListener("sync", (event) => {
-  if (event.tag === "sync-pending-actions") {
-    event.waitUntil(syncPendingActions());
-  }
-});
-
 // Fetch handler with offline support
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
@@ -112,80 +105,9 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
-// Sync pending actions when back online
-async function syncPendingActions() {
-  const pending = await getPendingActions();
-  const remaining = [];
-  
-  for (const action of pending) {
-    try {
-      const headers = new Headers(action.headers);
-      await fetch(action.url, {
-        method: action.method,
-        body: action.body,
-        headers
-      });
-    } catch {
-      remaining.push(action);
-    }
-  }
-  
-  await savePendingActions(remaining);
-  
-  // Notify clients
-  const clients = await self.clients.matchAll();
-  clients.forEach((client) => {
-    client.postMessage({ type: "SYNC_COMPLETE", remaining: remaining.length });
-  });
-}
-
-// IndexedDB helpers
-function getPendingActions() {
-  return new Promise((resolve) => {
-    const request = indexedDB.open("MarsMerchDB", 1);
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains("pending")) {
-        db.createObjectStore("pending", { keyPath: "id", autoIncrement: true });
-      }
-    };
-    request.onsuccess = (e) => {
-      const db = e.target.result;
-      const tx = db.transaction("pending", "readonly");
-      const store = tx.objectStore("pending");
-      const getAll = store.getAll();
-      getAll.onsuccess = () => resolve(getAll.result || []);
-      getAll.onerror = () => resolve([]);
-    };
-    request.onerror = () => resolve([]);
-  });
-}
-
-function savePendingActions(actions) {
-  return new Promise((resolve) => {
-    const request = indexedDB.open("MarsMerchDB", 1);
-    request.onsuccess = (e) => {
-      const db = e.target.result;
-      const tx = db.transaction("pending", "readwrite");
-      const store = tx.objectStore("pending");
-      store.clear();
-      actions.forEach((action) => store.add(action));
-      tx.oncomplete = resolve;
-    };
-    request.onerror = resolve;
-  });
-}
-
-// Listen for online/offline events from main thread
-self.addEventListener("message", async (event) => {
-  if (event.data.type === "SYNC_NOW") {
-    syncPendingActions();
-  }
-  if (event.data.type === "CLEAR_PENDING") {
-    savePendingActions([]);
-  }
-  if (event.data.type === "GET_PENDING_COUNT") {
-    const pending = await getPendingActions();
-    event.source.postMessage({ type: "PENDING_COUNT", count: pending.length });
+// Listen for cache management messages from main thread
+self.addEventListener("message", (event) => {
+  if (event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
   }
 });

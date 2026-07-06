@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CPM Mars — Merchandiser Planning App
+
+Application de gestion de planning et suivi terrain pour merchandisers CPM chez Mars Belgique.
+
+## Stack technique
+
+| Couche | Technologie |
+|--------|-------------|
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS v4 |
+| Backend | Next.js API Routes (App Router) |
+| Base de données | PostgreSQL (Neon) via Prisma 7 |
+| Auth | JWT (jose) + HTTP-only cookies |
+| IA | OpenAI GPT-4o (analyse mails, assistant) |
+| Storage | Vercel Blob (photos) |
+| Deploy | Vercel (auto-deploy sur `master`) |
+| Tests | Vitest (unit), Playwright (E2E) |
+| CI | GitHub Actions + Vercel Build Pipeline |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Installer les dépendances
+npm install
+
+# Copier le fichier d'environnement
+cp .env.example .env.local
+# Remplir les variables : DATABASE_URL, JWT_SECRET, OPENAI_API_KEY, BLOB_READ_WRITE_TOKEN
+
+# Lancer le dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement requises
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | URL PostgreSQL Neon |
+| `JWT_SECRET` | Clé secrète pour signer les JWT (min 32 chars) |
+| `OPENAI_API_KEY` | Clé API OpenAI pour analyse mail et assistant |
+| `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob pour photos |
+| `CRON_SECRET` | Secret pour authentifier les crons Vercel |
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Commande | Description |
+|----------|-------------|
+| `npm run dev` | Dev server local |
+| `npm run build` | Build production |
+| `npm run lint` | ESLint |
+| `npm run test:run` | Tests unitaires (Vitest, one-shot) |
+| `npm test` | Tests unitaires (watch mode) |
+| `npm run test:e2e` | Tests E2E (Playwright) |
+| `npm run test:ci` | lint + tests + playwright list |
+| `npm run vercel-build` | Build Vercel complet (migrations + lint + tests + build) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+├── api/          # Routes API (REST)
+├── (pages)/      # Pages Next.js (App Router)
+components/
+├── pages/        # Page-level client components
+├── ui/           # Composants UI réutilisables
+├── visit/        # Composants liés aux visites
+lib/
+├── validation.ts # Schémas Zod centralisés
+├── client-api.ts # Fetch wrapper client
+├── rate-limit.ts # Rate limiting in-memory
+├── auth-simple.ts# Authentification bcrypt
+prisma/
+├── schema.prisma # Schéma DB
+scripts/
+├── apply-migrations.mjs # Migrations SQL custom
+├── vercel-build.mjs     # Pipeline build Vercel
+public/
+├── sw.js         # Service Worker (PWA offline)
+├── manifest.json # PWA manifest
+e2e/              # Tests Playwright
+```
 
-## Deploy on Vercel
+## Sécurité
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Auth JWT avec cookies HTTP-only (`sameSite=lax`, `secure` en prod)
+- CSP restrictive (script-src, connect-src, etc.)
+- Rate limiting sur login, import, password change
+- Validation Zod sur toutes les entrées API
+- Protection prototype pollution sur parsing Excel
+- Headers sécurité (X-Frame-Options, X-Content-Type-Options, etc.)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Déploiement
+
+Le déploiement est automatique via Vercel sur push `master`. Le build exécute :
+1. `prisma generate`
+2. Migrations SQL (si `DATABASE_URL` dispo)
+3. Génération d'icônes
+4. Lint + tests unitaires
+5. `next build`
+
+Un backup automatique est déclenché quotidiennement à 02:00 UTC via Vercel Cron.

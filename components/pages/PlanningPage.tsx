@@ -20,6 +20,7 @@ import { useCreateVisit } from "@/lib/hooks/useCreateVisit";
 import { useUpdateVisit } from "@/lib/hooks/useUpdateVisit";
 import { useDeleteVisit } from "@/lib/hooks/useDeleteVisit";
 import { showToast } from "@/components/Toast";
+import { fetchApi } from "@/lib/client-api";
 import FrenchDatePicker from "@/components/FrenchDatePicker";
 import type { Visit, Week } from "@/types/visit";
 
@@ -119,12 +120,13 @@ export default function PlanningPage() {
     if (!effectiveWeekId) return;
     setDeletingWeek(true);
     try {
-      const res = await fetch("/api/weeks", {
+      const result = await fetchApi("/api/weeks", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: effectiveWeekId }),
+        suppressToast: true,
       });
-      if (!res.ok) throw new Error();
+      if (!result) throw new Error();
       showToast("success", "Semaine supprimée");
       setConfirmDeleteWeek(false);
       setSelectedWeekId("");

@@ -136,4 +136,22 @@ describe('parseExcelBuffer', () => {
     const result = parseExcelBuffer(buf);
     expect(result.visits[0].visitType).toBe('Maintenance');
   });
+
+  it('rejects sheets with too many rows', () => {
+    const bigRows = Array.from({ length: 5002 }, (_, i) => ({
+      ...BASE_ROW,
+      store_id: `ROW-${i}`,
+      'Day Period 2': '2026-06-23',
+    }));
+    const buf = makeBuffer(bigRows);
+    expect(() => parseExcelBuffer(buf)).toThrow(/trop volumineux/i);
+  });
+
+  it('clamps oversized string values', () => {
+    const veryLong = 'x'.repeat(12000);
+    const buf = makeBuffer([{ ...BASE_ROW, Remarks: veryLong, Materials: veryLong }]);
+    const result = parseExcelBuffer(buf);
+    expect(result.visits[0].remarks!.length).toBe(5000);
+    expect(result.visits[0].materials!.length).toBe(2000);
+  });
 });

@@ -1,28 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
-import { z } from "zod";
+import { CreateContactSchema, PatchContactSchema, DeleteContactSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
-
-const CreateContactSchema = z.object({
-  teamId: z.string().min(1, "Équipe requise"),
-  name: z.string().min(1, "Nom requis").max(200),
-  phone: z.string().min(1, "Téléphone requis").max(50),
-  email: z.string().email("Email invalide").max(200),
-});
-
-const PatchContactSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1).max(200).optional(),
-  phone: z.string().min(1).max(50).optional(),
-  email: z.string().email().max(200).optional(),
-  teamId: z.string().min(1).optional(),
-});
-
-const DeleteContactSchema = z.object({
-  id: z.string().min(1),
-});
 
 export async function GET() {
   try {
