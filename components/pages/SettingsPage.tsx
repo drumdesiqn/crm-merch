@@ -243,7 +243,7 @@ export default function SettingsPage() {
       {/* Profile & API */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Profil & Configuration IA</CardTitle>
+          <CardTitle className="text-base">Profil</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -289,30 +289,6 @@ export default function SettingsPage() {
               type="email"
               className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
-              IA (OpenAI)
-              {hasApiKey && (
-                <span className="ml-2 text-green-600 font-normal">
-                  <CheckCircle2 className="w-3 h-3 inline mr-0.5" />Configurée
-                </span>
-              )}
-            </label>
-            <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 p-3 text-sm text-slate-700 dark:text-slate-200">
-              La clé OpenAI n&apos;est plus modifiable ici. Configure <code>OPENAI_API_KEY</code> uniquement dans les variables d&apos;environnement serveur.
-            </div>
-            {!hasApiKey && (
-              <p className="flex items-center gap-1 text-xs text-orange-600">
-                <AlertCircle className="w-3 h-3" />
-                Clé requise pour utiliser l&apos;IA (Mails et Assistant)
-              </p>
-            )}
-            {hasApiKey && (
-              <p className="text-xs text-slate-400 dark:text-slate-500">
-                Clé détectée via la variable d&apos;environnement <code>OPENAI_API_KEY</code>.
-              </p>
-            )}
           </div>
           <Button onClick={saveSettings} disabled={savingSettings} className="w-full">
             {settingsSaved ? (
