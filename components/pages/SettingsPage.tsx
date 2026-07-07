@@ -27,7 +27,6 @@ export default function SettingsPage() {
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(false);
 
   const [newTerm, setNewTerm] = useState("");
   const [newDef, setNewDef] = useState("");
@@ -63,7 +62,6 @@ export default function SettingsPage() {
     setUserZone(settingsData.userZone || "");
     setUserEmail(settingsData.userEmail || "");
     setHomeAddress(settingsData.homeAddress || "");
-    setHasApiKey(settingsData.hasApiKey || false);
     setSettingsInitialized(true);
   }
 
@@ -71,7 +69,7 @@ export default function SettingsPage() {
     setSavingSettings(true);
     setErrorMsg(null);
     const body: Record<string, string> = { userName, userZone, userEmail, homeAddress };
-    const data = await fetchApi<{ hasApiKey: boolean }>("/api/settings", {
+    const data = await fetchApi<{ success: boolean }>("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -79,7 +77,6 @@ export default function SettingsPage() {
     });
     if (data) {
       setSettingsSaved(true);
-      setHasApiKey(data.hasApiKey);
       setTimeout(() => setSettingsSaved(false), 3000);
       queryClient.invalidateQueries({ queryKey: ["settings"] });
     } else {

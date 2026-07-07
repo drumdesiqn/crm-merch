@@ -90,6 +90,7 @@ function Lightbox({ photos, index, onClose, onNav }: { photos: PhotoWithVisit[];
       )}
       <div className="max-w-4xl w-full max-h-[85vh] flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
         <div className="relative w-full max-h-[75vh] flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo.url} alt={photo.caption || ""} className="max-h-[75vh] max-w-full rounded-xl object-contain" />
         </div>
         <div className="text-center">
@@ -161,7 +162,7 @@ export default function PhotosPage() {
   const toggleStore = (id: string) => {
     setExpandedStores((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   };
@@ -211,7 +212,7 @@ export default function PhotosPage() {
           {todayPhotos.length === 0 ? (
             <div className="text-center py-16 text-slate-400 dark:text-slate-600">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Pas encore de photos aujourd'hui</p>
+              <p className="font-medium">Pas encore de photos aujourd&apos;hui</p>
               <p className="text-sm mt-1">Les photos ajoutées ce jour apparaîtront ici</p>
             </div>
           ) : (
@@ -231,7 +232,7 @@ export default function PhotosPage() {
             <div className="text-center py-16 text-slate-400 dark:text-slate-600">
               <Star className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Aucun coup de cœur</p>
-              <p className="text-sm mt-1">Clique sur l'étoile d'une photo pour la mettre en avant</p>
+              <p className="text-sm mt-1">Clique sur l&apos;étoile d&apos;une photo pour la mettre en avant</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
@@ -265,7 +266,7 @@ export default function PhotosPage() {
               <p className="text-sm mt-1">Ajoute des photos depuis les visites dans le planning</p>
             </div>
           ) : storeGroups.length === 0 ? (
-            <p className="text-sm text-slate-500 py-8 text-center">Aucun résultat pour "{search}"</p>
+            <p className="text-sm text-slate-500 py-8 text-center">Aucun résultat pour &ldquo;{search}&rdquo;</p>
           ) : (
             storeGroups.map((group) => {
               const isExpanded = expandedStores.has(group.storeId);
@@ -282,6 +283,7 @@ export default function PhotosPage() {
                     <div className="flex items-center gap-3">
                       <div className="flex -space-x-2">
                         {preview.map((p) => (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img key={p.id} src={p.url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-900" />
                         ))}
                       </div>
