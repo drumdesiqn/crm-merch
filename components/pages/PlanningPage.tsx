@@ -220,14 +220,17 @@ export default function PlanningPage() {
     })), [dayGroups]);
 
 
+  const scrollRestored = useRef(false);
   useEffect(() => {
+    if (scrollRestored.current || sortedDays.length === 0) return;
     const saved = sessionStorage.getItem("planning-scroll");
     if (saved) {
+      scrollRestored.current = true;
       const y = parseInt(saved, 10);
-      setTimeout(() => window.scrollTo({ top: y, behavior: "instant" }), 80);
       sessionStorage.removeItem("planning-scroll");
+      setTimeout(() => window.scrollTo({ top: y, behavior: "instant" }), 80);
     }
-  }, []);
+  }, [sortedDays]);
 
 
   return (
