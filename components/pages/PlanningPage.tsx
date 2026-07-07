@@ -69,6 +69,8 @@ export default function PlanningPage() {
   const [filterType, setFilterType] = useState("all");
   const [confirmDeleteWeek, setConfirmDeleteWeek] = useState(false);
   const [deletingWeek, setDeletingWeek] = useState(false);
+  const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const hasScrolled = useRef(false);
 
   useEffect(() => {
     if (weeks.length > 0 && !selectedWeekId) {
@@ -80,6 +82,7 @@ export default function PlanningPage() {
   useEffect(() => {
     setLocalVisits(visits);
     if (allVisitsTruncated) setVisitsTruncated(true);
+    hasScrolled.current = false;
   }, [visits, allVisitsTruncated]);
 
   const handlePlanVisit = async () => {
@@ -218,6 +221,19 @@ export default function PlanningPage() {
       })(),
       visits: dayVisits,
     })), [dayGroups]);
+
+  useEffect(() => {
+    if (hasScrolled.current || sortedDays.length === 0 || viewMode !== "list") return;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const target = sortedDays.find((d) => d.date >= todayStr);
+    if (target) {
+      setTimeout(() => {
+        dayRefs.current[target.date]?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
+      hasScrolled.current = true;
+    }
+  }, [sortedDays, viewMode]);
 
 
   return (
@@ -418,7 +434,7 @@ export default function PlanningPage() {
             />
           ) : (
             sortedDays.map((day) => (
-              <div key={day.date} className="space-y-2">
+              <div key={day.date} ref={(el) => { dayRefs.current[day.date] = el; }} className="space-y-2">
                 <div className="flex items-center gap-2 py-1">
                   <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1">
                     <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
