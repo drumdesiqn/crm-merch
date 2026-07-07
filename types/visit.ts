@@ -47,10 +47,12 @@ export interface VisitPhoto {
   url: string;
   blobKey: string;
   caption: string | null;
+  starred: boolean;
   createdAt: string;
   visitId: string;
   storeId: string | null;
-  visit?: { visitDate: string; week: { label: string } } | null;
+  storeName?: string | null;
+  visit?: { visitDate: string; storeName: string; week: { label: string } } | null;
 }
 
 export interface ExportVisit extends Visit {

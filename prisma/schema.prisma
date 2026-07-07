@@ -89,10 +89,12 @@ model VisitPhoto {
   url       String
   blobKey   String
   caption   String?
+  starred   Boolean  @default(false)
   createdAt DateTime @default(now())
 
   @@index([visitId])
   @@index([storeId])
+  @@index([starred])
 }
 
 model MailLog {

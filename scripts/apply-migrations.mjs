@@ -277,6 +277,13 @@ const migrations = [
     ],
   },
   {
+    name: "20260707100000_add_starred_to_visit_photo",
+    sql: [
+      `ALTER TABLE "VisitPhoto" ADD COLUMN IF NOT EXISTS "starred" BOOLEAN NOT NULL DEFAULT false;`,
+      `CREATE INDEX IF NOT EXISTS "VisitPhoto_starred_idx" ON "VisitPhoto"("starred");`,
+    ],
+  },
+  {
     name: "20260627000000_add_store_model",
     sql: [
       `CREATE TABLE IF NOT EXISTS "Store" (
