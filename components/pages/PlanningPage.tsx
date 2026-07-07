@@ -69,8 +69,6 @@ export default function PlanningPage() {
   const [filterType, setFilterType] = useState("all");
   const [confirmDeleteWeek, setConfirmDeleteWeek] = useState(false);
   const [deletingWeek, setDeletingWeek] = useState(false);
-  const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const hasScrolled = useRef(false);
 
   useEffect(() => {
     if (weeks.length > 0 && !selectedWeekId) {
@@ -82,7 +80,6 @@ export default function PlanningPage() {
   useEffect(() => {
     setLocalVisits(visits);
     if (allVisitsTruncated) setVisitsTruncated(true);
-    hasScrolled.current = false;
   }, [visits, allVisitsTruncated]);
 
   const handlePlanVisit = async () => {
@@ -222,18 +219,15 @@ export default function PlanningPage() {
       visits: dayVisits,
     })), [dayGroups]);
 
+
   useEffect(() => {
-    if (hasScrolled.current || sortedDays.length === 0 || viewMode !== "list") return;
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    const target = sortedDays.find((d) => d.date >= todayStr);
-    if (target) {
-      setTimeout(() => {
-        dayRefs.current[target.date]?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 150);
-      hasScrolled.current = true;
+    const saved = sessionStorage.getItem("planning-scroll");
+    if (saved) {
+      const y = parseInt(saved, 10);
+      setTimeout(() => window.scrollTo({ top: y, behavior: "instant" }), 80);
+      sessionStorage.removeItem("planning-scroll");
     }
-  }, [sortedDays, viewMode]);
+  }, []);
 
 
   return (
@@ -434,7 +428,7 @@ export default function PlanningPage() {
             />
           ) : (
             sortedDays.map((day) => (
-              <div key={day.date} ref={(el) => { dayRefs.current[day.date] = el; }} className="space-y-2">
+              <div key={day.date} className="space-y-2">
                 <div className="flex items-center gap-2 py-1">
                   <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1">
                     <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
@@ -566,7 +560,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
 
   return (
-    <div onClick={() => router.push(`/planning/${visit.id}`)} className="cursor-pointer">
+    <div onClick={() => { sessionStorage.setItem("planning-scroll", String(window.scrollY)); router.push(`/planning/${visit.id}`); }} className="cursor-pointer">
       <Card className="hover:shadow-md hover:border-blue-200 transition-all">
         <CardContent className="p-3">
           <div className="flex items-start gap-2">
