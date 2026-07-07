@@ -44,16 +44,16 @@ function PhotoCard({ photo, onStar, onClick }: { photo: PhotoWithVisit; onStar: 
         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         onClick={onClick}
       />
-      {/* Star button */}
+      {/* Star button — always visible on touch devices, hover-only on desktop */}
       <button
         onClick={(e) => { e.stopPropagation(); onStar(photo.id, !photo.starred); }}
-        className={`absolute top-2 right-2 z-10 p-1.5 rounded-full transition-all shadow ${photo.starred ? "bg-yellow-400 text-white" : "bg-black/40 text-white opacity-0 group-hover:opacity-100"}`}
+        className={`absolute top-2 right-2 z-10 p-2 rounded-full transition-all shadow-md ${photo.starred ? "bg-yellow-400 text-white" : "bg-black/50 text-white sm:opacity-0 sm:group-hover:opacity-100"}`}
         title={photo.starred ? "Retirer des coups de cœur" : "Ajouter aux coups de cœur"}
       >
-        <Star className={`w-3.5 h-3.5 ${photo.starred ? "fill-white" : ""}`} />
+        <Star className={`w-4 h-4 ${photo.starred ? "fill-white" : ""}`} />
       </button>
-      {/* Overlay info */}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 translate-y-full group-hover:translate-y-0 transition-transform">
+      {/* Overlay info — always visible on mobile, hover on desktop */}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 sm:translate-y-full sm:group-hover:translate-y-0 transition-transform">
         <p className="text-white text-xs font-medium truncate">{photo.caption || date}</p>
       </div>
     </div>
@@ -69,12 +69,13 @@ function Lightbox({ photos, index, onClose, onNav }: { photos: PhotoWithVisit[];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
-      <button className="absolute top-4 right-4 text-white/80 hover:text-white p-2" onClick={onClose}>
+      <button className="absolute top-4 right-4 text-white/80 hover:text-white p-2 z-10" onClick={onClose}>
         <X className="w-6 h-6" />
       </button>
+      {/* Desktop side arrows */}
       {index > 0 && (
         <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors"
+          className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors"
           onClick={(e) => { e.stopPropagation(); onNav(index - 1); }}
         >
           <ChevronUp className="-rotate-90 w-5 h-5" />
@@ -82,25 +83,43 @@ function Lightbox({ photos, index, onClose, onNav }: { photos: PhotoWithVisit[];
       )}
       {index < photos.length - 1 && (
         <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors"
+          className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors"
           onClick={(e) => { e.stopPropagation(); onNav(index + 1); }}
         >
           <ChevronDown className="-rotate-90 w-5 h-5" />
         </button>
       )}
       <div className="max-w-4xl w-full max-h-[85vh] flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
-        <div className="relative w-full max-h-[75vh] flex items-center justify-center">
+        <div className="relative w-full max-h-[70vh] flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo.url} alt={photo.caption || ""} className="max-h-[75vh] max-w-full rounded-xl object-contain" />
+          <img src={photo.url} alt={photo.caption || ""} className="max-h-[70vh] max-w-full rounded-xl object-contain" />
         </div>
-        <div className="text-center">
-          {photo.caption && <p className="text-white font-medium">{photo.caption}</p>}
-          <p className="text-white/60 text-sm capitalize">{date}</p>
+        <div className="text-center px-2">
+          {photo.caption && <p className="text-white font-medium text-sm">{photo.caption}</p>}
+          <p className="text-white/60 text-xs sm:text-sm capitalize">{date}</p>
           {photo.visit?.storeName && (
             <p className="text-white/50 text-xs mt-0.5">{photo.visit.storeName} · {photo.visit.week?.label}</p>
           )}
         </div>
-        <p className="text-white/30 text-xs">{index + 1} / {photos.length}</p>
+        {/* Mobile bottom nav */}
+        <div className="flex items-center gap-4 sm:hidden">
+          <button
+            onClick={(e) => { e.stopPropagation(); if (index > 0) onNav(index - 1); }}
+            disabled={index === 0}
+            className="bg-white/10 disabled:opacity-30 text-white rounded-full p-3"
+          >
+            <ChevronUp className="-rotate-90 w-5 h-5" />
+          </button>
+          <p className="text-white/40 text-xs">{index + 1} / {photos.length}</p>
+          <button
+            onClick={(e) => { e.stopPropagation(); if (index < photos.length - 1) onNav(index + 1); }}
+            disabled={index === photos.length - 1}
+            className="bg-white/10 disabled:opacity-30 text-white rounded-full p-3"
+          >
+            <ChevronDown className="-rotate-90 w-5 h-5" />
+          </button>
+        </div>
+        <p className="hidden sm:block text-white/30 text-xs">{index + 1} / {photos.length}</p>
       </div>
     </div>
   );
@@ -195,16 +214,17 @@ export default function PhotosPage() {
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 w-fit">
         {[
-          { key: "stores", label: "Par magasin", icon: Store },
-          { key: "starred", label: `Coups de cœur${starredPhotos.length > 0 ? ` (${starredPhotos.length})` : ""}`, icon: Star },
-          { key: "today", label: `Aujourd'hui${todayPhotos.length > 0 ? ` (${todayPhotos.length})` : ""}`, icon: Camera },
-        ].map(({ key, label, icon: Icon }) => (
+          { key: "stores", label: "Par magasin", labelShort: "Magasins", icon: Store },
+          { key: "starred", label: `Coups de cœur${starredPhotos.length > 0 ? ` (${starredPhotos.length})` : ""}`, labelShort: `★${starredPhotos.length > 0 ? ` ${starredPhotos.length}` : ""}`, icon: Star },
+          { key: "today", label: `Aujourd'hui${todayPhotos.length > 0 ? ` (${todayPhotos.length})` : ""}`, labelShort: `Auj.${todayPhotos.length > 0 ? ` (${todayPhotos.length})` : ""}`, icon: Camera },
+        ].map(({ key, label, labelShort, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key as typeof tab)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${tab === key ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"}`}
           >
             <Icon className="w-4 h-4" />
+            <span className="sm:hidden">{labelShort}</span>
             <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
