@@ -60,7 +60,9 @@ export default function VisitNotes({
                   </button>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  {new Date(note.createdAt).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  {note.visit?.visitDate
+                    ? new Date(note.visit.visitDate).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", year: "numeric" })
+                    : new Date(note.createdAt).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", year: "numeric" })}
                   {note.visit?.week?.label && (
                     <span className="ml-2 text-blue-mars font-medium">· {note.visit.week.label}</span>
                   )}

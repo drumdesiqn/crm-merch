@@ -134,7 +134,10 @@ export default function PhotosPage() {
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   const todayPhotos = useMemo(() =>
-    allPhotos.filter((p) => p.createdAt.startsWith(todayStr)),
+    allPhotos.filter((p) => {
+      const ref = p.visit?.visitDate || p.createdAt;
+      return ref.startsWith(todayStr);
+    }),
     [allPhotos, todayStr]
   );
 
@@ -150,7 +153,8 @@ export default function PhotosPage() {
       const name = p.visit?.storeName || p.storeName || "Magasin inconnu";
       const city = p.visit?.storeCity || "";
       if (!map.has(key)) {
-        map.set(key, { storeId: key, storeName: name, storeCity: city, photos: [], lastDate: p.createdAt });
+        const refDate = p.visit?.visitDate || p.createdAt;
+        map.set(key, { storeId: key, storeName: name, storeCity: city, photos: [], lastDate: refDate });
       }
       map.get(key)!.photos.push(p);
     }
@@ -212,8 +216,8 @@ export default function PhotosPage() {
           {todayPhotos.length === 0 ? (
             <div className="text-center py-16 text-slate-400 dark:text-slate-600">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Pas encore de photos aujourd&apos;hui</p>
-              <p className="text-sm mt-1">Les photos ajoutées ce jour apparaîtront ici</p>
+              <p className="font-medium">Pas encore de photos pour aujourd&apos;hui</p>
+              <p className="text-sm mt-1">Les photos des visites planifiées ce jour apparaîtront ici</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
