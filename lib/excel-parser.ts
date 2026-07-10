@@ -120,14 +120,14 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ParseResult {
       if (isNaN(parsed.getTime())) {
         invalidDateCount++;
         const now = new Date();
-        visitDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0));
+        visitDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0, 0));
       } else {
-        visitDate = new Date(Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 12, 0, 0));
+        visitDate = new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate(), 12, 0, 0));
       }
     } else {
       invalidDateCount++;
       const now = new Date();
-      visitDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0));
+      visitDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0, 0));
     }
 
     const storeId = String(row["store_id"] || "").trim();

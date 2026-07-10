@@ -103,6 +103,18 @@ describe('parseExcelBuffer', () => {
     expect(v.visitFrequence).toBeNull();
   });
 
+  it('detects W29 2026 correctly (regression: was detected as W28)', () => {
+    const rows = Array.from({ length: 7 }, (_, i) => ({
+      ...BASE_ROW,
+      store_id: `W29-${i}`,
+      'Day Period 2': `2026-07-${13 + i}`, // W29: July 13-19 2026
+    }));
+    const buf = makeBuffer(rows);
+    const result = parseExcelBuffer(buf);
+    expect(result.weekNum).toBe(29);
+    expect(result.label).toBe('W29 2026');
+  });
+
   it('uses median date for week detection with multiple rows', () => {
     const rows = [
       { ...BASE_ROW, store_id: 'A', 'Day Period 2': '2026-06-22' },
