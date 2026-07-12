@@ -56,7 +56,7 @@ export default function Navbar() {
   return (
     <>
       {/* Top bar desktop */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 items-center px-4 gap-1">
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 bg-white dark:bg-[#0e0e0f] border-b border-slate-200 dark:border-[#2e2e30] items-center px-4 gap-1">
         <div className="flex items-center mr-6">
           <Image src="/logo-cpm-mars.png" alt="CPM Mars" width={100} height={32} className="h-8 w-auto dark:hidden" style={{ width: "auto", height: "auto" }} priority />
           <Image src="/logo-cpm-mars-white.png" alt="CPM Mars" width={100} height={32} className="h-8 w-auto hidden dark:block" style={{ width: "auto", height: "auto" }} priority />
@@ -70,8 +70,8 @@ export default function Navbar() {
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
-                  ? "bg-blue-50 dark:bg-blue-950 text-blue-mars dark:text-blue-400"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                  ? "bg-blue-50 dark:bg-blue-mars/15 text-blue-mars dark:text-blue-400"
+                  : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a1a1b] hover:text-slate-900 dark:hover:text-zinc-100"
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -88,8 +88,8 @@ export default function Navbar() {
               className={cn(
                 "hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
-                  ? "bg-blue-50 dark:bg-blue-950 text-blue-mars dark:text-blue-400"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                  ? "bg-blue-50 dark:bg-blue-mars/15 text-blue-mars dark:text-blue-400"
+                  : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a1a1b] hover:text-slate-900 dark:hover:text-zinc-100"
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -100,7 +100,7 @@ export default function Navbar() {
         <div className="ml-auto">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a1a1b] transition-colors"
             title={theme === "dark" ? "Mode clair" : "Mode sombre"}
             aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
           >
@@ -110,7 +110,7 @@ export default function Navbar() {
       </header>
 
       {/* Bottom nav mobile — 4 items + menu Plus */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex px-2 pb-safe-extra">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-[#0e0e0f] border-t border-slate-200 dark:border-[#2e2e30] flex px-2 pb-safe-extra">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           return (
@@ -149,7 +149,7 @@ export default function Navbar() {
             />
           )}
           {showMore && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 min-w-[160px] z-[10000]">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white dark:bg-[#1a1a1b] rounded-xl shadow-lg border border-slate-200 dark:border-[#2e2e30] p-2 min-w-[160px] z-[10000]">
               {MORE_ITEMS.map((item) => {
                 const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                 return (
@@ -159,7 +159,7 @@ export default function Navbar() {
                     onClick={closeMore}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      active ? "text-blue-mars dark:text-blue-400 bg-blue-50 dark:bg-blue-950" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      active ? "text-blue-mars dark:text-blue-400 bg-blue-50 dark:bg-blue-mars/15" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#222223]"
                     )}
                   >
                     <item.icon className="w-4 h-4" />

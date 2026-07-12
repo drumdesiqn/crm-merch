@@ -11,6 +11,13 @@
   --color-red-mars-light: #fee2e2;
   --color-green-cpm: #059669;
   --color-green-cpm-light: #ecfdf5;
+
+  /* Dark mode warm neutral palette */
+  --color-dark-bg: #0e0e0f;
+  --color-dark-surface: #1a1a1b;
+  --color-dark-surface-2: #222223;
+  --color-dark-border: #2e2e30;
+  --color-dark-border-subtle: #252526;
 }
 
 body {
@@ -18,8 +25,8 @@ body {
 }
 
 .dark body {
-  color: #f1f5f9;
-  background-color: #0f172a;
+  color: #f4f4f5;
+  background-color: var(--color-dark-bg);
 }
 
 .dark {

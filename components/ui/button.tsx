@@ -10,9 +10,9 @@ const buttonVariants = cva(
       variant: {
         default: "bg-blue-mars text-white hover:bg-blue-800 shadow",
         destructive: "bg-red-mars text-white hover:bg-red-700",
-        outline: "border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100",
-        secondary: "bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-600",
-        ghost: "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-blue-mars dark:hover:text-blue-cpm",
+        outline: "border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:bg-slate-50 dark:hover:bg-[#222223] text-slate-900 dark:text-zinc-100",
+        secondary: "bg-slate-100 dark:bg-[#222223] text-slate-900 dark:text-zinc-100 hover:bg-slate-200 dark:hover:bg-[#2e2e30]",
+        ghost: "hover:bg-slate-100 dark:hover:bg-[#222223] text-slate-700 dark:text-zinc-300 hover:text-blue-mars dark:hover:text-blue-cpm",
         link: "text-blue-mars underline-offset-4 hover:underline",
         success: "bg-green-cpm text-white hover:bg-green-600",
       },
