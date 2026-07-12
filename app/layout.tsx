@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${geistSans.variable} h-full antialiased`}>
       <head>
-        <meta name="theme-color" content="#2563EB" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0074d7" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#0e0e0f" media="(prefers-color-scheme: dark)" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

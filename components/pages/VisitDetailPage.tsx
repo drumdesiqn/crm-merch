@@ -290,16 +290,16 @@ export default function VisitDetailPage() {
           <title>Rapport de visite - ${escapeHtml(v.storeName)}</title>
           <style>
             ${PDF_BASE_STYLES}
-            h1 { color: #2563EB; margin-bottom: 5px; }
-            .header { border-bottom: 2px solid #2563EB; padding-bottom: 15px; margin-bottom: 20px; }
+            h1 { color: #0074d7; margin-bottom: 5px; }
+            .header { border-bottom: 2px solid #0074d7; padding-bottom: 15px; margin-bottom: 20px; }
             .info-item { padding: 8px; background: #f9fafb; border-radius: 6px; }
             .info-label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
             .info-value { font-size: 14px; font-weight: 500; margin-top: 2px; }
             .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; margin-right: 5px; }
             .badge-red { background: #fee2e2; color: #C8102E; }
-            .badge-blue { background: #dbeafe; color: #2563EB; }
+            .badge-blue { background: #dbeafe; color: #0074d7; }
             .badge-gray { background: #f3f4f6; color: #6b7280; }
-            .section-title { font-size: 16px; font-weight: 600; color: #2563EB; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
+            .section-title { font-size: 16px; font-weight: 600; color: #0074d7; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
           </style>
         </head>
         <body>
