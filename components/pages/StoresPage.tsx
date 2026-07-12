@@ -145,305 +145,179 @@ export default function StoresPage() {
     return <StoresListSkeleton />;
   }
 
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars";
+  const labelCls = "block text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wide";
+  const modalCls = "bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 space-y-4";
+
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link href="/">
-            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" aria-label="Retour">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">Magasins</h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              {stores.length} magasin{stores.length !== 1 ? "s" : ""} visité{stores.length !== 1 ? "s" : ""}
-              {isFetching && <Loader2 className="w-3 h-3 animate-spin" />}
-            </p>
-          </div>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-1">Réseau</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+            Magasins
+            {isFetching && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+          </h1>
         </div>
         <Button size="sm" onClick={() => setShowStoreForm(true)} className="shrink-0" aria-label="Ajouter magasin">
-          <Plus className="w-4 h-4 mr-1" /> Ajouter
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Ajouter</span>
         </Button>
       </div>
 
       {/* Search and filters */}
-      <Card>
-        <CardContent className="pt-4 sm:pt-6 px-3 sm:px-4">
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Rechercher un magasin..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars text-base"
-                aria-label="Rechercher un magasin"
-              />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-base focus:outline-none focus:ring-2 focus:ring-blue-mars"
-              >
-                <option value="name">Nom</option>
-                <option value="city">Ville</option>
-                <option value="visits">Visites</option>
-                <option value="lastVisit">Dernière visite</option>
-              </select>
-              <button
-                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                {sortOrder === "asc" ? "↑" : "↓"}
-              </button>
-            </div>
-            {cities.length > 1 && (
-              <select
-                value={filterCity}
-                onChange={(e) => setFilterCity(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-base focus:outline-none focus:ring-2 focus:ring-blue-mars"
-              >
-                <option value="">Toutes les villes</option>
-                {cities.map((city) => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats — uniquement les stats propres à la liste magasins */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/50 dark:to-slate-900 border-blue-100 dark:border-blue-900">
-          <CardContent className="py-3 sm:py-4 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-400">{stores.filter((s) => s.totalVisits > 0).length}</p>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1">Magasins actifs</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-blue-mars-light to-white dark:from-blue-mars/20 dark:to-slate-900 border-blue-200 dark:border-blue-800">
-          <CardContent className="py-3 sm:py-4 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-blue-mars dark:text-blue-cpm">
-              {stores.filter((s) => s.materialTypes.length > 0).length}
-            </p>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1">Avec matériel installé</p>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="flex justify-end">
-        <Link href="/analytics" className="text-xs text-blue-mars hover:underline flex items-center gap-1">
-          <TrendingUp className="w-3 h-3" /> Voir les stats globales dans Analytics
-        </Link>
+      <div className="flex flex-col gap-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Rechercher un magasin, ville..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+            aria-label="Rechercher un magasin"
+          />
+        </div>
+        <div className="flex gap-2">
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+            className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars">
+            <option value="name">Trier par nom</option>
+            <option value="city">Ville</option>
+            <option value="visits">Visites</option>
+            <option value="lastVisit">Dernière visite</option>
+          </select>
+          <button onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-600 dark:text-zinc-400 text-sm hover:bg-slate-50 dark:hover:bg-[#222223] transition-colors">
+            {sortOrder === "asc" ? "↑" : "↓"}
+          </button>
+          {cities.length > 1 && (
+            <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)}
+              className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars">
+              <option value="">Toutes les villes</option>
+              {cities.map((city) => (<option key={city} value={city}>{city}</option>))}
+            </select>
+          )}
+        </div>
       </div>
 
-      {/* Stores list + count */}
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 border-l-blue-mars rounded-xl px-4 py-3">
+          <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{stores.filter((s) => s.totalVisits > 0).length}</p>
+          <p className="text-xs text-slate-500 dark:text-zinc-500 mt-0.5">Magasins actifs</p>
+        </div>
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 border-l-blue-cpm rounded-xl px-4 py-3">
+          <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{stores.filter((s) => s.materialTypes.length > 0).length}</p>
+          <p className="text-xs text-slate-500 dark:text-zinc-500 mt-0.5">Avec matériel installé</p>
+        </div>
+      </div>
+
+      {/* Result count */}
       {(searchQuery || filterCity) && (
-        <p className="text-xs text-slate-400 dark:text-slate-500">
-          {filteredStores.length} résultat{filteredStores.length !== 1 ? "s" : ""} sur {stores.length}
-        </p>
+        <p className="text-xs text-slate-400 dark:text-zinc-500">{filteredStores.length} / {stores.length} magasin{stores.length > 1 ? "s" : ""}</p>
       )}
-      <div className="grid gap-2 sm:gap-3">
+
+      {/* Stores list */}
+      <div className="space-y-2">
         {filteredStores.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Store className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="font-semibold text-slate-700 dark:text-slate-300">Aucun magasin trouvé</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Les magasins apparaissent automatiquement après import du planning</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-16">
+            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#222223] flex items-center justify-center mx-auto mb-3">
+              <Store className="w-5 h-5 text-slate-400" />
+            </div>
+            <p className="font-semibold text-slate-700 dark:text-zinc-300">Aucun magasin trouvé</p>
+            <p className="text-sm text-slate-400 dark:text-zinc-500 mt-1">Les magasins apparaissent automatiquement après import du planning</p>
+          </div>
         ) : (
           filteredStores.map((store) => (
-            <Link key={store.storeId} href={`/stores/${store.storeId}/history`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer border-slate-200 dark:border-slate-700">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight">
-                          {store.storeName}
-                        </h3>
-                        <Badge variant="secondary" className="text-[10px] sm:text-xs shrink-0 mt-0.5">
-                          {store.totalVisits} visite{store.totalVisits !== 1 ? "s" : ""}
-                        </Badge>
+            <div key={store.storeId} className="group flex items-stretch gap-0 rounded-xl border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] hover:shadow-sm transition-all">
+              {/* Left accent based on completions */}
+              <div className={`w-1 rounded-l-xl shrink-0 ${
+                store.totalVisits === 0 ? "bg-slate-200 dark:bg-[#2e2e30]" :
+                store.completedVisits === store.totalVisits ? "bg-green-500" : "bg-blue-mars"
+              }`} />
+              <div className="flex-1 p-3 min-w-0">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">{store.storeName}</p>
+                      <span className="text-xs text-slate-400 dark:text-zinc-500 shrink-0">· {store.completedVisits}/{store.totalVisits}</span>
+                    </div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">{store.storeAddress}, {store.storeZipcode} {store.storeCity}</p>
+                    </div>
+                    {store.salesRep && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <User className="w-3 h-3 text-slate-400 shrink-0" />
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">{store.salesRep}</p>
                       </div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 px-2 text-xs"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePlan(store); }}
-                        >
-                          <CalendarPlus className="w-3 h-3 mr-1" /> Planifier
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 text-xs text-slate-500"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(store); }}
-                        >
-                          <Pencil className="w-3 h-3 mr-1" /> Modifier
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">
-                        <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                        <span className="truncate">
-                          {store.storeAddress}, {store.storeZipcode} {store.storeCity}
-                        </span>
-                      </div>
-                      {store.salesRep && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mb-1">
-                          <User className="w-3 h-3 shrink-0" />
-                          <span className="truncate">{store.salesRep}</span>
+                    )}
+                    <div className="flex items-center gap-3 mt-1">
+                      {store.lastVisit && (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <span className="text-xs text-slate-400 dark:text-zinc-500">{formatDate(store.lastVisit)}</span>
                         </div>
                       )}
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span className="truncate">{store.lastVisit ? formatDate(store.lastVisit) : "—"}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3" />
-                          <span>
-                            {store.completedVisits}/{store.totalVisits}
-                          </span>
-                        </div>
-                        {store.totalPhotos > 0 && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-blue-mars dark:text-blue-cpm font-medium">
-                              {store.totalPhotos} photo{store.totalPhotos !== 1 ? "s" : ""}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {store.materialTypes.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {store.materialTypes.slice(0, 3).map((type) => (
-                            <Badge key={type} className="text-[10px] sm:text-xs bg-blue-mars-light text-blue-mars dark:bg-blue-mars/20 dark:text-blue-cpm border-blue-200 dark:border-blue-800">
-                              {type}
-                            </Badge>
-                          ))}
-                          {store.materialTypes.length > 3 && (
-                            <Badge className="text-[10px] sm:text-xs bg-blue-mars-light text-blue-mars dark:bg-blue-mars/20 dark:text-blue-cpm border-blue-200 dark:border-blue-800">
-                              +{store.materialTypes.length - 3}
-                            </Badge>
-                          )}
-                        </div>
+                      {store.totalPhotos > 0 && (
+                        <span className="text-xs text-slate-400 dark:text-zinc-500">{store.totalPhotos} photo{store.totalPhotos > 1 ? "s" : ""}</span>
                       )}
                     </div>
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 shrink-0 mt-1" />
+                    {store.materialTypes.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {store.materialTypes.slice(0, 3).map((type) => (
+                          <span key={type} className="text-xs px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-medium">{type}</span>
+                        ))}
+                        {store.materialTypes.length > 3 && (
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#222223] text-slate-500 dark:text-zinc-400">+{store.materialTypes.length - 3}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePlan(store); }}
+                      className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-blue-mars hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Planifier">
+                      <CalendarPlus className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(store); }}
+                      className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#222223] transition-colors" title="Modifier">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <Link href={`/stores/${store.storeId}/history`} onClick={(e) => e.stopPropagation()}>
+                      <span className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-300 dark:text-zinc-600 hover:text-slate-500 transition-colors">
+                        <ChevronRight className="w-4 h-4" />
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))
         )}
       </div>
 
       {/* Create store modal */}
       {showStoreForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowStoreForm(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Ajouter un magasin</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowStoreForm(false)}>
+          <div className={modalCls} onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100">Ajouter un magasin</h2>
             <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ID magasin *</label>
-                <input
-                  type="text"
-                  value={storeForm.storeId}
-                  onChange={(e) => setStoreForm({ ...storeForm, storeId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Ex: BRU001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom *</label>
-                <input
-                  type="text"
-                  value={storeForm.storeName}
-                  onChange={(e) => setStoreForm({ ...storeForm, storeName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Ex: Carrefour Express Bruxelles"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse *</label>
-                <input
-                  type="text"
-                  value={storeForm.storeAddress}
-                  onChange={(e) => setStoreForm({ ...storeForm, storeAddress: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Ex: Rue de la Loi 1"
-                />
-              </div>
+              <div><label className={labelCls}>ID magasin *</label><input type="text" value={storeForm.storeId} onChange={(e) => setStoreForm({ ...storeForm, storeId: e.target.value })} className={inputCls} placeholder="Ex: BRU001" /></div>
+              <div><label className={labelCls}>Nom *</label><input type="text" value={storeForm.storeName} onChange={(e) => setStoreForm({ ...storeForm, storeName: e.target.value })} className={inputCls} placeholder="Ex: Carrefour Express Bruxelles" /></div>
+              <div><label className={labelCls}>Adresse *</label><input type="text" value={storeForm.storeAddress} onChange={(e) => setStoreForm({ ...storeForm, storeAddress: e.target.value })} className={inputCls} placeholder="Ex: Rue de la Loi 1" /></div>
               <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Code postal *</label>
-                  <input
-                    type="text"
-                    value={storeForm.storeZipcode}
-                    onChange={(e) => setStoreForm({ ...storeForm, storeZipcode: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                    placeholder="1000"
-                  />
-                </div>
-                <div className="flex-[2]">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ville *</label>
-                  <input
-                    type="text"
-                    value={storeForm.storeCity}
-                    onChange={(e) => setStoreForm({ ...storeForm, storeCity: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                    placeholder="Bruxelles"
-                  />
-                </div>
+                <div className="flex-1"><label className={labelCls}>CP *</label><input type="text" value={storeForm.storeZipcode} onChange={(e) => setStoreForm({ ...storeForm, storeZipcode: e.target.value })} className={inputCls} placeholder="1000" /></div>
+                <div className="flex-[2]"><label className={labelCls}>Ville *</label><input type="text" value={storeForm.storeCity} onChange={(e) => setStoreForm({ ...storeForm, storeCity: e.target.value })} className={inputCls} placeholder="Bruxelles" /></div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type de visite</label>
-                <input
-                  type="text"
-                  value={storeForm.visitType}
-                  onChange={(e) => setStoreForm({ ...storeForm, visitType: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assortiment</label>
-                <input
-                  type="text"
-                  value={storeForm.assortment}
-                  onChange={(e) => setStoreForm({ ...storeForm, assortment: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fréquence</label>
-                <input
-                  type="text"
-                  value={storeForm.visitFrequence || ""}
-                  onChange={(e) => setStoreForm({ ...storeForm, visitFrequence: e.target.value || null })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Ex: Hebdomadaire"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Représentant</label>
-                <input
-                  type="text"
-                  value={storeForm.salesRep || ""}
-                  onChange={(e) => setStoreForm({ ...storeForm, salesRep: e.target.value || null })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Nom du représentant"
-                />
-              </div>
+              <div><label className={labelCls}>Type de visite</label><input type="text" value={storeForm.visitType} onChange={(e) => setStoreForm({ ...storeForm, visitType: e.target.value })} className={inputCls} /></div>
+              <div><label className={labelCls}>Assortiment</label><input type="text" value={storeForm.assortment} onChange={(e) => setStoreForm({ ...storeForm, assortment: e.target.value })} className={inputCls} /></div>
+              <div><label className={labelCls}>Fréquence</label><input type="text" value={storeForm.visitFrequence || ""} onChange={(e) => setStoreForm({ ...storeForm, visitFrequence: e.target.value || null })} className={inputCls} placeholder="Ex: Hebdomadaire" /></div>
+              <div><label className={labelCls}>Représentant</label><input type="text" value={storeForm.salesRep || ""} onChange={(e) => setStoreForm({ ...storeForm, salesRep: e.target.value || null })} className={inputCls} placeholder="Nom du représentant" /></div>
             </div>
-            <div className="flex gap-2 pt-2">
-              <Button className="flex-1" onClick={handleCreateStore} disabled={createStore.isPending}>
-                {createStore.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer"}
-              </Button>
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={handleCreateStore} disabled={createStore.isPending}>{createStore.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer"}</Button>
               <Button variant="outline" className="flex-1" onClick={() => setShowStoreForm(false)}>Annuler</Button>
             </div>
           </div>
@@ -452,39 +326,19 @@ export default function StoresPage() {
 
       {/* Plan visit modal */}
       {showPlanForm && planStore && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowPlanForm(null)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Planifier {planStore.storeName}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowPlanForm(null)}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100">Planifier {planStore.storeName}</h2>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Date de visite</label>
-              <div className="border border-slate-200 dark:border-slate-600 rounded-lg p-3">
+              <label className={labelCls}>Date de visite</label>
+              <div className="border border-slate-200 dark:border-[#2e2e30] rounded-lg p-3 bg-white dark:bg-[#222223]">
                 <FrenchDatePicker value={planDate} onChange={setPlanDate} />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Représentant</label>
-              <input
-                type="text"
-                value={planSalesRep}
-                onChange={(e) => setPlanSalesRep(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                placeholder="Nom du représentant"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
-              <textarea
-                value={planRemarks}
-                onChange={(e) => setPlanRemarks(e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base resize-none"
-                placeholder="Remarques, instructions..."
-              />
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button className="flex-1" onClick={handleCreateVisit} disabled={createVisit.isPending}>
-                {createVisit.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Planifier"}
-              </Button>
+            <div><label className={labelCls}>Représentant</label><input type="text" value={planSalesRep} onChange={(e) => setPlanSalesRep(e.target.value)} className={inputCls} placeholder="Nom du représentant" /></div>
+            <div><label className={labelCls}>Notes</label><textarea value={planRemarks} onChange={(e) => setPlanRemarks(e.target.value)} rows={2} className={`${inputCls} resize-none`} placeholder="Remarques, instructions..." /></div>
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={handleCreateVisit} disabled={createVisit.isPending}>{createVisit.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Planifier"}</Button>
               <Button variant="outline" className="flex-1" onClick={() => setShowPlanForm(null)}>Annuler</Button>
             </div>
           </div>
@@ -493,91 +347,23 @@ export default function StoresPage() {
 
       {/* Edit store modal */}
       {editingStore && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setEditingStore(null)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Modifier {editingStore.storeName}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingStore(null)}>
+          <div className={modalCls} onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100">Modifier {editingStore.storeName}</h2>
             <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom *</label>
-                <input
-                  type="text"
-                  value={editForm.storeName}
-                  onChange={(e) => setEditForm({ ...editForm, storeName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse *</label>
-                <input
-                  type="text"
-                  value={editForm.storeAddress}
-                  onChange={(e) => setEditForm({ ...editForm, storeAddress: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                />
-              </div>
+              <div><label className={labelCls}>Nom *</label><input type="text" value={editForm.storeName} onChange={(e) => setEditForm({ ...editForm, storeName: e.target.value })} className={inputCls} /></div>
+              <div><label className={labelCls}>Adresse *</label><input type="text" value={editForm.storeAddress} onChange={(e) => setEditForm({ ...editForm, storeAddress: e.target.value })} className={inputCls} /></div>
               <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Code postal *</label>
-                  <input
-                    type="text"
-                    value={editForm.storeZipcode}
-                    onChange={(e) => setEditForm({ ...editForm, storeZipcode: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  />
-                </div>
-                <div className="flex-[2]">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ville *</label>
-                  <input
-                    type="text"
-                    value={editForm.storeCity}
-                    onChange={(e) => setEditForm({ ...editForm, storeCity: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  />
-                </div>
+                <div className="flex-1"><label className={labelCls}>CP *</label><input type="text" value={editForm.storeZipcode} onChange={(e) => setEditForm({ ...editForm, storeZipcode: e.target.value })} className={inputCls} /></div>
+                <div className="flex-[2]"><label className={labelCls}>Ville *</label><input type="text" value={editForm.storeCity} onChange={(e) => setEditForm({ ...editForm, storeCity: e.target.value })} className={inputCls} /></div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type de visite</label>
-                <input
-                  type="text"
-                  value={editForm.visitType}
-                  onChange={(e) => setEditForm({ ...editForm, visitType: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assortiment</label>
-                <input
-                  type="text"
-                  value={editForm.assortment}
-                  onChange={(e) => setEditForm({ ...editForm, assortment: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fréquence</label>
-                <input
-                  type="text"
-                  value={editForm.visitFrequence || ""}
-                  onChange={(e) => setEditForm({ ...editForm, visitFrequence: e.target.value || null })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Ex: Hebdomadaire"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Représentant</label>
-                <input
-                  type="text"
-                  value={editForm.salesRep || ""}
-                  onChange={(e) => setEditForm({ ...editForm, salesRep: e.target.value || null })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
-                  placeholder="Nom du représentant"
-                />
-              </div>
+              <div><label className={labelCls}>Type de visite</label><input type="text" value={editForm.visitType} onChange={(e) => setEditForm({ ...editForm, visitType: e.target.value })} className={inputCls} /></div>
+              <div><label className={labelCls}>Assortiment</label><input type="text" value={editForm.assortment} onChange={(e) => setEditForm({ ...editForm, assortment: e.target.value })} className={inputCls} /></div>
+              <div><label className={labelCls}>Fréquence</label><input type="text" value={editForm.visitFrequence || ""} onChange={(e) => setEditForm({ ...editForm, visitFrequence: e.target.value || null })} className={inputCls} placeholder="Ex: Hebdomadaire" /></div>
+              <div><label className={labelCls}>Représentant</label><input type="text" value={editForm.salesRep || ""} onChange={(e) => setEditForm({ ...editForm, salesRep: e.target.value || null })} className={inputCls} placeholder="Nom du représentant" /></div>
             </div>
-            <div className="flex gap-2 pt-2">
-              <Button className="flex-1" onClick={handleUpdateStore} disabled={updateStore.isPending}>
-                {updateStore.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
-              </Button>
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={handleUpdateStore} disabled={updateStore.isPending}>{updateStore.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}</Button>
               <Button variant="outline" className="flex-1" onClick={() => setEditingStore(null)}>Annuler</Button>
             </div>
           </div>
