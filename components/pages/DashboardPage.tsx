@@ -3,9 +3,8 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X } from "lucide-react";
+import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X, CheckCircle2, Clock, AlertTriangle, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -39,11 +38,8 @@ export default function DashboardPage() {
     return d;
   }, []);
 
-  // Filter visits based on search query and filters
   const filteredVisits = useMemo(() => {
     let result = visits;
-
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((v) =>
@@ -53,28 +49,19 @@ export default function DashboardPage() {
         v.storeZipcode?.toLowerCase().includes(query)
       );
     }
-
-    // Type filter
-    if (filterType !== "all") {
-      result = result.filter((v) => v.visitType === filterType);
-    }
-
-    // Status filter
-    if (filterStatus !== "all") {
-      result = result.filter((v) => v.status === filterStatus);
-    }
-
+    if (filterType !== "all") result = result.filter((v) => v.visitType === filterType);
+    if (filterStatus !== "all") result = result.filter((v) => v.status === filterStatus);
     return result;
   }, [visits, searchQuery, filterType, filterStatus]);
 
-  const todayVisits = useMemo(() => 
+  const todayVisits = useMemo(() =>
     filteredVisits
       .filter((v) => parseLocalDate(v.visitDate).getTime() === today.getTime())
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
     [filteredVisits, today]
   );
 
-  const upcomingVisits = useMemo(() => 
+  const upcomingVisits = useMemo(() =>
     filteredVisits
       .filter((v) => parseLocalDate(v.visitDate).getTime() > today.getTime())
       .sort((a, b) => {
@@ -85,7 +72,7 @@ export default function DashboardPage() {
     [filteredVisits, today]
   );
 
-  const pastVisits = useMemo(() => 
+  const pastVisits = useMemo(() =>
     filteredVisits
       .filter((v) => parseLocalDate(v.visitDate).getTime() < today.getTime())
       .sort((a, b) => {
@@ -100,107 +87,134 @@ export default function DashboardPage() {
   const maintenanceCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Maintenance").length, [filteredVisits]);
   const adHocCount = useMemo(() => filteredVisits.filter((v) => v.visitType === "Ad Hoc").length, [filteredVisits]);
   const doneCount = useMemo(() => filteredVisits.filter((v) => v.status === "done").length, [filteredVisits]);
+  const completionPct = filteredVisits.length > 0 ? Math.round((doneCount / filteredVisits.length) * 100) : 0;
 
-  // Cross-week store stats from summary endpoint
   const storeVisitCount = useMemo(() => {
     const counts = new Map<string, number>();
-    Object.entries(summaryStores).forEach(([storeId, data]) => {
-      counts.set(storeId, data.total);
-    });
+    Object.entries(summaryStores).forEach(([storeId, data]) => counts.set(storeId, data.total));
     return counts;
   }, [summaryStores]);
 
   const storeCompletedCount = useMemo(() => {
     const counts = new Map<string, number>();
-    Object.entries(summaryStores).forEach(([storeId, data]) => {
-      counts.set(storeId, data.completed);
-    });
+    Object.entries(summaryStores).forEach(([storeId, data]) => counts.set(storeId, data.completed));
     return counts;
   }, [summaryStores]);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  if (loading) return <DashboardSkeleton />;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header with greeting */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+            {currentWeek ? currentWeek.label : "Tableau de bord"}
+          </p>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {userName ? `Salut ${userName} 👋` : "Tableau de bord"}
+            {userName ? `Bonjour, ${userName}` : "Tableau de bord"}
           </h1>
           {currentWeek && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{currentWeek.label} · {currentWeek._count.visits} visites</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              {currentWeek._count.visits} visites planifiées · {completionPct}% complétées
+            </p>
           )}
         </div>
         {currentWeek && (
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-60">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="Rechercher un magasin..."
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
               aria-label="Rechercher un magasin"
             />
             {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                aria-label="Effacer la recherche"
-              >
-                <X className="w-4 h-4" />
+              <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label="Effacer">
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         )}
       </div>
 
-      {/* No week imported */}
+      {/* ── No week ── */}
       {!currentWeek && (
-        <Card className="border-dashed border-2 border-slate-300">
-          <CardContent className="py-10 flex flex-col items-center gap-4 text-center">
-            <Upload className="w-10 h-10 text-slate-400" />
-            <div>
-              <p className="font-semibold text-slate-700 dark:text-slate-300">Aucun planning importé</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Importe ton fichier Excel hebdomadaire pour commencer</p>
-            </div>
-            <Link href="/planning">
-              <Button>Importer un planning</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 py-14 flex flex-col items-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+            <Upload className="w-5 h-5 text-slate-400" />
+          </div>
+          <div>
+            <p className="font-semibold text-slate-700 dark:text-slate-300">Aucun planning importé</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Importe ton fichier Excel hebdomadaire pour commencer</p>
+          </div>
+          <Link href="/planning">
+            <Button size="sm">Importer un planning</Button>
+          </Link>
+        </div>
       )}
 
       {currentWeek && (
         <>
-          {/* Quick action: start my day */}
+          {/* ── Today banner ── */}
           {todayVisits.length > 0 && (
-            <Card className="bg-gradient-to-r from-blue-mars to-blue-cpm text-white border-0">
-              <CardContent className="py-4 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-lg font-bold">{todayVisits.length} visite{todayVisits.length > 1 ? "s" : ""} aujourd&apos;hui</p>
-                  <p className="text-white/80 text-sm">{todayVisits.filter((v) => v.status === "done").length} terminée{todayVisits.filter((v) => v.status === "done").length > 1 ? "s" : ""} · {todayVisits.filter((v) => v.status === "pending" || !v.status).length} restante{todayVisits.filter((v) => v.status === "pending" || !v.status).length > 1 ? "s" : ""}</p>
-                </div>
-                <Link href="/planning">
-                  <Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20 shrink-0">
-                    <Route className="w-4 h-4 mr-1.5" />
-                    <span className="hidden sm:inline">Voir le planning</span>
-                    <span className="sm:hidden">Planning</span>
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            <div className="rounded-xl bg-blue-mars text-white px-5 py-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="font-semibold text-base">
+                  {todayVisits.length} visite{todayVisits.length > 1 ? "s" : ""} aujourd&apos;hui
+                </p>
+                <p className="text-white/70 text-sm mt-0.5">
+                  {todayVisits.filter((v) => v.status === "done").length} terminée{todayVisits.filter((v) => v.status === "done").length > 1 ? "s" : ""} · {todayVisits.filter((v) => v.status === "pending" || !v.status).length} à faire
+                </p>
+              </div>
+              <Link href="/planning">
+                <button className="flex items-center gap-1.5 text-sm font-medium bg-white/15 hover:bg-white/25 transition-colors px-3 py-1.5 rounded-lg whitespace-nowrap">
+                  <Route className="w-4 h-4" />
+                  <span className="hidden sm:inline">Voir le planning</span>
+                  <span className="sm:hidden">Planning</span>
+                </button>
+              </Link>
+            </div>
           )}
 
-          {/* Filters row */}
-          <div className="flex flex-wrap gap-2">
+          {/* ── Stat cards ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatCard
+              label="Maintenance"
+              value={maintenanceCount}
+              icon={<Wrench className="w-4 h-4" />}
+              accent="blue"
+            />
+            <StatCard
+              label="Ad Hoc"
+              value={adHocCount}
+              icon={<Route className="w-4 h-4" />}
+              accent="orange"
+            />
+            <StatCard
+              label="Remarques"
+              value={withRemarks.length}
+              icon={<AlertTriangle className="w-4 h-4" />}
+              accent="yellow"
+            />
+            <StatCard
+              label="Effectuées"
+              value={doneCount}
+              icon={<CheckCircle2 className="w-4 h-4" />}
+              accent="green"
+              progress={completionPct}
+            />
+          </div>
+
+          {/* ── Filters ── */}
+          <div className="flex flex-wrap items-center gap-2">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
               aria-label="Filtrer par type"
             >
               <option value="all">Tous types</option>
@@ -210,7 +224,7 @@ export default function DashboardPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
               aria-label="Filtrer par statut"
             >
               <option value="all">Tous statuts</option>
@@ -220,80 +234,42 @@ export default function DashboardPage() {
             {(filterType !== "all" || filterStatus !== "all") && (
               <button
                 onClick={() => { setFilterType("all"); setFilterStatus("all"); }}
-                className="px-3 py-1.5 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="px-3 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
                 Réinitialiser
               </button>
             )}
             {(searchQuery || filterType !== "all" || filterStatus !== "all") && (
-              <span className="self-center text-xs text-slate-400 dark:text-slate-500">
+              <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">
                 {filteredVisits.length} / {visits.length} visite{visits.length > 1 ? "s" : ""}
               </span>
             )}
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3">
-            <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/50 dark:to-slate-900 border-blue-100 dark:border-blue-900">
-              <CardContent className="py-4 text-center">
-                <p className="text-3xl font-bold text-blue-700 dark:text-blue-400">{maintenanceCount}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Maintenance</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/50 dark:to-slate-900 border-orange-100 dark:border-orange-900">
-              <CardContent className="py-4 text-center">
-                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{adHocCount}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ad Hoc</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-950/50 dark:to-slate-900 border-yellow-100 dark:border-yellow-900">
-              <CardContent className="py-4 text-center">
-                <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{withRemarks.length}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Remarques</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-green-50 to-white dark:from-green-950/50 dark:to-slate-900 border-green-100 dark:border-green-900">
-              <CardContent className="py-4 text-center">
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">{doneCount}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Effectuées</p>
-                {filteredVisits.length > 0 && (
-                  <div className="mt-2 w-full bg-green-100 dark:bg-green-900/40 rounded-full h-1.5">
-                    <div
-                      className="bg-green-500 h-1.5 rounded-full transition-all"
-                      style={{ width: `${Math.round((doneCount / filteredVisits.length) * 100)}%` }}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 text-center">Stats pour {currentWeek.label} · {Math.round((doneCount / (filteredVisits.length || 1)) * 100)}% complété</p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Today's visits */}
-            <Card className="h-fit">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Calendar className="w-4 h-4 text-blue-mars dark:text-blue-400" />
+          {/* ── Visit lists ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Aujourd'hui */}
+            <Card className="h-fit shadow-sm">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                  <Calendar className="w-4 h-4 text-blue-mars" />
                   Aujourd&apos;hui
                   {todayVisits.length > 0 && (
-                    <Badge variant="blue" className="ml-auto">{todayVisits.length}</Badge>
+                    <span className="ml-auto text-xs font-semibold bg-blue-mars text-white px-2 py-0.5 rounded-full">
+                      {todayVisits.length}
+                    </span>
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="pt-3 space-y-1.5">
                 {todayVisits.length === 0 ? (
                   (() => {
                     const weekDates = visits.map((v) => parseLocalDate(v.visitDate).getTime());
                     const minDate = weekDates.length > 0 ? Math.min(...weekDates) : null;
                     const maxDate = weekDates.length > 0 ? Math.max(...weekDates) : null;
-                    if (maxDate && today.getTime() > maxDate) {
-                      return <p className="text-sm text-slate-400 py-2">Cette semaine est terminée 📅</p>;
-                    }
-                    if (minDate && today.getTime() < minDate) {
-                      return <p className="text-sm text-slate-400 py-2">Cette semaine n&apos;a pas encore commencé 📅</p>;
-                    }
-                    return <p className="text-sm text-slate-500 py-2">Aucune visite aujourd&apos;hui 🎉</p>;
+                    if (maxDate && today.getTime() > maxDate) return <EmptyState text="Cette semaine est terminée" />;
+                    if (minDate && today.getTime() < minDate) return <EmptyState text="La semaine n'a pas encore commencé" />;
+                    return <EmptyState text="Aucune visite aujourd'hui" />;
                   })()
                 ) : (
                   todayVisits.map((v) => <VisitRow key={v.id} visit={v} totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />)
@@ -301,21 +277,21 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Upcoming visits */}
+            {/* Prochaines visites */}
             {upcomingVisits.length > 0 && (
-              <Card className="h-fit">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+              <Card className="h-fit shadow-sm">
+                <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    <TrendingUp className="w-4 h-4 text-slate-400" />
                     Prochaines visites
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="pt-3 space-y-1.5">
                   {upcomingVisits.slice(0, 5).map((v) => (
                     <VisitRow key={v.id} visit={v} showDate totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {upcomingVisits.length > 5 && (
-                    <Link href="/planning" className="block text-center text-sm text-blue-mars dark:text-blue-400 hover:underline pt-1">
+                    <Link href="/planning" className="block text-center text-xs text-blue-mars dark:text-blue-400 hover:underline pt-2 font-medium">
                       Voir toutes les visites →
                     </Link>
                   )}
@@ -324,26 +300,27 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Past visits (collapsible) */}
+          {/* ── Past visits ── */}
           {pastVisits.length > 0 && (
             <div>
               <button
                 onClick={() => setShowPast((v) => !v)}
-                className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium"
+                className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium transition-colors"
                 aria-expanded={showPast}
-                aria-controls="past-visits"
               >
                 <ChevronRight className={`w-4 h-4 transition-transform ${showPast ? "rotate-90" : ""}`} />
                 Visites passées
-                <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-normal">{pastVisits.length}</span>
+                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">
+                  {pastVisits.length}
+                </span>
               </button>
               {showPast && (
-                <div id="past-visits" className="mt-2 space-y-2">
+                <div className="mt-2 space-y-1.5">
                   {pastVisits.slice(0, 10).map((v) => (
                     <VisitRow key={v.id} visit={v} showDate totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {pastVisits.length > 10 && (
-                    <Link href="/planning" className="block text-center text-sm text-blue-mars dark:text-blue-400 hover:underline pt-1">
+                    <Link href="/planning" className="block text-center text-xs text-blue-mars dark:text-blue-400 hover:underline pt-2 font-medium">
                       Voir toutes →
                     </Link>
                   )}
@@ -351,79 +328,117 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-
         </>
       )}
-
     </div>
   );
 }
 
-function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number; }) {
+const ACCENT_STYLES = {
+  blue:   { border: "border-l-blue-mars",   icon: "text-blue-mars bg-blue-50 dark:bg-blue-950/50",   value: "text-slate-900 dark:text-slate-100" },
+  orange: { border: "border-l-orange-500",  icon: "text-orange-500 bg-orange-50 dark:bg-orange-950/40", value: "text-slate-900 dark:text-slate-100" },
+  yellow: { border: "border-l-yellow-500",  icon: "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40", value: "text-slate-900 dark:text-slate-100" },
+  green:  { border: "border-l-green-600",   icon: "text-green-600 bg-green-50 dark:bg-green-950/40",  value: "text-slate-900 dark:text-slate-100" },
+};
+
+function StatCard({ label, value, icon, accent, progress }: { label: string; value: number; icon: React.ReactNode; accent: keyof typeof ACCENT_STYLES; progress?: number }) {
+  const s = ACCENT_STYLES[accent];
+  return (
+    <div className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 ${s.border} rounded-xl px-4 py-3 shadow-sm`}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">{label}</p>
+        <span className={`flex items-center justify-center w-7 h-7 rounded-lg ${s.icon}`}>
+          {icon}
+        </span>
+      </div>
+      <p className={`text-2xl font-bold ${s.value}`}>{value}</p>
+      {progress !== undefined && (
+        <div className="mt-2 h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-1 bg-green-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-2 py-3 text-sm text-slate-400 dark:text-slate-500">
+      <Clock className="w-4 h-4 shrink-0" />
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number }) {
   const router = useRouter();
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
+  const isDone = visit.status === "done";
+
   return (
-    <div 
-      onClick={() => router.push(`/planning/${visit.id}`)} 
-      onKeyDown={(e) => e.key === 'Enter' && router.push(`/planning/${visit.id}`)}
+    <div
+      onClick={() => router.push(`/planning/${visit.id}`)}
+      onKeyDown={(e) => e.key === "Enter" && router.push(`/planning/${visit.id}`)}
       role="button"
       tabIndex={0}
-      className="block cursor-pointer"
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-all cursor-pointer"
     >
-      <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{visit.storeName}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${colorClass}`}>
-              {visit.visitType}
-            </span>
-          </div>
-          <div className="flex items-center gap-1 mt-0.5">
-            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-            <p className="text-xs text-slate-500 dark:text-slate-400">{visit.storeCity}</p>
-            {showDate && (
-              <span className="text-xs text-slate-400 ml-1">· {formatDateShort(visit.visitDate)}</span>
-            )}
-            {totalVisits !== undefined && totalVisits > 1 && (
-              <span className="text-xs text-slate-400 ml-1">· {completedVisits || 0}/{totalVisits} visites</span>
-            )}
-          </div>
-          {visit.remarks && (
-            <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 line-clamp-1">⚠ {visit.remarks}</p>
-          )}
-          {visit.materialType && (
-            <div className="flex items-center gap-1 mt-1 flex-wrap">
-              <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
-              {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                <span key={idx} className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium border border-blue-200 dark:border-blue-800">
-                  {type}
-                </span>
-              ))}
-            </div>
+      {/* Status dot */}
+      <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-500" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className={`text-sm font-medium truncate ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`}>
+            {visit.storeName}
+          </p>
+          <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-md border font-medium ${colorClass}`}>
+            {visit.visitType}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{visit.storeCity}</p>
+          {showDate && <span className="text-xs text-slate-400">· {formatDateShort(visit.visitDate)}</span>}
+          {totalVisits !== undefined && totalVisits > 1 && (
+            <span className="text-xs text-slate-400">· {completedVisits || 0}/{totalVisits}</span>
           )}
         </div>
-        {visit.status && visit.status !== "pending" && (
-          <StatusBadge status={visit.status as VisitStatus} size="sm" />
-        )}
-        {visit.salesRep && (
-          <div className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
-            <User className="w-3 h-3" />
-            <span className="hidden sm:inline">{visit.salesRep.split(" ")[0]}</span>
+        {visit.remarks && (
+          <div className="flex items-center gap-1 mt-0.5">
+            <AlertTriangle className="w-3 h-3 text-orange-500 shrink-0" />
+            <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-1">{visit.remarks}</p>
           </div>
         )}
-        <a
-          href={wazeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-[#00bfff]/10 hover:bg-[#00bfff]/20 transition-colors"
-          title="Naviguer avec Waze"
-        >
-          <Navigation className="w-3.5 h-3.5 text-[#00bfff]" />
-        </a>
-        <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" />
+        {visit.materialType && (
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
+            {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
+              <span key={idx} className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">
+                {type}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
+
+      {visit.salesRep && (
+        <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 shrink-0">
+          <User className="w-3 h-3" />
+          <span>{visit.salesRep.split(" ")[0]}</span>
+        </div>
+      )}
+      <a
+        href={wazeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg text-[#00bfff] hover:bg-[#00bfff]/10 transition-colors"
+        title="Waze"
+      >
+        <Navigation className="w-3.5 h-3.5" />
+      </a>
+      <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 group-hover:text-slate-400 transition-colors" />
     </div>
   );
 }
