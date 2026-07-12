@@ -48,6 +48,7 @@ export default function VisitDetailPage() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDeleteNoteId, setConfirmDeleteNoteId] = useState<string | null>(null);
+  const [confirmDeletePhotos, setConfirmDeletePhotos] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<VisitStatus | null>(null);
 
   const visitId = params?.id as string;
@@ -408,8 +409,11 @@ export default function VisitDetailPage() {
 
   const deleteSelectedPhotos = async () => {
     if (selectedPhotos.size === 0) return;
-    if (!confirm(`Supprimer ${selectedPhotos.size} photo${selectedPhotos.size > 1 ? "s" : ""} ?`)) return;
+    setConfirmDeletePhotos(true);
+  };
 
+  const confirmDeleteSelectedPhotos = async () => {
+    setConfirmDeletePhotos(false);
     const ids = Array.from(selectedPhotos);
     const previousPhotos = [...photos];
     setPhotos((prev) => prev.filter((p) => !selectedPhotos.has(p.id)));
@@ -733,6 +737,27 @@ export default function VisitDetailPage() {
             <div className="flex gap-2 pt-1">
               <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={confirmNoteDelete}>Supprimer</Button>
               <Button variant="outline" className="flex-1" onClick={() => setConfirmDeleteNoteId(null)}>Annuler</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk photo delete confirmation modal */}
+      {confirmDeletePhotos && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setConfirmDeletePhotos(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Supprimer {selectedPhotos.size} photo{selectedPhotos.size > 1 ? "s" : ""} ?</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Cette action est irréversible.</p>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={confirmDeleteSelectedPhotos}>Supprimer</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setConfirmDeletePhotos(false)}>Annuler</Button>
             </div>
           </div>
         </div>

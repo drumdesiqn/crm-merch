@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { LayoutDashboard, Calendar, BarChart3, Settings, Sun, Moon, Users, BookOpen, MoreHorizontal, Store, Camera } from "lucide-react";
+import { LayoutDashboard, Calendar, BarChart3, Settings, Sun, Moon, Users, BookOpen, MoreHorizontal, Store, Camera, Bot } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
@@ -21,6 +21,7 @@ const MORE_ITEMS = [
   { href: "/stores", icon: Store, label: "Magasins" },
   { href: "/photos", icon: Camera, label: "Médiathèque" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
+  { href: "/assistant", icon: Bot, label: "Assistant" },
   { href: "/guide", icon: BookOpen, label: "Guide" },
   { href: "/settings", icon: Settings, label: "Réglages" },
 ];

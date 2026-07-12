@@ -64,6 +64,9 @@ export interface StoreHistoryVisit {
   id: string;
   visitDate: string;
   visitType: string;
+  assortment?: string;
+  visitFrequence?: string | null;
+  salesRep?: string | null;
   status?: string;
   remarks?: string | null;
   materials?: string | null;

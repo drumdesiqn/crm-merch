@@ -37,9 +37,9 @@ export default function StoreHistoryPage() {
       storeZipcode: storeData.storeZipcode,
       storeCity: storeData.storeCity,
       visitType: lastVisit?.visitType || "",
-      assortment: "",
-      visitFrequence: "",
-      salesRep: storeData.salesRep || "",
+      assortment: lastVisit?.assortment || "",
+      visitFrequence: lastVisit?.visitFrequence || "",
+      salesRep: lastVisit?.salesRep || "",
     });
     setShowEditStore(true);
   };
