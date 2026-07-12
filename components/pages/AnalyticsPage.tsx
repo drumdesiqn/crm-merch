@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, BarChart3, Camera, MapPin, Store, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { BarChart3, MapPin, Loader2 } from "lucide-react";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useTheme } from "@/components/ThemeProvider";
@@ -48,8 +45,8 @@ export default function AnalyticsPage() {
   const { data, isLoading, isError } = useAnalytics(selectedWeek || undefined);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const gridStroke = isDark ? "#334155" : "#e2e8f0";
-  const tooltipStyle = { borderRadius: 8, fontSize: 12, backgroundColor: isDark ? "#1e293b" : "#fff", border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`, color: isDark ? "#e2e8f0" : "#1e293b" };
+  const gridStroke = isDark ? "#2e2e30" : "#e2e8f0";
+  const tooltipStyle = { borderRadius: 8, fontSize: 12, backgroundColor: isDark ? "#1a1a1b" : "#fff", border: `1px solid ${isDark ? "#2e2e30" : "#e2e8f0"}`, color: isDark ? "#d4d4d8" : "#1e293b" };
 
   if (isLoading) {
     return (
@@ -69,43 +66,34 @@ export default function AnalyticsPage() {
 
   if (data.summary.totalVisits === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <Link href="/">
-            <Button variant="outline" size="icon" aria-label="Retour">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Analytics</h1>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-1">Statistiques</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">Analytics</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <BarChart3 className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-4" />
-          <p className="text-lg font-medium text-slate-600 dark:text-slate-300">Pas encore de données</p>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Importe ton planning Excel pour voir les statistiques ici.</p>
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#222223] flex items-center justify-center mx-auto mb-3">
+            <BarChart3 className="w-5 h-5 text-slate-400" />
+          </div>
+          <p className="text-lg font-medium text-slate-700 dark:text-zinc-300">Pas encore de données</p>
+          <p className="text-sm text-slate-400 dark:text-zinc-500 mt-1">Importe ton planning Excel pour voir les statistiques ici.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Link href="/">
-            <Button variant="outline" size="icon" aria-label="Retour">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Analytics</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Vue d&apos;ensemble de l&apos;activité</p>
-          </div>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-1">Statistiques</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">Analytics</h1>
         </div>
         <select
           value={selectedWeek}
           onChange={(e) => setSelectedWeek(e.target.value)}
-          className="text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+          className="text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-mars"
         >
           <option value="">Toutes les semaines</option>
           {weeks.map((w) => (
@@ -116,35 +104,24 @@ export default function AnalyticsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SummaryCard
-          icon={<BarChart3 className="w-5 h-5 text-blue-mars" />}
-          label="Visites totales"
-          value={data.summary.totalVisits}
-        />
-        <SummaryCard
-          icon={<div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center text-xs font-bold text-green-700">%</div>}
-          label="Taux de complétion"
-          value={`${data.summary.completionRate}%`}
-        />
-        <SummaryCard
-          icon={<Store className="w-5 h-5 text-blue-600" />}
-          label="Magasins"
-          value={data.summary.totalStores}
-        />
-        <SummaryCard
-          icon={<Camera className="w-5 h-5 text-purple-600" />}
-          label="Photos"
-          value={data.summary.totalPhotos}
-        />
+        {[
+          { label: "Visites totales", value: data.summary.totalVisits, accent: "border-l-blue-mars" },
+          { label: "Complétion", value: `${data.summary.completionRate}%`, accent: "border-l-green-500" },
+          { label: "Magasins", value: data.summary.totalStores, accent: "border-l-blue-cpm" },
+          { label: "Photos", value: data.summary.totalPhotos, accent: "border-l-amber-400" },
+        ].map(({ label, value, accent }) => (
+          <div key={label} className={`bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 ${accent} rounded-xl px-4 py-3`}>
+            <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{value}</p>
+            <p className="text-xs text-slate-500 dark:text-zinc-500 mt-0.5">{label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Visits per week — line chart */}
       {data.visitsByWeek.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Visites par semaine</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3">Visites par semaine</p>
+          <div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.visitsByWeek} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
@@ -165,18 +142,16 @@ export default function AnalyticsPage() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Status pie chart */}
         {data.visitsByStatus.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Répartition par statut</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+            <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3">Répartition par statut</p>
+            <div>
               <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -200,17 +175,15 @@ export default function AnalyticsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Visit type pie chart */}
         {data.visitsByType.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Types de visite</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+            <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3">Types de visite</p>
+            <div>
               <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -234,21 +207,19 @@ export default function AnalyticsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
 
       {/* Top cities bar chart */}
       {data.visitsByCity.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <MapPin className="w-4 h-4 text-blue-mars" />
-              Top villes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3 flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-blue-mars" />
+            Top villes
+          </p>
+          <div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.visitsByCity} layout="vertical" margin={{ top: 5, right: 20, bottom: 5, left: 60 }}>
@@ -260,17 +231,15 @@ export default function AnalyticsPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Material type bar chart */}
       {data.materialCounts.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Types de matériel</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3">Types de matériel</p>
+          <div>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.materialCounts} margin={{ top: 5, right: 20, bottom: 30, left: 0 }}>
@@ -282,20 +251,18 @@ export default function AnalyticsPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Sales Rep bar chart */}
       {data.visitsBySalesRep && data.visitsBySalesRep.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <User className="w-4 h-4 text-blue-mars" />
-              Visites par Sales Representative
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3 flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5 text-blue-mars" />
+            Visites par Sales Rep
+          </p>
+          <div>
             <div style={{ height: Math.max(180, data.visitsBySalesRep.length * 36) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.visitsBySalesRep} layout="vertical" margin={{ top: 5, right: 20, bottom: 5, left: 100 }}>
@@ -307,23 +274,9 @@ export default function AnalyticsPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
-  );
-}
-
-function SummaryCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-3 py-4 px-4">
-        <div className="shrink-0">{icon}</div>
-        <div className="min-w-0">
-          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{label}</p>
-          <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

@@ -35,7 +35,7 @@ function PhotoCard({ photo, onStar, onClick }: { photo: PhotoWithVisit; onStar: 
     : new Date(photo.createdAt).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", year: "numeric" });
 
   return (
-    <div className="relative group rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square cursor-pointer shadow-sm hover:shadow-md transition-all">
+    <div className="relative group rounded-xl overflow-hidden bg-slate-100 dark:bg-[#222223] aspect-square cursor-pointer shadow-sm hover:shadow-md transition-all">
       <Image
         src={photo.url}
         alt={photo.caption || photo.visit?.storeName || "Photo"}
@@ -199,20 +199,20 @@ export default function PhotosPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Camera className="w-6 h-6 text-blue-mars" />
-            Médiathèque
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-1">Médiathèque</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">
+            Photos
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{allPhotos.length} photo{allPhotos.length > 1 ? "s" : ""} au total</p>
         </div>
+        <p className="text-sm text-slate-400 dark:text-zinc-500 pb-0.5">{allPhotos.length} photo{allPhotos.length > 1 ? "s" : ""}</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-slate-100 dark:bg-[#222223] rounded-xl p-1 w-fit">
         {[
           { key: "stores", label: "Par magasin", labelShort: "Magasins", icon: Store },
           { key: "starred", label: `Coups de cœur${starredPhotos.length > 0 ? ` (${starredPhotos.length})` : ""}`, labelShort: `★${starredPhotos.length > 0 ? ` ${starredPhotos.length}` : ""}`, icon: Star },
@@ -221,9 +221,13 @@ export default function PhotosPage() {
           <button
             key={key}
             onClick={() => setTab(key as typeof tab)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${tab === key ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              tab === key
+                ? "bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 shadow-sm"
+                : "text-slate-500 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-300"
+            }`}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="w-3.5 h-3.5" />
             <span className="sm:hidden">{labelShort}</span>
             <span className="hidden sm:inline">{label}</span>
           </button>
@@ -234,7 +238,7 @@ export default function PhotosPage() {
       {tab === "today" && (
         <div className="space-y-4">
           {todayPhotos.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 dark:text-slate-600">
+            <div className="text-center py-16 text-slate-400 dark:text-zinc-600">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Pas encore de photos pour aujourd&apos;hui</p>
               <p className="text-sm mt-1">Les photos des visites planifiées ce jour apparaîtront ici</p>
@@ -253,7 +257,7 @@ export default function PhotosPage() {
       {tab === "starred" && (
         <div className="space-y-4">
           {starredPhotos.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 dark:text-slate-600">
+            <div className="text-center py-16 text-slate-400 dark:text-zinc-600">
               <Star className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Aucun coup de cœur</p>
               <p className="text-sm mt-1">Clique sur l&apos;étoile d&apos;une photo pour la mettre en avant</p>
@@ -279,12 +283,12 @@ export default function PhotosPage() {
               placeholder="Rechercher un magasin..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
             />
           </div>
 
           {allPhotos.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 dark:text-slate-600">
+            <div className="text-center py-16 text-slate-400 dark:text-zinc-600">
               <ImageOff className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Aucune photo disponible</p>
               <p className="text-sm mt-1">Ajoute des photos depuis les visites dans le planning</p>
@@ -298,32 +302,32 @@ export default function PhotosPage() {
               const lastDate = new Date(group.lastDate).toLocaleDateString("fr-BE", { day: "2-digit", month: "short", year: "numeric" });
               const weekLabel = group.photos[0]?.visit?.week?.label;
               return (
-                <div key={group.storeId} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
+                <div key={group.storeId} className="border border-slate-200 dark:border-[#2e2e30] rounded-xl overflow-hidden bg-white dark:bg-[#1a1a1b]">
                   {/* Store header */}
                   <button
-                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#222223] transition-colors text-left"
                     onClick={() => toggleStore(group.storeId)}
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex -space-x-2">
                         {preview.map((p) => (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img key={p.id} src={p.url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-900" />
+                          <img key={p.id} src={p.url} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-white dark:border-[#1a1a1b]" />
                         ))}
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{group.storeName}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="font-semibold text-slate-900 dark:text-zinc-100 text-sm">{group.storeName}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400">
                           {group.storeCity && <span className="mr-2">{group.storeCity}</span>}
-                          {group.photos.length} photo{group.photos.length > 1 ? "s" : ""}
-                          {weekLabel && <span className="ml-2 text-slate-400">· {weekLabel}</span>}
+                          <span>{group.photos.length} photo{group.photos.length > 1 ? "s" : ""}</span>
+                          {weekLabel && <span className="ml-2 text-slate-400 dark:text-zinc-500">· {weekLabel}</span>}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-400 hidden sm:block">{lastDate}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 dark:text-zinc-500 hidden sm:block">{lastDate}</span>
                       {group.photos.some((p) => p.starred) && (
-                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                       )}
                       {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                     </div>
@@ -331,7 +335,7 @@ export default function PhotosPage() {
 
                   {/* Expanded grid */}
                   {isExpanded && (
-                    <div className="px-4 pb-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                    <div className="px-4 pb-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 border-t border-slate-100 dark:border-[#2e2e30] pt-3">
                       {group.photos.map((p, i) => (
                         <PhotoCard
                           key={p.id}
