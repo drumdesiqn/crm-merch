@@ -5,12 +5,12 @@ import { BookOpen } from "lucide-react";
 
 export default function GuidePage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <BookOpen className="w-5 h-5 text-blue-mars dark:text-blue-400" />
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Guide Matériel</h1>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-1 flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" /> Référence</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">Guide Matériel</h1>
       </div>
-      <div className="rounded-xl overflow-hidden shadow-md border border-slate-200 dark:border-slate-700">
+      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-[#2e2e30]">
         <Image
           src="/guide-materiel.jpg"
           alt="Guide des types de matériel merchandising Mars"
@@ -20,7 +20,7 @@ export default function GuidePage() {
           priority
         />
       </div>
-      <div className="rounded-xl overflow-hidden shadow-md border border-slate-200 dark:border-slate-700">
+      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-[#2e2e30]">
         <Image
           src="/guide-rack.jpg"
           alt="Exemple de rack M&Ms en magasin"
