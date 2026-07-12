@@ -8,7 +8,7 @@ if (!process.env.JWT_SECRET) {
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
-const publicPaths = ["/login", "/api/auth/login", "/api/health"];
+const publicPaths = ["/login", "/api/auth/login", "/api/auth/logout", "/api/health", "/offline"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
