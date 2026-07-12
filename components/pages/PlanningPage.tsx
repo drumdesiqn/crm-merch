@@ -26,7 +26,7 @@ import type { Visit, Week } from "@/types/visit";
 const EMPTY_VISITS: Visit[] = [];
 
 const RouteMapView = dynamic(() => import("@/components/pages/RouteMapView"), { ssr: false, loading: () => (
-  <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" /></div>
+  <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-teal-cpm border-t-transparent rounded-full animate-spin" /></div>
 ) });
 
 interface DayGroup {
@@ -233,16 +233,16 @@ export default function PlanningPage() {
   }, [sortedDays]);
 
 
-  const inputCls = "w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars";
-  const selectCls = "px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars";
+  const inputCls = "w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-cpm";
+  const selectCls = "px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-cpm";
   const modalCls = "bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4";
-  const modalInputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars";
+  const modalInputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm";
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
       {!isReady || weeks.length === 0 || effectiveWeekId === "" ? (
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-6 h-6 border-2 border-blue-mars border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-teal-cpm border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <>
@@ -264,14 +264,14 @@ export default function PlanningPage() {
                 <div className="flex rounded-lg border border-slate-200 dark:border-[#2e2e30] overflow-hidden shrink-0">
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === "list" ? "bg-blue-mars text-white" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#222223]"}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === "list" ? "bg-teal-cpm text-white" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#222223]"}`}
                   >
                     <List className="w-4 h-4" /> Liste
                   </button>
                   <button
                     onClick={() => setViewMode("map")}
                     title="Organise et optimise ton itinéraire de la journée sur la carte"
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-[#2e2e30] whitespace-nowrap ${viewMode === "map" ? "bg-blue-mars text-white" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#222223]"}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-[#2e2e30] whitespace-nowrap ${viewMode === "map" ? "bg-teal-cpm text-white" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#222223]"}`}
                   >
                     <Route className="w-4 h-4" />
                     <span className="hidden sm:inline">Routing journée</span>
@@ -308,7 +308,7 @@ export default function PlanningPage() {
               onDragLeave={() => setDragging(false)}
               onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f, "check"); }}
               onClick={() => fileRef.current?.click()}
-              className={`rounded-xl border-2 border-dashed py-14 flex flex-col items-center gap-3 text-center cursor-pointer transition-colors ${dragging ? "border-blue-mars bg-blue-mars/5" : "border-slate-200 dark:border-[#2e2e30] hover:border-slate-300 dark:hover:border-[#3a3a3c]"}`}
+              className={`rounded-xl border-2 border-dashed py-14 flex flex-col items-center gap-3 text-center cursor-pointer transition-colors ${dragging ? "border-teal-cpm bg-teal-cpm/5" : "border-slate-200 dark:border-[#2e2e30] hover:border-slate-300 dark:hover:border-[#3a3a3c]"}`}
             >
               <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#222223] flex items-center justify-center">
                 <Upload className="w-5 h-5 text-slate-400" />
@@ -356,7 +356,7 @@ export default function PlanningPage() {
                   <button
                     key={w.id}
                     onClick={() => handleWeekChange(w.id)}
-                    className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${active ? "bg-blue-mars text-white border-blue-mars shadow-sm" : "border-slate-200 dark:border-[#2e2e30] text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#1a1a1b] hover:text-slate-900 dark:hover:text-zinc-200"}`}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${active ? "bg-teal-cpm text-white border-teal-cpm shadow-sm" : "border-slate-200 dark:border-[#2e2e30] text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#1a1a1b] hover:text-slate-900 dark:hover:text-zinc-200"}`}
                   >
                     {w.label}
                     <span className={`ml-1.5 text-xs ${active ? "text-white/70" : "text-slate-400 dark:text-zinc-500"}`}>
@@ -605,9 +605,9 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
               {/* Material types */}
               {visit.materialType && (
                 <div className="flex items-center gap-1 mt-1 flex-wrap">
-                  <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
+                  <Wrench className="w-3 h-3 text-teal-cpm shrink-0" />
                   {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                    <span key={idx} className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">
+                    <span key={idx} className="text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-1.5 py-0.5 rounded font-medium">
                       {type}
                     </span>
                   ))}
