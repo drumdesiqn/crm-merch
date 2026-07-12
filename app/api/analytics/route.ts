@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
         FROM "Visit" v
         JOIN "Week" w ON v."weekId" = w."id"
         ${weekId ? Prisma.sql`WHERE v."weekId" = ${weekId}` : Prisma.empty}
-        GROUP BY w."id", w."label", w."weekNum", w."year"
-        ORDER BY w."year" ASC, w."weekNum" ASC
+        GROUP BY w."id", w."label", w."weekNum", w."year", w."createdAt"
+        ORDER BY w."createdAt" ASC
       `,
 
       // Visits by status

@@ -44,6 +44,17 @@ export async function POST(req: NextRequest) {
       ? await prisma.visit.findMany({
           where: { weekId: currentWeek.id },
           orderBy: [{ sortOrder: "asc" }, { visitDate: "asc" }],
+          select: {
+            storeName: true,
+            storeCity: true,
+            storeZipcode: true,
+            visitType: true,
+            visitDate: true,
+            salesRep: true,
+            remarks: true,
+            materials: true,
+            status: true,
+          },
         })
       : [];
 
