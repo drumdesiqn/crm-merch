@@ -45,6 +45,56 @@ function normalizeString(value: unknown, maxLen = MAX_CELL_STRING_LENGTH): strin
   return str.length > maxLen ? str.slice(0, maxLen) : str;
 }
 
+function parseExcelDate(value: unknown): { date: Date; valid: boolean } {
+  if (value instanceof Date) {
+    return {
+      date: new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate(), 12, 0, 0)),
+      valid: true,
+    };
+  }
+
+  // Excel serial number (days since 1899-12-30)
+  if (typeof value === "number" && !isNaN(value) && value > 0) {
+    const epoch = new Date(Date.UTC(1899, 11, 30, 0, 0, 0));
+    const ms = epoch.getTime() + value * 24 * 60 * 60 * 1000;
+    const d = new Date(ms);
+    return {
+      date: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12, 0, 0)),
+      valid: true,
+    };
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return { date: new Date(), valid: false };
+
+    // ISO-ish or other JS-parseable formats
+    let d = new Date(trimmed);
+    if (!isNaN(d.getTime())) {
+      return {
+        date: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12, 0, 0)),
+        valid: true,
+      };
+    }
+
+    // European formats: dd/mm/yyyy, dd-mm-yyyy, dd.mm.yyyy, optionally with time
+    const match = trimmed.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})(?:(?:\s|T)(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10);
+      const year = parseInt(match[3], 10);
+      if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900) {
+        d = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+        if (!isNaN(d.getTime())) {
+          return { date: d, valid: true };
+        }
+      }
+    }
+  }
+
+  return { date: new Date(), valid: false };
+}
+
 export interface ParsedVisit {
   assortment: string;
   storeId: string;
@@ -111,23 +161,10 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ParseResult {
   let missingStoreIdCount = 0;
 
   const allVisits: ParsedVisit[] = rows.map((row) => {
-    let visitDate: Date;
     const rawDate = row["Day Period 2"];
-    if (rawDate instanceof Date) {
-      visitDate = new Date(Date.UTC(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate(), 12, 0, 0));
-    } else if (typeof rawDate === "string") {
-      const parsed = new Date(rawDate);
-      if (isNaN(parsed.getTime())) {
-        invalidDateCount++;
-        const now = new Date();
-        visitDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0, 0));
-      } else {
-        visitDate = new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate(), 12, 0, 0));
-      }
-    } else {
+    const { date: visitDate, valid: dateValid } = parseExcelDate(rawDate);
+    if (!dateValid) {
       invalidDateCount++;
-      const now = new Date();
-      visitDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0, 0));
     }
 
     const storeId = String(row["store_id"] || "").trim();

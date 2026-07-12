@@ -71,6 +71,22 @@ describe('parseExcelBuffer', () => {
     expect(result.warnings.some((w) => w.includes('store_id'))).toBe(true);
   });
 
+  it('handles dd/mm/yyyy dates correctly', () => {
+    const buf = makeBuffer([{ ...BASE_ROW, 'Day Period 2': '14/07/2026' }]);
+    const result = parseExcelBuffer(buf);
+    expect(result.visits[0].visitDate.getUTCDate()).toBe(14);
+    expect(result.visits[0].visitDate.getUTCMonth()).toBe(6); // July = 6
+    expect(result.visits[0].visitDate.getUTCFullYear()).toBe(2026);
+  });
+
+  it('handles dd-mm-yyyy dates correctly', () => {
+    const buf = makeBuffer([{ ...BASE_ROW, 'Day Period 2': '17-07-2026' }]);
+    const result = parseExcelBuffer(buf);
+    expect(result.visits[0].visitDate.getUTCDate()).toBe(17);
+    expect(result.visits[0].visitDate.getUTCMonth()).toBe(6);
+    expect(result.visits[0].visitDate.getUTCFullYear()).toBe(2026);
+  });
+
   it('handles invalid date and warns', () => {
     const buf = makeBuffer([{ ...BASE_ROW, 'Day Period 2': 'not-a-date' }]);
     const result = parseExcelBuffer(buf);
