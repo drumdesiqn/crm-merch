@@ -54,7 +54,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">{formatDate(visit.visitDate)}</p>
             </div>
           </div>
-          <div className="h-px bg-slate-100 dark:bg-slate-700" />
+          <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
           <div className="flex items-start gap-3">
             <MapPin className="w-4 h-4 text-blue-mars shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -64,7 +64,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
             </div>
           </div>
           <>
-            <div className="h-px bg-slate-100 dark:bg-slate-700" />
+            <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
             <div className="flex items-center gap-3">
               <User className="w-4 h-4 text-blue-mars shrink-0" />
               <div className="flex-1">
@@ -77,7 +77,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
                       value={salesRepValue}
                       onChange={(e) => setSalesRepValue(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") saveSalesRep(); if (e.key === "Escape") { setSalesRepValue(visit.salesRep || ""); setEditingSalesRep(false); } }}
-                      className="flex-1 px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-base"
+                      className="flex-1 px-2 py-1 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
                       placeholder="Nom du représentant"
                     />
                     <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={saveSalesRep} disabled={saving}><Check className="w-3.5 h-3.5" /></Button>
@@ -94,7 +94,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
           </>
           {visit.visitFrequence && (
             <>
-              <div className="h-px bg-slate-100 dark:bg-slate-700" />
+              <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
               <div className="flex items-center gap-3">
                 <Tag className="w-4 h-4 text-blue-mars shrink-0" />
                 <div>
@@ -106,7 +106,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
           )}
           {visit.merchandiser && (
             <>
-              <div className="h-px bg-slate-100 dark:bg-slate-700" />
+              <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
               <div className="flex items-center gap-3">
                 <Package className="w-4 h-4 text-blue-mars shrink-0" />
                 <div>
@@ -116,7 +116,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
               </div>
             </>
           )}
-          <div className="h-px bg-slate-100 dark:bg-slate-700" />
+          <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
           <div className="flex gap-2 pt-1">
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
               className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-colors">
@@ -130,9 +130,9 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
         </CardContent>
       </Card>
 
-      <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30">
+      <Card className="border-amber-200/80 bg-amber-50/60 dark:border-amber-900/60 dark:bg-amber-950/15">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center justify-between text-base text-orange-800 dark:text-orange-300">
+          <CardTitle className="flex items-center justify-between text-sm text-amber-800 dark:text-amber-400">
             <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Remarques</div>
             {onUpdate && !editingRemarks && (
               <button onClick={() => setEditingRemarks(true)} className="text-orange-300 hover:text-orange-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
@@ -147,7 +147,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
                 value={remarksValue}
                 onChange={(e) => setRemarksValue(e.target.value)}
                 rows={3}
-                className="w-full px-2 py-1.5 text-sm rounded border border-orange-300 bg-white dark:bg-slate-800 dark:border-orange-700 text-base resize-none"
+                className="w-full px-2 py-1.5 text-sm rounded-lg border border-amber-200 dark:border-amber-900/60 bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-amber-400"
                 placeholder="Remarques, instructions..."
               />
               <div className="flex gap-2">
@@ -156,20 +156,20 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
               </div>
             </div>
           ) : (
-            <p className="text-sm text-orange-900 dark:text-orange-200 whitespace-pre-wrap">{visit.remarks || <span className="italic text-orange-400">Aucune remarque</span>}</p>
+            <p className="text-sm text-amber-900 dark:text-amber-200 whitespace-pre-wrap">{visit.remarks || <span className="italic text-amber-400/80">Aucune remarque</span>}</p>
           )}
         </CardContent>
       </Card>
 
       {visit.materials && (
-        <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30">
+        <Card className="border-blue-100 dark:border-[#2e2e30]">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base text-purple-800 dark:text-purple-300">
+            <CardTitle className="flex items-center gap-2 text-sm text-slate-600 dark:text-zinc-400">
               <Wrench className="w-4 h-4" /> Matériel nécessaire
             </CardTitle>
           </CardHeader>
           <CardContent className="py-0 pb-4">
-            <p className="text-sm text-purple-900 dark:text-purple-200 whitespace-pre-wrap">{visit.materials}</p>
+            <p className="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap">{visit.materials}</p>
           </CardContent>
         </Card>
       )}

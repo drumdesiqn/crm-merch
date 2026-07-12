@@ -474,77 +474,54 @@ export default function VisitDetailPage() {
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+        className="flex items-center gap-1.5 text-sm text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors"
       >
-        <ArrowLeft className="w-4 h-4" /> Retour au planning
+        <ArrowLeft className="w-3.5 h-3.5" /> Retour au planning
       </button>
 
       {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">{visit.storeName}</h1>
-          <div className="flex items-center gap-2">
-            {/* Navigation buttons */}
-            <a
-              href={wazeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#00bfff]/10 hover:bg-[#00bfff]/20 transition-colors"
-              title="Naviguer avec Waze"
-            >
-              <Navigation className="w-4 h-4 text-[#00bfff]" />
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-0.5">
+              {visit.storeCity} · <span className="normal-case tracking-normal font-normal">#{visit.storeId}</span>
+            </p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-zinc-100 leading-tight truncate">{visit.storeName}</h1>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <a href={wazeUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-[#00bfff] hover:bg-[#00bfff]/10 transition-colors" title="Waze">
+              <Navigation className="w-4 h-4" />
             </a>
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-900/40 transition-colors"
-              title="Voir sur Google Maps"
-            >
-              <MapPin className="w-4 h-4 text-green-600" />
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors" title="Google Maps">
+              <MapPin className="w-4 h-4" />
             </a>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="h-8 px-2"
-              onClick={exportVisitPDF}
-              disabled={exportingPdf}
-              aria-label="Exporter en PDF"
-            >
-              {exportingPdf ? (
-                <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <FileDown className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline ml-1">PDF</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-              onClick={() => setConfirmDelete(true)}
-              aria-label="Supprimer la visite"
-            >
+            <button onClick={exportVisitPDF} disabled={exportingPdf}
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#222223] transition-colors" aria-label="Export PDF">
+              {exportingPdf ? <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : <FileDown className="w-4 h-4" />}
+            </button>
+            <button onClick={() => setConfirmDelete(true)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors" aria-label="Supprimer">
               <Trash2 className="w-4 h-4" />
-            </Button>
-            <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">#{visit.storeId}</span>
+            </button>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${typeColor}`}>
-            {visit.visitType}
-          </span>
-          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${assortColor}`}>
-            {visit.assortment}
-          </span>
-          <Badge variant="outline" className="text-xs">
-            {visit.week?.label}
-          </Badge>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-1.5">
+          <span className={`text-xs px-2 py-0.5 rounded border font-medium ${typeColor}`}>{visit.visitType}</span>
+          {visit.assortment && <span className={`text-xs px-2 py-0.5 rounded font-medium ${assortColor}`}>{visit.assortment}</span>}
+          {visit.week?.label && (
+            <span className="text-xs px-2 py-0.5 rounded border border-slate-200 dark:border-[#2e2e30] text-slate-500 dark:text-zinc-400 font-medium">
+              {visit.week.label}
+            </span>
+          )}
         </div>
 
         {/* Status selector */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Statut :</span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium shrink-0">Statut :</span>
           {(Object.keys(STATUS_CONFIG) as VisitStatus[]).map((s) => {
             const cfg = STATUS_CONFIG[s];
             const isActive = status === s;
@@ -553,10 +530,10 @@ export default function VisitDetailPage() {
                 key={s}
                 onClick={() => updateStatus(s)}
                 disabled={savingStatus}
-                className={`flex items-center gap-1.5 text-xs px-3 py-2 min-h-[36px] rounded-full border font-medium transition-all ${
+                className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-all ${
                   isActive
-                    ? cfg.color + " ring-2 ring-offset-1 " + cfg.color.replace("bg-", "ring-").split(" ")[0]
-                    : "bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500"
+                    ? cfg.color
+                    : "bg-white dark:bg-[#1a1a1b] text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-[#2e2e30] hover:border-slate-300 dark:hover:border-[#3a3a3c]"
                 }`}
               >
                 {cfg.icon}
@@ -584,19 +561,19 @@ export default function VisitDetailPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+      <div className="flex rounded-lg border border-slate-200 dark:border-[#2e2e30] overflow-hidden">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors relative ${
-              tab === t.id ? "bg-blue-mars text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-            } ${t.id !== "visit" ? "border-l border-slate-200 dark:border-slate-600" : ""}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+              tab === t.id ? "bg-blue-mars text-white" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#222223]"
+            } ${t.id !== "visit" ? "border-l border-slate-200 dark:border-[#2e2e30]" : ""}`}
           >
             {t.icon}
-            <span className="hidden sm:inline">{t.label}</span>
+            <span className="ml-0.5">{t.label}</span>
             {t.badge !== undefined && t.badge > 0 && (
-              <span className={`text-xs rounded-full px-1.5 py-0.5 font-semibold ${tab === t.id ? "bg-white/20 text-white" : "bg-blue-mars-light text-blue-mars"}`}>
+              <span className={`text-xs rounded px-1.5 py-0.5 font-semibold ${tab === t.id ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-[#222223] text-slate-500 dark:text-zinc-400"}`}>
                 {t.badge}
               </span>
             )}
@@ -637,15 +614,15 @@ export default function VisitDetailPage() {
           {/* ── Notes & Photos divider ── */}
           <div className="space-y-4 pt-1">
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-              <div className="flex items-center gap-2">
-                <StickyNote className="w-4 h-4 text-blue-mars" />
-                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">Notes & Photos</p>
+              <div className="h-px flex-1 bg-slate-100 dark:bg-[#2e2e30]" />
+              <div className="flex items-center gap-1.5 shrink-0">
+                <StickyNote className="w-3 h-3 text-slate-400 dark:text-zinc-500" />
+                <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 tracking-wide">Notes & Photos</span>
                 {(notes.length + photos.length) > 0 && (
-                  <span className="text-xs bg-blue-mars-light text-blue-mars px-1.5 py-0.5 rounded-full font-semibold">{notes.length + photos.length}</span>
+                  <span className="text-xs bg-slate-100 dark:bg-[#222223] text-slate-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-semibold">{notes.length + photos.length}</span>
                 )}
               </div>
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+              <div className="h-px flex-1 bg-slate-100 dark:bg-[#2e2e30]" />
             </div>
 
             <VisitNotes
@@ -696,104 +673,80 @@ export default function VisitDetailPage() {
 
       {/* Status confirmation modal */}
       {pendingStatus && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setPendingStatus(null)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setPendingStatus(null)}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                 {pendingStatus === "done" ? "Marquer comme effectuée ?" : "Annuler cette visite ?"}
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {pendingStatus === "done"
-                  ? "La visite sera marquée comme effectuée."
-                  : "La visite sera marquée comme annulée."}
+              <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
+                {pendingStatus === "done" ? "La visite sera marquée comme effectuée." : "La visite sera marquée comme annulée."}
               </p>
             </div>
-            <div className="flex gap-2 pt-1">
-              <Button
-                className={`flex-1 text-white ${pendingStatus === "done" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
-                onClick={() => { applyStatus(pendingStatus); setPendingStatus(null); }}
-              >
-                Confirmer
-              </Button>
+            <div className="flex gap-2">
+              <Button className={`flex-1 text-white ${pendingStatus === "done" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
+                onClick={() => { applyStatus(pendingStatus); setPendingStatus(null); }}>Confirmer</Button>
               <Button variant="outline" className="flex-1" onClick={() => setPendingStatus(null)}>Annuler</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete note confirmation modal */}
+      {/* Delete note modal */}
       {confirmDeleteNoteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setConfirmDeleteNoteId(null)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmDeleteNoteId(null)}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </div>
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0"><Trash2 className="w-4 h-4 text-red-600" /></div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Supprimer cette note ?</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Cette action est irréversible.</p>
+                <p className="font-semibold text-slate-900 dark:text-zinc-100 text-sm">Supprimer cette note ?</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Cette action est irréversible.</p>
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
-              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={confirmNoteDelete}>Supprimer</Button>
-              <Button variant="outline" className="flex-1" onClick={() => setConfirmDeleteNoteId(null)}>Annuler</Button>
+            <div className="flex gap-2">
+              <button className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors" onClick={confirmNoteDelete}>Supprimer</button>
+              <button className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] text-slate-700 dark:text-zinc-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#222223] transition-colors" onClick={() => setConfirmDeleteNoteId(null)}>Annuler</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Bulk photo delete confirmation modal */}
+      {/* Bulk photo delete modal */}
       {confirmDeletePhotos && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setConfirmDeletePhotos(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmDeletePhotos(false)}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </div>
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0"><Trash2 className="w-4 h-4 text-red-600" /></div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Supprimer {selectedPhotos.size} photo{selectedPhotos.size > 1 ? "s" : ""} ?</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Cette action est irréversible.</p>
+                <p className="font-semibold text-slate-900 dark:text-zinc-100 text-sm">Supprimer {selectedPhotos.size} photo{selectedPhotos.size > 1 ? "s" : ""} ?</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Cette action est irréversible.</p>
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
-              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={confirmDeleteSelectedPhotos}>Supprimer</Button>
-              <Button variant="outline" className="flex-1" onClick={() => setConfirmDeletePhotos(false)}>Annuler</Button>
+            <div className="flex gap-2">
+              <button className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors" onClick={confirmDeleteSelectedPhotos}>Supprimer</button>
+              <button className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] text-slate-700 dark:text-zinc-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#222223] transition-colors" onClick={() => setConfirmDeletePhotos(false)}>Annuler</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete confirmation modal */}
+      {/* Delete visit modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setConfirmDelete(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmDelete(false)}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </div>
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/40 shrink-0"><Trash2 className="w-4 h-4 text-red-600" /></div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Supprimer cette visite ?</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Cette action est irréversible. Les notes et photos seront également supprimées.</p>
+                <p className="font-semibold text-slate-900 dark:text-zinc-100 text-sm">Supprimer cette visite ?</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Notes et photos incluses. Irréversible.</p>
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
-              <Button
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                onClick={async () => {
-                  try {
-                    await deleteVisit.mutateAsync(visitId);
-                    showToast("success", "Visite supprimée");
-                    router.push("/planning");
-                  } catch {
-                    showToast("error", "Erreur lors de la suppression");
-                    setConfirmDelete(false);
-                  }
-                }}
-                disabled={deleteVisit.isPending}
-              >
-                {deleteVisit.isPending ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "Supprimer"}
-              </Button>
-              <Button variant="outline" className="flex-1" onClick={() => setConfirmDelete(false)}>Annuler</Button>
+            <div className="flex gap-2">
+              <button className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium transition-colors" disabled={deleteVisit.isPending}
+                onClick={async () => { try { await deleteVisit.mutateAsync(visitId); showToast("success", "Visite supprimée"); router.push("/planning"); } catch { showToast("error", "Erreur"); setConfirmDelete(false); } }}>
+                {deleteVisit.isPending ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" /> : "Supprimer"}
+              </button>
+              <button className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] text-slate-700 dark:text-zinc-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#222223] transition-colors" onClick={() => setConfirmDelete(false)}>Annuler</button>
             </div>
           </div>
         </div>

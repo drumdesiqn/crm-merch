@@ -31,7 +31,7 @@ export default function VisitNotes({
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
             placeholder="Ex: Facing refait, clipstrip ajouté côté gauche..."
-            className="w-full min-h-[90px] resize-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full min-h-[80px] resize-none rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-zinc-500"
             onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) onAddNote(); }}
           />
           <Button size="sm" onClick={onAddNote} disabled={!noteInput.trim() || addingNote}>

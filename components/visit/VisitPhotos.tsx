@@ -45,7 +45,7 @@ export default function VisitPhotos({
             <button
               onClick={() => photoRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-blue-cpm dark:hover:border-blue-cpm hover:bg-blue-mars-light dark:hover:bg-blue-950/40 transition-colors text-sm text-slate-500 dark:text-slate-400 hover:text-blue-mars dark:hover:text-blue-400 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-[#2e2e30] hover:border-blue-mars dark:hover:border-blue-mars/60 hover:bg-blue-50 dark:hover:bg-blue-mars/5 transition-colors text-sm text-slate-500 dark:text-zinc-400 hover:text-blue-mars disabled:opacity-50"
               aria-label="Prendre une photo"
             >
               {uploadingPhoto ? (
@@ -58,7 +58,7 @@ export default function VisitPhotos({
             <button
               onClick={() => galleryRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-blue-cpm dark:hover:border-blue-cpm hover:bg-blue-mars-light dark:hover:bg-blue-950/40 transition-colors text-sm text-slate-500 dark:text-slate-400 hover:text-blue-mars dark:hover:text-blue-400 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-[#2e2e30] hover:border-blue-mars dark:hover:border-blue-mars/60 hover:bg-blue-50 dark:hover:bg-blue-mars/5 transition-colors text-sm text-slate-500 dark:text-zinc-400 hover:text-blue-mars disabled:opacity-50"
               aria-label="Choisir depuis la galerie"
             >
               {uploadingPhoto ? (
@@ -123,8 +123,8 @@ export default function VisitPhotos({
               return (
                 <div
                   key={photo.id}
-                  className={`relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 transition-all ${
-                    isSelected ? "border-blue-mars ring-2 ring-blue-mars/20" : "border-slate-200 dark:border-slate-700"
+                  className={`relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-[#222223] border-2 transition-all ${
+                    isSelected ? "border-blue-mars ring-2 ring-blue-mars/20" : "border-slate-200 dark:border-[#2e2e30]"
                   }`}
                 >
                   {/* Selection checkbox */}
@@ -160,7 +160,7 @@ export default function VisitPhotos({
                       <X className="w-3 h-3" />
                     </button>
                   )}
-                  <div className="px-1.5 py-1 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+                  <div className="px-1.5 py-1 bg-white dark:bg-[#1a1a1b] border-t border-slate-100 dark:border-[#2e2e30]">
                     <p className="text-[10px] font-medium text-slate-700 dark:text-slate-200 leading-tight">
                       {photoDate}
                     </p>
@@ -177,7 +177,7 @@ export default function VisitPhotos({
 
           {/* Floating action bar for selection - compact on left to avoid chat button */}
           {selectMode && selectedPhotos.size > 0 && (
-            <div className="fixed bottom-24 left-2 right-auto md:bottom-4 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-2 z-40 max-w-[280px]">
+            <div className="fixed bottom-24 left-2 right-auto md:bottom-4 bg-white dark:bg-[#1a1a1b] rounded-xl shadow-lg border border-slate-200 dark:border-[#2e2e30] p-2 flex items-center gap-2 z-40 max-w-[280px]">
               <span className="text-xs font-medium text-slate-900 dark:text-slate-100 whitespace-nowrap px-1">
                 {selectedPhotos.size}
               </span>
