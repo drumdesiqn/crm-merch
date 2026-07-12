@@ -10,7 +10,7 @@ interface ImportResponse {
 }
 
 export function useImport() {
-  return useMutation<ImportResponse, Error, { file: File; mode: "check" | "replace" | "merge" }>({
+  return useMutation<ImportResponse, Error, { file: File; mode: "check" | "replace" | "merge" | "new" }>({
     mutationFn: async ({ file, mode }) => {
       const formData = new FormData();
       formData.append("file", file);

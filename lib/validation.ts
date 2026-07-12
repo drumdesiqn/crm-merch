@@ -134,7 +134,7 @@ export const CreateVisitSchema = z.object({
 
 // Schema for import mode
 export const ImportSchema = z.object({
-  mode: z.enum(["replace", "merge", "check"]).default("replace"),
+  mode: z.enum(["replace", "merge", "check", "new"]).default("replace"),
 });
 
 // Schema for chat messages (POST /api/chat)

@@ -138,7 +138,7 @@ export default function PlanningPage() {
     }
   };
 
-  const handleFile = async (file: File, mode: "check" | "replace" | "merge" = "check") => {
+  const handleFile = async (file: File, mode: "check" | "replace" | "merge" | "new" = "check") => {
     try {
       const data = await importMutation.mutateAsync({ file, mode });
 
@@ -336,9 +336,10 @@ export default function PlanningPage() {
               <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                 La semaine <strong>{pendingImport.label}</strong> existe déjà ({pendingImport.count} visites détectées).
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => handleFile(pendingImport.file, "replace")}>Remplacer</Button>
                 <Button size="sm" variant="outline" onClick={() => handleFile(pendingImport.file, "merge")}>Fusionner</Button>
+                <Button size="sm" variant="outline" onClick={() => handleFile(pendingImport.file, "new")}>Nouvelle semaine</Button>
                 <Button size="sm" variant="ghost" onClick={() => setPendingImport(null)}>Annuler</Button>
               </div>
             </div>

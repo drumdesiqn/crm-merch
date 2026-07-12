@@ -104,6 +104,17 @@ export async function POST(req: NextRequest) {
       if (visitsToCreate.length === 0) {
         return NextResponse.json({ success: true, weekNum, year, label, count: 0, warnings: ["Aucune nouvelle visite à fusionner — toutes les visites existent déjà."] });
       }
+    } else if (mode === "new") {
+      // Find a free virtual weekNum slot to bypass the unique(weekNum, year) constraint
+      // We use offsets 1000+, 2000+, etc. — purely internal, display uses the label
+      let virtualWeekNum = weekNum + 1000;
+      let suffix = 2;
+      while (await prisma.week.findUnique({ where: { weekNum_year: { weekNum: virtualWeekNum, year } } })) {
+        virtualWeekNum = weekNum + 1000 * suffix;
+        suffix++;
+      }
+      const newLabel = `${label} (${suffix - 1})`;
+      week = await prisma.week.create({ data: { weekNum: virtualWeekNum, year, label: newLabel } });
     } else if (!existingWeek) {
       week = await prisma.week.create({ data: { weekNum, year, label } });
     } else {
