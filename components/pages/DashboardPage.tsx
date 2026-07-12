@@ -129,7 +129,7 @@ export default function DashboardPage() {
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
               aria-label="Rechercher un magasin"
             />
             {searchQuery && (
@@ -161,7 +161,7 @@ export default function DashboardPage() {
         <>
           {/* ── Today banner ── */}
           {todayVisits.length > 0 && (
-            <div className="rounded-xl bg-blue-mars text-white px-5 py-4 flex items-center justify-between gap-4">
+            <div className="rounded-xl bg-teal-cpm text-white px-5 py-4 flex items-center justify-between gap-4">
               <div>
                 <p className="font-semibold text-base">
                   {todayVisits.length} visite{todayVisits.length > 1 ? "s" : ""} aujourd&apos;hui
@@ -214,7 +214,7 @@ export default function DashboardPage() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm"
               aria-label="Filtrer par type"
             >
               <option value="all">Tous types</option>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm"
               aria-label="Filtrer par statut"
             >
               <option value="all">Tous statuts</option>
@@ -252,10 +252,10 @@ export default function DashboardPage() {
             <Card className="h-fit shadow-sm">
               <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                  <Calendar className="w-4 h-4 text-blue-mars" />
+                  <Calendar className="w-4 h-4 text-teal-cpm" />
                   Aujourd&apos;hui
                   {todayVisits.length > 0 && (
-                    <span className="ml-auto text-xs font-semibold bg-blue-mars text-white px-2 py-0.5 rounded-full">
+                    <span className="ml-auto text-xs font-semibold bg-teal-cpm text-white px-2 py-0.5 rounded-full">
                       {todayVisits.length}
                     </span>
                   )}
@@ -335,7 +335,7 @@ export default function DashboardPage() {
 }
 
 const ACCENT_STYLES = {
-  blue:   { border: "border-l-blue-mars",   icon: "text-blue-mars bg-blue-50 dark:bg-blue-950/50",   value: "text-slate-900 dark:text-slate-100" },
+  blue:   { border: "border-l-teal-cpm",   icon: "text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15",   value: "text-slate-900 dark:text-slate-100" },
   orange: { border: "border-l-orange-500",  icon: "text-orange-500 bg-orange-50 dark:bg-orange-950/40", value: "text-slate-900 dark:text-slate-100" },
   yellow: { border: "border-l-yellow-500",  icon: "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40", value: "text-slate-900 dark:text-slate-100" },
   green:  { border: "border-l-green-600",   icon: "text-green-600 bg-green-50 dark:bg-green-950/40",  value: "text-slate-900 dark:text-slate-100" },
@@ -412,9 +412,9 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
         )}
         {visit.materialType && (
           <div className="flex items-center gap-1 mt-1 flex-wrap">
-            <Wrench className="w-3 h-3 text-blue-mars shrink-0" />
+            <Wrench className="w-3 h-3 text-teal-cpm shrink-0" />
             {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-              <span key={idx} className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">
+              <span key={idx} className="text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-1.5 py-0.5 rounded font-medium">
                 {type}
               </span>
             ))}
