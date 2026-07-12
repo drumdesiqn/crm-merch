@@ -35,9 +35,9 @@ const STATUS_LABELS: Record<string, string> = {
   postponed: "Reporté",
 };
 
-const PIE_COLORS = ["#00d7b9", "#059669", "#d97706", "#8b5cf6", "#ec4899", "#ef4444"];
-const BAR_CITY_COLOR = "#00d7b9";
-const BAR_MATERIAL_COLOR = "#00d7b9";
+const PIE_COLORS = ["#0074d7", "#059669", "#d97706", "#8b5cf6", "#ec4899", "#ef4444"];
+const BAR_CITY_COLOR = "#0074d7";
+const BAR_MATERIAL_COLOR = "#0074d7";
 
 export default function AnalyticsPage() {
   const [selectedWeek, setSelectedWeek] = useState<string>("");
@@ -136,7 +136,7 @@ export default function AnalyticsPage() {
                       name === "total" ? "Total" : name === "done" ? "Effectuées" : "Taux %",
                     ]}
                   />
-                  <Line yAxisId="left" type="monotone" dataKey="total" stroke="#00d7b9" strokeWidth={2} dot={{ r: 3 }} name="total" />
+                  <Line yAxisId="left" type="monotone" dataKey="total" stroke="#0074d7" strokeWidth={2} dot={{ r: 3 }} name="total" />
                   <Line yAxisId="left" type="monotone" dataKey="done" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} name="done" />
                   <Line yAxisId="right" type="monotone" dataKey="rate" stroke="#6366f1" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="rate" />
                 </LineChart>
@@ -270,7 +270,7 @@ export default function AnalyticsPage() {
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={95} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Visites"]} />
-                  <Bar dataKey="count" fill="#00d7b9" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="#0074d7" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
