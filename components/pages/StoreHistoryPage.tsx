@@ -130,7 +130,7 @@ export default function StoreHistoryPage() {
     );
   }
 
-  const inputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars";
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm";
   const labelCls = "block text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wide";
 
   return (
@@ -168,12 +168,12 @@ export default function StoreHistoryPage() {
       {stats && (
         <div className="grid grid-cols-3 gap-2">
           {[
-            { value: stats.totalVisits, label: "Visites", accent: "border-l-blue-mars" },
+            { value: stats.totalVisits, label: "Visites", accent: "border-l-teal-cpm" },
             { value: stats.completedVisits, label: "Terminées", accent: "border-l-green-500" },
             { value: stats.pendingVisits, label: "À faire", accent: "border-l-amber-400" },
             { value: stats.totalNotes, label: "Notes", accent: "border-l-slate-400" },
             { value: stats.totalPhotos, label: "Photos", accent: "border-l-slate-400" },
-            { value: stats.materialTypes.length, label: "Matériels", accent: "border-l-blue-cpm" },
+            { value: stats.materialTypes.length, label: "Matériels", accent: "border-l-teal-cpm" },
           ].map(({ value, label, accent }) => (
             <div key={label} className={`bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 ${accent} rounded-xl px-3 py-2.5`}>
               <p className="text-xl font-bold text-slate-900 dark:text-zinc-100">{value}</p>
@@ -187,13 +187,13 @@ export default function StoreHistoryPage() {
       <div className="flex items-center gap-2">
         <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-          className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars">
+          className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-cpm">
           <option value="all">Tous les statuts</option>
           <option value="pending">À faire</option>
           <option value="done">Terminé</option>
         </select>
         <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
-          className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars">
+          className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-cpm">
           <option value="all">Tous les types</option>
           <option value="Maintenance">Maintenance</option>
           <option value="Ad Hoc">Ad Hoc</option>
@@ -237,7 +237,7 @@ export default function StoreHistoryPage() {
                       </div>
                       <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{visit.week.label}</p>
                     </div>
-                    <Link href={`/planning/${visit.id}`} className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-300 dark:text-zinc-600 hover:text-blue-mars transition-colors shrink-0">
+                    <Link href={`/planning/${visit.id}`} className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-300 dark:text-zinc-600 hover:text-teal-cpm transition-colors shrink-0">
                       <ChevronRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -253,7 +253,7 @@ export default function StoreHistoryPage() {
                       <BarChart3 className="w-3 h-3 text-slate-400" />
                       <span className="text-xs text-slate-600 dark:text-zinc-400">{visit.materials}</span>
                       {visit.materialType && visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                        <span key={idx} className="text-xs px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">{type}</span>
+                        <span key={idx} className="text-xs px-1.5 py-0.5 rounded bg-teal-cpm/10 dark:bg-teal-cpm/15 text-teal-cpm">{type}</span>
                       ))}
                     </div>
                   )}

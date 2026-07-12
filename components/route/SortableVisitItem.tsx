@@ -47,7 +47,7 @@ export function SortableVisitItem({
         ref={setNodeRef}
         style={style}
         className={`flex items-center gap-3 p-3 rounded-xl border bg-white dark:bg-slate-800 transition-shadow ${
-          isDragging ? "shadow-lg border-blue-cpm dark:border-blue-700" : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
+          isDragging ? "shadow-lg border-teal-cpm" : "border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600"
         }`}
       >
       <button
@@ -61,7 +61,7 @@ export function SortableVisitItem({
 
       <div
         className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-          visit.coords ? "bg-blue-mars text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+          visit.coords ? "bg-teal-cpm text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
         }`}
       >
         {index + 1}

@@ -38,7 +38,7 @@ export function formatDateShort(date: Date | string): string {
 }
 
 export const VISIT_TYPE_COLORS: Record<string, string> = {
-  Maintenance: "bg-blue-mars-light text-blue-mars border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
+  Maintenance: "bg-teal-cpm/10 text-teal-cpm border-teal-cpm/30 dark:bg-teal-cpm/10 dark:text-teal-cpm dark:border-teal-cpm/30",
   "Ad Hoc": "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800",
 };
 

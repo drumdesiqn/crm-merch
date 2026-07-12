@@ -293,10 +293,10 @@ export default function RouteMapView({
   return (
     <div className="space-y-4">
       {/* Intro banner — explains the feature */}
-      <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-        <Info className="w-5 h-5 text-blue-mars shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 p-3 rounded-xl bg-teal-cpm/5 dark:bg-teal-cpm/10 border border-teal-cpm/20">
+        <Info className="w-5 h-5 text-teal-cpm shrink-0 mt-0.5" />
         <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
-          <p className="font-semibold text-blue-mars dark:text-blue-cpm">Comment ça marche ?</p>
+          <p className="font-semibold text-teal-cpm">Comment ça marche ?</p>
           <ol className="list-decimal list-inside space-y-0.5 text-slate-600 dark:text-slate-400">
             <li>Choisis un jour ci-dessous</li>
             <li>Clique <strong>&quot;Optimiser le trajet&quot;</strong> pour trier automatiquement</li>
@@ -317,7 +317,7 @@ export default function RouteMapView({
                 onClick={() => setSelectedDay(day)}
                 className={`shrink-0 px-3 py-2 rounded-xl text-sm font-medium border transition-colors capitalize ${
                   selectedDay === day
-                    ? "bg-blue-mars text-white border-blue-mars shadow-sm"
+                    ? "bg-teal-cpm text-white border-teal-cpm shadow-sm"
                     : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
@@ -332,7 +332,7 @@ export default function RouteMapView({
       {/* Single day label when only 1 day */}
       {dayKeys.length === 1 && (
         <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-blue-mars" />
+          <MapPin className="w-4 h-4 text-teal-cpm" />
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 capitalize">{dayLabel(dayKeys[0])}</p>
           <span className="text-xs text-slate-400">— {orderedVisits.length} visite{orderedVisits.length > 1 ? "s" : ""}</span>
         </div>
@@ -342,13 +342,13 @@ export default function RouteMapView({
       {geocoding && geocodingProgress && (
         <div className="bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-3 space-y-2">
           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <div className="w-4 h-4 border-2 border-blue-mars border-t-transparent rounded-full animate-spin shrink-0" />
+            <div className="w-4 h-4 border-2 border-teal-cpm border-t-transparent rounded-full animate-spin shrink-0" />
             <span>Géolocalisation des adresses…</span>
             <span className="ml-auto text-xs text-slate-400">{geocodingProgress.done}/{geocodingProgress.total}</span>
           </div>
           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
             <div
-              className="bg-blue-mars h-2 rounded-full transition-all duration-500"
+              className="bg-teal-cpm h-2 rounded-full transition-all duration-500"
               style={{ width: `${Math.round((geocodingProgress.done / geocodingProgress.total) * 100)}%` }}
             />
           </div>
@@ -402,7 +402,7 @@ export default function RouteMapView({
             return (
               <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-1.5">
-                  <Navigation className="w-3.5 h-3.5 text-blue-mars" />
+                  <Navigation className="w-3.5 h-3.5 text-teal-cpm" />
                   <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatKm(totalDist)}</span>
                 </div>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
@@ -417,12 +417,12 @@ export default function RouteMapView({
           })()}
 
           {/* Home point */}
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-            <div className="w-8 h-8 rounded-full bg-blue-mars flex items-center justify-center text-sm shrink-0">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-teal-cpm/5 dark:bg-teal-cpm/10 border border-teal-cpm/20">
+            <div className="w-8 h-8 rounded-full bg-teal-cpm flex items-center justify-center text-sm shrink-0">
               🏠
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-blue-mars dark:text-blue-cpm">Départ</p>
+              <p className="text-xs font-semibold text-teal-cpm">Départ</p>
               <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{homeLabel.replace("Domicile — ", "")}</p>
             </div>
           </div>
@@ -491,7 +491,7 @@ export default function RouteMapView({
                   type="text"
                   value={editAddress.address}
                   onChange={(e) => setEditAddress((p) => ({ ...p, address: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                  className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                   placeholder="Rue Example 42"
                 />
               </div>
@@ -502,7 +502,7 @@ export default function RouteMapView({
                     type="text"
                     value={editAddress.zipcode}
                     onChange={(e) => setEditAddress((p) => ({ ...p, zipcode: e.target.value }))}
-                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                     placeholder="1000"
                   />
                 </div>
@@ -512,7 +512,7 @@ export default function RouteMapView({
                     type="text"
                     value={editAddress.city}
                     onChange={(e) => setEditAddress((p) => ({ ...p, city: e.target.value }))}
-                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                     placeholder="Bruxelles"
                   />
                 </div>

@@ -70,7 +70,7 @@ export default function Navbar() {
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
-                  ? "bg-blue-50 dark:bg-blue-mars/15 text-blue-mars dark:text-blue-400"
+                  ? "bg-teal-cpm/10 dark:bg-teal-cpm/15 text-teal-cpm"
                   : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a1a1b] hover:text-slate-900 dark:hover:text-zinc-100"
               )}
             >
@@ -88,7 +88,7 @@ export default function Navbar() {
               className={cn(
                 "hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
-                  ? "bg-blue-50 dark:bg-blue-mars/15 text-blue-mars dark:text-blue-400"
+                  ? "bg-teal-cpm/10 dark:bg-teal-cpm/15 text-teal-cpm"
                   : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a1a1b] hover:text-slate-900 dark:hover:text-zinc-100"
               )}
             >
@@ -119,10 +119,10 @@ export default function Navbar() {
               href={item.href}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors rounded-xl",
-                active ? "text-blue-mars dark:text-blue-400" : "text-slate-500 dark:text-slate-400"
+                active ? "text-teal-cpm" : "text-slate-500 dark:text-slate-400"
               )}
             >
-              <item.icon className={cn("w-5 h-5", active && "stroke-[color:var(--color-blue-mars)] dark:stroke-blue-400")} />
+              <item.icon className={cn("w-5 h-5", active && "stroke-[color:var(--color-teal-cpm)]")} />
               <span className="truncate">{item.label}</span>
             </Link>
           );
@@ -133,12 +133,12 @@ export default function Navbar() {
             onClick={toggleMore}
             className={cn(
               "w-full flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors rounded-xl",
-              showMore ? "text-blue-mars dark:text-blue-400" : "text-slate-500 dark:text-slate-400"
+              showMore ? "text-teal-cpm" : "text-slate-500 dark:text-slate-400"
             )}
             aria-label="Menu supplémentaire"
             aria-expanded={showMore}
           >
-            <MoreHorizontal className={cn("w-5 h-5", showMore && "stroke-[color:var(--color-blue-mars)] dark:stroke-blue-400")} />
+            <MoreHorizontal className={cn("w-5 h-5", showMore && "stroke-[color:var(--color-teal-cpm)]")} />
             <span className="truncate">Plus</span>
           </button>
           {/* Overlay pour capturer les clics à l'extérieur */}
@@ -159,7 +159,7 @@ export default function Navbar() {
                     onClick={closeMore}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      active ? "text-blue-mars dark:text-blue-400 bg-blue-50 dark:bg-blue-mars/15" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#222223]"
+                      active ? "text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#222223]"
                     )}
                   >
                     <item.icon className="w-4 h-4" />

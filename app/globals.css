@@ -4,9 +4,9 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
 
-  --color-blue-mars: #0010A4;
-  --color-blue-mars-light: #eef2ff;
-  --color-blue-cpm: #0055FF;
+  --color-blue-mars: #2563EB;
+  --color-blue-mars-light: #dbeafe;
+  --color-blue-cpm: #3B82F6;
   --color-red-mars: #C8102E;
   --color-red-mars-light: #fee2e2;
   --color-green-cpm: #059669;

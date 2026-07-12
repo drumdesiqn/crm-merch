@@ -123,7 +123,7 @@ export default function ContactsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-mars" />
+        <Loader2 className="w-6 h-6 animate-spin text-teal-cpm" />
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function ContactsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-blue-mars dark:text-blue-400" />
+          <Users className="w-5 h-5 text-teal-cpm" />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Contacts</h1>
           <span className="text-sm text-slate-400 dark:text-slate-500 ml-1">{allContacts.length}</span>
         </div>
@@ -156,7 +156,7 @@ export default function ContactsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher par nom, email ou téléphone..."
-          className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-slate-500"
+          className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm placeholder:text-slate-400 dark:placeholder:text-slate-500"
         />
         {search && (
           <button
@@ -177,8 +177,8 @@ export default function ContactsPage() {
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors",
               !activeTeam
-                ? "bg-blue-mars text-white border-blue-mars"
-                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-blue-mars hover:text-blue-mars dark:hover:text-blue-400"
+                ? "bg-teal-cpm text-white border-teal-cpm"
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-teal-cpm hover:text-teal-cpm"
             )}
           >
             Tous ({allContacts.length})
@@ -190,8 +190,8 @@ export default function ContactsPage() {
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors",
                 activeTeam === t.id
-                  ? "bg-blue-mars text-white border-blue-mars"
-                  : `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:border-blue-mars hover:text-blue-mars dark:hover:text-blue-400 ${t.color}`
+                  ? "bg-teal-cpm text-white border-teal-cpm"
+                  : `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:border-teal-cpm hover:text-teal-cpm ${t.color}`
               )}
             >
               {t.name} ({t.contacts.length})
@@ -202,7 +202,7 @@ export default function ContactsPage() {
 
       {/* Add contact form */}
       {addingToTeam && (
-        <Card className="border-blue-200 dark:border-blue-800">
+        <Card className="border-teal-cpm/30 dark:border-teal-cpm/30">
           <CardContent className="py-4 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nouveau contact</p>
@@ -216,7 +216,7 @@ export default function ContactsPage() {
                 <select
                   value={addingToTeam}
                   onChange={(e) => setAddingToTeam(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                 >
                   {teams.map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
@@ -225,9 +225,9 @@ export default function ContactsPage() {
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom complet *" aria-label="Nom complet" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone *" aria-label="Téléphone" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-              <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" aria-label="Email" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom complet *" aria-label="Nom complet" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm" />
+              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone *" aria-label="Téléphone" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm" />
+              <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" aria-label="Email" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm" />
             </div>
             <div className="flex gap-2">
               <Button size="sm" className="h-8 text-xs" onClick={() => handleAdd(addingToTeam)} disabled={saving}>
@@ -256,7 +256,7 @@ export default function ContactsPage() {
       {filteredContacts.length > 0 && (
         <div className="space-y-2">
           {filteredContacts.map((c) => (
-            <Card key={c.id} className={cn("group transition-all", editingId === c.id ? "border-blue-300 dark:border-blue-700 shadow-md" : "hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800")}>
+            <Card key={c.id} className={cn("group transition-all", editingId === c.id ? "border-teal-cpm/50 shadow-md" : "hover:shadow-md hover:border-teal-cpm/30")}>
               <CardContent className="py-3 px-4">
                 {editingId === c.id ? (
                   <div className="space-y-3">
@@ -267,9 +267,9 @@ export default function ContactsPage() {
                       </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom *" aria-label="Nom" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-                      <input value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone *" aria-label="Téléphone" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
-                      <input value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" aria-label="Email" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-mars" />
+                      <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nom *" aria-label="Nom" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm" />
+                      <input value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Téléphone *" aria-label="Téléphone" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm" />
+                      <input value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" aria-label="Email" className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm" />
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" className="h-8 text-xs" onClick={handleEdit} disabled={saving}>
@@ -282,7 +282,7 @@ export default function ContactsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     {/* Top row: avatar + info */}
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-mars to-blue-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-teal-cpm flex items-center justify-center text-white text-sm font-bold shrink-0">
                         {getInitials(c.name)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -318,7 +318,7 @@ export default function ContactsPage() {
                       </a>
                       <a
                         href={`mailto:${c.email}`}
-                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-teal-cpm/10 dark:bg-teal-cpm/10 text-teal-cpm border border-teal-cpm/30 dark:border-teal-cpm/30 hover:bg-teal-cpm/15 dark:hover:bg-teal-cpm/20 transition-colors"
                         title={`Email ${c.email}`}
                         aria-label={`Envoyer un email à ${c.name}`}
                       >
@@ -326,7 +326,7 @@ export default function ContactsPage() {
                       </a>
                       <button
                         onClick={() => startEdit(c)}
-                        className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-blue-mars hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                        className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all text-slate-300 dark:text-slate-600 hover:text-teal-cpm hover:bg-teal-cpm/10 dark:hover:bg-teal-cpm/15"
                         title="Modifier ce contact"
                         aria-label={`Modifier ${c.name}`}
                       >

@@ -151,7 +151,7 @@ export default function SettingsPage() {
   };
 
   const sectionCls = "bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4 space-y-3";
-  const inputCls = "w-full rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars placeholder:text-slate-400 dark:placeholder:text-zinc-500";
+  const inputCls = "w-full rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm placeholder:text-slate-400 dark:placeholder:text-zinc-500";
   const dividerCls = "h-px bg-slate-100 dark:bg-[#2e2e30]";
   const labelCls = "text-xs font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wide";
 

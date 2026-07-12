@@ -37,7 +37,7 @@ export default function VisitPhotos({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-blue-mars" /> Photos
+            <ImageIcon className="w-4 h-4 text-teal-cpm" /> Photos
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -45,7 +45,7 @@ export default function VisitPhotos({
             <button
               onClick={() => photoRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-[#2e2e30] hover:border-blue-mars dark:hover:border-blue-mars/60 hover:bg-blue-50 dark:hover:bg-blue-mars/5 transition-colors text-sm text-slate-500 dark:text-zinc-400 hover:text-blue-mars disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-[#2e2e30] hover:border-teal-cpm dark:hover:border-teal-cpm/60 hover:bg-teal-cpm/5 transition-colors text-sm text-slate-500 dark:text-zinc-400 hover:text-teal-cpm disabled:opacity-50"
               aria-label="Prendre une photo"
             >
               {uploadingPhoto ? (
@@ -58,7 +58,7 @@ export default function VisitPhotos({
             <button
               onClick={() => galleryRef.current?.click()}
               disabled={uploadingPhoto}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-[#2e2e30] hover:border-blue-mars dark:hover:border-blue-mars/60 hover:bg-blue-50 dark:hover:bg-blue-mars/5 transition-colors text-sm text-slate-500 dark:text-zinc-400 hover:text-blue-mars disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-slate-200 dark:border-[#2e2e30] hover:border-teal-cpm dark:hover:border-teal-cpm/60 hover:bg-teal-cpm/5 transition-colors text-sm text-slate-500 dark:text-zinc-400 hover:text-teal-cpm disabled:opacity-50"
               aria-label="Choisir depuis la galerie"
             >
               {uploadingPhoto ? (
@@ -106,7 +106,7 @@ export default function VisitPhotos({
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Photos ({photos.length})</p>
             <button
               onClick={() => selectMode ? onExitSelectMode() : onSetSelectMode(true)}
-              className="text-xs text-blue-mars font-medium hover:underline"
+              className="text-xs text-teal-cpm font-medium hover:underline"
             >
               {selectMode ? "Annuler" : "Sélectionner"}
             </button>
@@ -124,7 +124,7 @@ export default function VisitPhotos({
                 <div
                   key={photo.id}
                   className={`relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-[#222223] border-2 transition-all ${
-                    isSelected ? "border-blue-mars ring-2 ring-blue-mars/20" : "border-slate-200 dark:border-[#2e2e30]"
+                    isSelected ? "border-teal-cpm ring-2 ring-teal-cpm/20" : "border-slate-200 dark:border-[#2e2e30]"
                   }`}
                 >
                   {/* Selection checkbox */}
@@ -137,7 +137,7 @@ export default function VisitPhotos({
                       className="absolute top-1 left-1 z-10 bg-white dark:bg-slate-800 rounded p-0.5 shadow"
                     >
                       {isSelected ? (
-                        <CheckSquare className="w-4 h-4 text-blue-mars" />
+                        <CheckSquare className="w-4 h-4 text-teal-cpm" />
                       ) : (
                         <Square className="w-4 h-4 text-slate-400" />
                       )}
@@ -193,14 +193,14 @@ export default function VisitPhotos({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 px-2 text-blue-mars border-blue-200 hover:bg-blue-mars-light"
+                  className="h-8 px-2 text-teal-cpm border-teal-cpm/30 hover:bg-teal-cpm/10"
                   onClick={onDeleteSelected}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 px-3 bg-blue-mars hover:bg-blue-800 text-white"
+                  className="h-8 px-3 bg-teal-cpm hover:bg-teal-cpm/85 text-white"
                   onClick={onShareSelected}
                   disabled={sharing}
                 >

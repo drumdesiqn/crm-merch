@@ -50,7 +50,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-mars-light to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-cpm/5 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
@@ -74,7 +74,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-mars dark:bg-slate-800 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-cpm dark:bg-slate-800 dark:text-white"
                 placeholder="votre@email.com"
               />
             </div>
@@ -88,7 +88,7 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-mars dark:bg-slate-800 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-cpm dark:bg-slate-800 dark:text-white"
                 placeholder="••••••••"
               />
             </div>
@@ -100,7 +100,7 @@ function LoginForm() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-mars hover:bg-blue-800 text-white"
+              className="w-full bg-teal-cpm hover:bg-teal-cpm/85 text-white"
             >
               {loading ? "Connexion..." : "Se connecter"}
             </Button>

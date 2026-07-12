@@ -209,7 +209,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Magasin non trouvé. Ajoute-le d'abord via la page Magasins." }, { status: 404 });
     }
 
-    const date = new Date(visitDate);
+    const [y, m, d] = visitDate.split("-").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
     const { weekNum, year, label } = getWeekLabel(date);
 
     let week;

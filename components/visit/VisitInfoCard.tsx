@@ -48,7 +48,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
       <Card>
         <CardContent className="py-3 space-y-3">
           <div className="flex items-center gap-3">
-            <Calendar className="w-4 h-4 text-blue-mars shrink-0" />
+            <Calendar className="w-4 h-4 text-teal-cpm shrink-0" />
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400">Date de visite</p>
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">{formatDate(visit.visitDate)}</p>
@@ -56,7 +56,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
           </div>
           <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
           <div className="flex items-start gap-3">
-            <MapPin className="w-4 h-4 text-blue-mars shrink-0 mt-0.5" />
+            <MapPin className="w-4 h-4 text-teal-cpm shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-slate-500 dark:text-slate-400">Adresse</p>
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.storeAddress}</p>
@@ -66,7 +66,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
           <>
             <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
             <div className="flex items-center gap-3">
-              <User className="w-4 h-4 text-blue-mars shrink-0" />
+              <User className="w-4 h-4 text-teal-cpm shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-slate-500 dark:text-slate-400">Sales Representative</p>
                 {editingSalesRep ? (
@@ -77,7 +77,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
                       value={salesRepValue}
                       onChange={(e) => setSalesRepValue(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") saveSalesRep(); if (e.key === "Escape") { setSalesRepValue(visit.salesRep || ""); setEditingSalesRep(false); } }}
-                      className="flex-1 px-2 py-1 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+                      className="flex-1 px-2 py-1 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                       placeholder="Nom du représentant"
                     />
                     <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={saveSalesRep} disabled={saving}><Check className="w-3.5 h-3.5" /></Button>
@@ -86,7 +86,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
                 ) : (
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.salesRep || <span className="text-slate-400 italic">Non renseigné</span>}</p>
-                    {onUpdate && <button onClick={() => setEditingSalesRep(true)} className="text-slate-300 hover:text-blue-mars transition-colors"><Pencil className="w-3 h-3" /></button>}
+                    {onUpdate && <button onClick={() => setEditingSalesRep(true)} className="text-slate-300 hover:text-teal-cpm transition-colors"><Pencil className="w-3 h-3" /></button>}
                   </div>
                 )}
               </div>
@@ -96,7 +96,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
             <>
               <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
               <div className="flex items-center gap-3">
-                <Tag className="w-4 h-4 text-blue-mars shrink-0" />
+                <Tag className="w-4 h-4 text-teal-cpm shrink-0" />
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Type / Fréquence</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.visitFrequence}</p>
@@ -108,7 +108,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
             <>
               <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
               <div className="flex items-center gap-3">
-                <Package className="w-4 h-4 text-blue-mars shrink-0" />
+                <Package className="w-4 h-4 text-teal-cpm shrink-0" />
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Merchandiser</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{visit.merchandiser}</p>
@@ -119,7 +119,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
           <div className="h-px bg-slate-100 dark:bg-[#2e2e30]" />
           <div className="flex gap-2 pt-1">
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-              className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-colors">
+              className="flex flex-1 items-center justify-center gap-2 py-2 rounded-lg bg-teal-cpm/5 border border-teal-cpm/20 text-teal-cpm text-sm font-medium hover:bg-teal-cpm/10 dark:bg-teal-cpm/10 dark:border-teal-cpm/30 dark:hover:bg-teal-cpm/15 transition-colors">
               <ExternalLink className="w-4 h-4" /> Google Maps
             </a>
             <a href={wazeUrl} target="_blank" rel="noopener noreferrer"
@@ -162,7 +162,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
       </Card>
 
       {visit.materials && (
-        <Card className="border-blue-100 dark:border-[#2e2e30]">
+        <Card className="border-slate-200 dark:border-[#2e2e30]">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-slate-600 dark:text-zinc-400">
               <Wrench className="w-4 h-4" /> Matériel nécessaire

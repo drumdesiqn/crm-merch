@@ -39,7 +39,7 @@ export default function MaterialTypeSelector({
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-base">
           <span className="flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-blue-mars" /> Type de matériel installé
+            <Wrench className="w-4 h-4 text-teal-cpm" /> Type de matériel installé
           </span>
           {saving && <span className="text-xs text-slate-400 font-normal animate-pulse">Sauvegarde...</span>}
         </CardTitle>
@@ -52,8 +52,8 @@ export default function MaterialTypeSelector({
               onClick={() => toggleType(t)}
               className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                 value.includes(t)
-                  ? "bg-blue-mars text-white border-blue-mars"
-                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-blue-cpm hover:text-blue-mars"
+                  ? "bg-teal-cpm text-white border-teal-cpm"
+                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-teal-cpm hover:text-teal-cpm"
               }`}
             >
               {t}
@@ -62,7 +62,7 @@ export default function MaterialTypeSelector({
         </div>
         {value.length > 0 && (
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            Sélectionné : <span className="font-medium text-blue-mars">{value.join(", ")}</span>
+            Sélectionné : <span className="font-medium text-teal-cpm">{value.join(", ")}</span>
           </p>
         )}
       </CardContent>

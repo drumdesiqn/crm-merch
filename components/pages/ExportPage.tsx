@@ -218,7 +218,7 @@ export default function ExportPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="w-4 h-4 text-blue-mars" />
+            <Calendar className="w-4 h-4 text-teal-cpm" />
             1. Choisir une semaine
           </CardTitle>
         </CardHeader>
@@ -230,13 +230,13 @@ export default function ExportPage() {
                 onClick={() => selectWeek(week.id)}
                 className={`flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
                   selectedWeek === week.id
-                    ? "border-blue-mars bg-blue-mars-light dark:bg-blue-mars/20"
+                    ? "border-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15"
                     : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >
                 <span className="font-medium text-slate-900 dark:text-slate-100">{week.label}</span>
                 {selectedWeek === week.id && (
-                  <div className="w-4 h-4 rounded-full bg-blue-mars flex items-center justify-center">
+                  <div className="w-4 h-4 rounded-full bg-teal-cpm flex items-center justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-white" />
                   </div>
                 )}
@@ -251,7 +251,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Store className="w-4 h-4 text-blue-mars" />
+              <Store className="w-4 h-4 text-teal-cpm" />
               2. Choisir une visite
             </CardTitle>
           </CardHeader>
@@ -268,7 +268,7 @@ export default function ExportPage() {
                   onClick={() => setSelectedVisit(visit.id)}
                   className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
                     selectedVisit === visit.id
-                      ? "border-blue-mars bg-blue-mars-light dark:bg-blue-mars/20"
+                      ? "border-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15"
                       : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                   }`}
                 >
@@ -282,7 +282,7 @@ export default function ExportPage() {
                     </p>
                   </div>
                   {selectedVisit === visit.id && (
-                    <div className="w-4 h-4 rounded-full bg-blue-mars flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-4 h-4 rounded-full bg-teal-cpm flex items-center justify-center shrink-0 mt-0.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-white" />
                     </div>
                   )}
@@ -298,7 +298,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="w-4 h-4 text-blue-mars" />
+              <FileText className="w-4 h-4 text-teal-cpm" />
               3. Générer le PDF
             </CardTitle>
           </CardHeader>
@@ -307,7 +307,7 @@ export default function ExportPage() {
               Le rapport inclura toutes les informations de la visite avec les photos et notes.
             </p>
             <Button
-              className="w-full bg-blue-mars hover:bg-blue-800 text-white"
+              className="w-full bg-teal-cpm hover:bg-teal-cpm/85 text-white"
               onClick={generatePDF}
               disabled={generating}
             >
@@ -332,7 +332,7 @@ export default function ExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileSpreadsheet className="w-4 h-4 text-blue-mars" />
+              <FileSpreadsheet className="w-4 h-4 text-teal-cpm" />
               Exporter toutes les visites
             </CardTitle>
           </CardHeader>
@@ -359,7 +359,7 @@ export default function ExportPage() {
               </Button>
             </div>
             <Button
-              className="w-full bg-blue-mars hover:bg-blue-800 text-white mt-3"
+              className="w-full bg-teal-cpm hover:bg-teal-cpm/85 text-white mt-3"
               onClick={generateBatchPDF}
               disabled={generatingBatch}
             >

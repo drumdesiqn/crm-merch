@@ -291,7 +291,7 @@ export default function DashboardPage() {
                     <VisitRow key={v.id} visit={v} showDate totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {upcomingVisits.length > 5 && (
-                    <Link href="/planning" className="block text-center text-xs text-blue-mars dark:text-blue-400 hover:underline pt-2 font-medium">
+                    <Link href="/planning" className="block text-center text-xs text-teal-cpm hover:underline pt-2 font-medium">
                       Voir toutes les visites →
                     </Link>
                   )}
@@ -320,7 +320,7 @@ export default function DashboardPage() {
                     <VisitRow key={v.id} visit={v} showDate totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />
                   ))}
                   {pastVisits.length > 10 && (
-                    <Link href="/planning" className="block text-center text-xs text-blue-mars dark:text-blue-400 hover:underline pt-2 font-medium">
+                    <Link href="/planning" className="block text-center text-xs text-teal-cpm hover:underline pt-2 font-medium">
                       Voir toutes →
                     </Link>
                   )}

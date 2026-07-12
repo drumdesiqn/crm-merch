@@ -145,7 +145,7 @@ export default function StoresPage() {
     return <StoresListSkeleton />;
   }
 
-  const inputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-mars";
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-cpm";
   const labelCls = "block text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wide";
   const modalCls = "bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 space-y-4";
 
@@ -175,13 +175,13 @@ export default function StoresPage() {
             placeholder="Rechercher un magasin, ville..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
             aria-label="Rechercher un magasin"
           />
         </div>
         <div className="flex gap-2">
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-            className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars">
+            className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-cpm">
             <option value="name">Trier par nom</option>
             <option value="city">Ville</option>
             <option value="visits">Visites</option>
@@ -193,7 +193,7 @@ export default function StoresPage() {
           </button>
           {cities.length > 1 && (
             <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-mars">
+              className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-cpm">
               <option value="">Toutes les villes</option>
               {cities.map((city) => (<option key={city} value={city}>{city}</option>))}
             </select>
@@ -203,11 +203,11 @@ export default function StoresPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 border-l-blue-mars rounded-xl px-4 py-3">
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 border-l-teal-cpm rounded-xl px-4 py-3">
           <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{stores.filter((s) => s.totalVisits > 0).length}</p>
           <p className="text-xs text-slate-500 dark:text-zinc-500 mt-0.5">Magasins actifs</p>
         </div>
-        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 border-l-blue-cpm rounded-xl px-4 py-3">
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 border-l-teal-cpm rounded-xl px-4 py-3">
           <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{stores.filter((s) => s.materialTypes.length > 0).length}</p>
           <p className="text-xs text-slate-500 dark:text-zinc-500 mt-0.5">Avec matériel installé</p>
         </div>
@@ -234,7 +234,7 @@ export default function StoresPage() {
               {/* Left accent based on completions */}
               <div className={`w-1 rounded-l-xl shrink-0 ${
                 store.totalVisits === 0 ? "bg-slate-200 dark:bg-[#2e2e30]" :
-                store.completedVisits === store.totalVisits ? "bg-green-500" : "bg-blue-mars"
+                store.completedVisits === store.totalVisits ? "bg-green-500" : "bg-teal-cpm"
               }`} />
               <div className="flex-1 p-3 min-w-0">
                 <div className="flex items-start gap-2">
@@ -267,7 +267,7 @@ export default function StoresPage() {
                     {store.materialTypes.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {store.materialTypes.slice(0, 3).map((type) => (
-                          <span key={type} className="text-xs px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-medium">{type}</span>
+                          <span key={type} className="text-xs px-1.5 py-0.5 rounded bg-teal-cpm/10 dark:bg-teal-cpm/15 text-teal-cpm font-medium">{type}</span>
                         ))}
                         {store.materialTypes.length > 3 && (
                           <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#222223] text-slate-500 dark:text-zinc-400">+{store.materialTypes.length - 3}</span>
@@ -278,7 +278,7 @@ export default function StoresPage() {
                   {/* Actions */}
                   <div className="flex items-center gap-1 shrink-0">
                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePlan(store); }}
-                      className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-blue-mars hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Planifier">
+                      className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-teal-cpm hover:bg-teal-cpm/10 dark:hover:bg-teal-cpm/15 transition-colors" title="Planifier">
                       <CalendarPlus className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(store); }}

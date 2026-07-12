@@ -35,9 +35,9 @@ const STATUS_LABELS: Record<string, string> = {
   postponed: "Reporté",
 };
 
-const PIE_COLORS = ["#0010A4", "#0055FF", "#00C8A0", "#d97706", "#8b5cf6", "#ec4899"];
-const BAR_CITY_COLOR = "#0010A4";
-const BAR_MATERIAL_COLOR = "#0055FF";
+const PIE_COLORS = ["#00d7b9", "#059669", "#d97706", "#8b5cf6", "#ec4899", "#ef4444"];
+const BAR_CITY_COLOR = "#00d7b9";
+const BAR_MATERIAL_COLOR = "#00d7b9";
 
 export default function AnalyticsPage() {
   const [selectedWeek, setSelectedWeek] = useState<string>("");
@@ -51,7 +51,7 @@ export default function AnalyticsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-mars" />
+        <Loader2 className="w-6 h-6 animate-spin text-teal-cpm" />
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
         <select
           value={selectedWeek}
           onChange={(e) => setSelectedWeek(e.target.value)}
-          className="text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+          className="text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-700 dark:text-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
         >
           <option value="">Toutes les semaines</option>
           {weeks.map((w) => (
@@ -105,9 +105,9 @@ export default function AnalyticsPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Visites totales", value: data.summary.totalVisits, accent: "border-l-blue-mars" },
+          { label: "Visites totales", value: data.summary.totalVisits, accent: "border-l-teal-cpm" },
           { label: "Complétion", value: `${data.summary.completionRate}%`, accent: "border-l-green-500" },
-          { label: "Magasins", value: data.summary.totalStores, accent: "border-l-blue-cpm" },
+          { label: "Magasins", value: data.summary.totalStores, accent: "border-l-teal-cpm" },
           { label: "Photos", value: data.summary.totalPhotos, accent: "border-l-amber-400" },
         ].map(({ label, value, accent }) => (
           <div key={label} className={`bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 ${accent} rounded-xl px-4 py-3`}>
@@ -136,7 +136,7 @@ export default function AnalyticsPage() {
                       name === "total" ? "Total" : name === "done" ? "Effectuées" : "Taux %",
                     ]}
                   />
-                  <Line yAxisId="left" type="monotone" dataKey="total" stroke="#0010A4" strokeWidth={2} dot={{ r: 3 }} name="total" />
+                  <Line yAxisId="left" type="monotone" dataKey="total" stroke="#00d7b9" strokeWidth={2} dot={{ r: 3 }} name="total" />
                   <Line yAxisId="left" type="monotone" dataKey="done" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} name="done" />
                   <Line yAxisId="right" type="monotone" dataKey="rate" stroke="#6366f1" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="rate" />
                 </LineChart>
@@ -216,7 +216,7 @@ export default function AnalyticsPage() {
       {data.visitsByCity.length > 0 && (
         <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
           <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-blue-mars" />
+            <MapPin className="w-3.5 h-3.5 text-teal-cpm" />
             Top villes
           </p>
           <div>
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
       {data.visitsBySalesRep && data.visitsBySalesRep.length > 0 && (
         <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
           <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-blue-mars" />
+            <User className="w-3.5 h-3.5 text-teal-cpm" />
             Visites par Sales Rep
           </p>
           <div>
@@ -270,7 +270,7 @@ export default function AnalyticsPage() {
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={95} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Visites"]} />
-                  <Bar dataKey="count" fill="#0055FF" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="#00d7b9" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

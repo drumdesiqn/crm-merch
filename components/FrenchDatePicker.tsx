@@ -102,9 +102,9 @@ export default function FrenchDatePicker({ value, onChange }: Props) {
               className={[
                 "mx-auto flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors",
                 isSelected
-                  ? "bg-blue-600 text-white"
+                  ? "bg-teal-cpm text-white"
                   : isToday
-                  ? "border border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
+                  ? "border border-teal-cpm text-teal-cpm hover:bg-teal-cpm/10"
                   : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700",
               ].join(" ")}
               aria-label={dateStr}

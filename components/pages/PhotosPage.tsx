@@ -193,7 +193,7 @@ export default function PhotosPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-teal-cpm border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -283,7 +283,7 @@ export default function PhotosPage() {
               placeholder="Rechercher un magasin..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-mars"
+              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
             />
           </div>
 

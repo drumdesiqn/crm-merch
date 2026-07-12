@@ -22,7 +22,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
 
       {!historyLoaded && (
         <div className="flex justify-center py-8">
-          <div className="w-6 h-6 border-4 border-blue-mars border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-4 border-teal-cpm border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -36,7 +36,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
         const hTypeColor = VISIT_TYPE_COLORS[v.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
         return (
           <Link key={v.id} href={`/planning/${v.id}`}>
-            <Card className="hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer">
+            <Card className="hover:shadow-md hover:border-teal-cpm/30 transition-all cursor-pointer">
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
@@ -51,7 +51,7 @@ export default function VisitHistory({ history, historyLoaded, storeName }: Visi
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                       {v.materialType && v.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                        <span key={idx} className="flex items-center gap-1 text-xs text-blue-mars bg-blue-mars-light dark:bg-blue-mars/20 px-2 py-0.5 rounded-full">
+                        <span key={idx} className="flex items-center gap-1 text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-2 py-0.5 rounded-full">
                           <Wrench className="w-3 h-3" /> {type}
                         </span>
                       ))}
