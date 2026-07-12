@@ -54,7 +54,7 @@ export default function ChatWidget() {
       {open && (
         <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-2.5 px-4 py-3 bg-blue-mars shrink-0">
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-teal-cpm shrink-0">
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
               <Bot className="w-4 h-4 text-white" />
             </div>
@@ -87,8 +87,8 @@ export default function ChatWidget() {
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
             {messages.length === 0 && (
               <div className="flex flex-col items-center gap-4 pt-4 text-center">
-                <div className="w-12 h-12 bg-blue-mars-light dark:bg-blue-mars/20 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-blue-mars" />
+                <div className="w-12 h-12 bg-teal-cpm/10 dark:bg-teal-cpm/15 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-teal-cpm" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Ton assistant Mars</p>
@@ -101,7 +101,7 @@ export default function ChatWidget() {
                     <button
                       key={q}
                       onClick={() => send(q)}
-                      className="w-full text-left text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-blue-mars-light dark:hover:bg-blue-mars/20 hover:border-blue-200 dark:hover:border-blue-800 hover:text-blue-mars dark:hover:text-blue-cpm transition-colors"
+                      className="w-full text-left text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-teal-cpm/10 dark:hover:bg-teal-cpm/15 hover:border-teal-cpm/30 hover:text-teal-cpm transition-colors"
                     >
                       {q}
                     </button>
@@ -113,14 +113,14 @@ export default function ChatWidget() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "assistant" && (
-                  <div className="w-6 h-6 bg-blue-mars rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-teal-cpm rounded-full flex items-center justify-center shrink-0 mt-0.5">
                     <Bot className="w-3 h-3 text-white" />
                   </div>
                 )}
                 <div
                   className={`max-w-[82%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-blue-mars text-white rounded-tr-sm"
+                      ? "bg-teal-cpm text-white rounded-tr-sm"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-tl-sm"
                   }`}
                 >
@@ -136,7 +136,7 @@ export default function ChatWidget() {
 
             {loading && (
               <div className="flex gap-2 justify-start">
-                <div className="w-6 h-6 bg-blue-mars rounded-full flex items-center justify-center shrink-0">
+                <div className="w-6 h-6 bg-teal-cpm rounded-full flex items-center justify-center shrink-0">
                   <Bot className="w-3 h-3 text-white" />
                 </div>
                 <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-tl-sm px-3 py-2">
@@ -173,7 +173,7 @@ export default function ChatWidget() {
                 }}
                 placeholder="Pose ta question... (Entrée)"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-mars max-h-24 overflow-y-auto"
+                className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-cpm max-h-24 overflow-y-auto"
                 style={{ minHeight: "36px" }}
               />
               <Button
@@ -201,7 +201,7 @@ export default function ChatWidget() {
         className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
           open
             ? "bg-slate-700 hover:bg-slate-800 rotate-0"
-            : "bg-blue-mars hover:bg-blue-800"
+            : "bg-teal-cpm hover:bg-teal-cpm/85"
         } ${open ? "scale-90" : "scale-100 hover:scale-105"}`}
         aria-label="Assistant IA"
       >
