@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: "Visites totales", value: data.summary.totalVisits, accent: "border-l-teal-cpm" },
-          { label: "Complétion", value: `${data.summary.completionRate}%`, accent: "border-l-green-500" },
+          { label: "Complétion", value: `${data.summary.completionRate}%`, accent: "border-l-green-cpm" },
           { label: "Magasins", value: data.summary.totalStores, accent: "border-l-teal-cpm" },
           { label: "Photos", value: data.summary.totalPhotos, accent: "border-l-amber-400" },
         ].map(({ label, value, accent }) => (

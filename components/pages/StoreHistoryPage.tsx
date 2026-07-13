@@ -169,7 +169,7 @@ export default function StoreHistoryPage() {
         <div className="grid grid-cols-3 gap-2">
           {[
             { value: stats.totalVisits, label: "Visites", accent: "border-l-teal-cpm" },
-            { value: stats.completedVisits, label: "Terminées", accent: "border-l-green-500" },
+            { value: stats.completedVisits, label: "Terminées", accent: "border-l-green-cpm" },
             { value: stats.pendingVisits, label: "À faire", accent: "border-l-amber-400" },
             { value: stats.totalNotes, label: "Notes", accent: "border-l-slate-400" },
             { value: stats.totalPhotos, label: "Photos", accent: "border-l-slate-400" },
@@ -230,7 +230,7 @@ export default function StoreHistoryPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 capitalize">{formatDate(visit.visitDate)}</p>
                         <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                          visit.status === "done" ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400" :
+                          visit.status === "done" ? "bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm" :
                           "bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400"
                         }`}>{visit.status === "done" ? "Terminé" : "À faire"}</span>
                         <span className="text-xs text-slate-400 dark:text-zinc-500">{visit.visitType}</span>

@@ -338,7 +338,7 @@ const ACCENT_STYLES = {
   blue:   { border: "border-l-teal-cpm",   icon: "text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15",   value: "text-slate-900 dark:text-slate-100" },
   orange: { border: "border-l-orange-500",  icon: "text-orange-500 bg-orange-50 dark:bg-orange-950/40", value: "text-slate-900 dark:text-slate-100" },
   yellow: { border: "border-l-yellow-500",  icon: "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40", value: "text-slate-900 dark:text-slate-100" },
-  green:  { border: "border-l-green-600",   icon: "text-green-600 bg-green-50 dark:bg-green-950/40",  value: "text-slate-900 dark:text-slate-100" },
+  green:  { border: "border-l-green-cpm",   icon: "text-green-cpm bg-green-cpm/10 dark:bg-green-cpm/15",  value: "text-slate-900 dark:text-slate-100" },
 };
 
 function StatCard({ label, value, icon, accent, progress }: { label: string; value: number; icon: React.ReactNode; accent: keyof typeof ACCENT_STYLES; progress?: number }) {

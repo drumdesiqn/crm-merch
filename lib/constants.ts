@@ -97,7 +97,7 @@ export const TEAMS: Team[] = [
   {
     id: "food-pet",
     name: "Mars Food & Pet Nutrition",
-    color: "bg-blue-100 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300",
+    color: "bg-teal-cpm/10 dark:bg-teal-cpm/15 border-teal-cpm/30 dark:border-teal-cpm/40 text-teal-cpm",
     contacts: [
       { name: "An Vangerven",       phone: "+32 476 50 78 71", email: "an.vangerven@effem.com" },
       { name: "Benjamin Francq",    phone: "+32 499 58 59 38", email: "benjamin.francq@effem.com" },

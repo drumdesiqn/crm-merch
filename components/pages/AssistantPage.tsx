@@ -22,7 +22,7 @@ export default function AssistantPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b]">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-teal-cpm rounded-full flex items-center justify-center">
             <Bot className="w-4 h-4 text-white" />

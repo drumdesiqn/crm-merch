@@ -549,7 +549,7 @@ export default function VisitDetailPage() {
         <button
           onClick={() => updateStatus("done")}
           disabled={savingStatus}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold text-sm transition-colors disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-cpm hover:bg-green-cpm/85 active:bg-green-cpm/70 text-white font-semibold text-sm transition-colors disabled:opacity-60"
         >
           {savingStatus ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

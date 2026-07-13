@@ -57,9 +57,9 @@ function LoginForm() {
             <Image src="/logo-cpm-mars.png" alt="CPM Mars" width={140} height={45} className="h-10 w-auto dark:hidden" style={{ width: "auto", height: "auto" }} priority />
             <Image src="/logo-cpm-mars-white.png" alt="CPM Mars" width={140} height={45} className="h-10 w-auto hidden dark:block" style={{ width: "auto", height: "auto" }} priority />
           </div>
-          <CardTitle className="text-2xl font-bold">CPM Mars</CardTitle>
+          <CardTitle className="text-2xl font-bold">CPM Mars Merch</CardTitle>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Connectez-vous pour accéder à votre planning
+            Plateforme de gestion merchandising · Mars Belgique
           </p>
         </CardHeader>
         <CardContent>
