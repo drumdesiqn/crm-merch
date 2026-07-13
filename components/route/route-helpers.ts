@@ -112,62 +112,78 @@ export function formatDuration(seconds: number): string {
 
 /**
  * Nearest-neighbor heuristic starting from home.
- * Locked visits stay at their current index — the optimizer only moves the unlocked ones.
+ * Locked visits stay at their current index.
+ * The optimizer runs in segments between locked waypoints so distances are geographically accurate.
  */
 export function optimizeOrder(home: LatLng, visits: GeocodedVisit[], lockedIds: Set<string> = new Set()): GeocodedVisit[] {
   if (visits.length <= 1) return visits;
 
-  // Separate locked (with their original index) from unlocked
-  const lockedSlots = new Map<number, GeocodedVisit>(); // index → visit
-  const unlocked: GeocodedVisit[] = [];
+  // Build a sparse result array: locked visits placed at their original index
+  const result: (GeocodedVisit | undefined)[] = new Array(visits.length).fill(undefined);
+  const lockedIndices = new Set<number>();
 
   visits.forEach((v, i) => {
     if (lockedIds.has(v.id)) {
-      lockedSlots.set(i, v);
-    } else {
-      unlocked.push(v);
+      result[i] = v;
+      lockedIndices.add(i);
     }
   });
 
-  // If nothing to reorder
-  if (unlocked.length <= 1) return visits;
+  // Collect unlocked visits (in original order, geocoded first)
+  const unlockedGeocoded = visits.filter((v) => !lockedIds.has(v.id) && v.coords);
+  const unlockedUngeocoded = visits.filter((v) => !lockedIds.has(v.id) && !v.coords);
 
-  // Split unlocked into geocoded and ungeocoded
-  const geocodedUnlocked = unlocked.filter((v) => v.coords);
-  const ungeocodedUnlocked = unlocked.filter((v) => !v.coords);
-
-  // Run nearest-neighbor on unlocked geocoded visits, starting from home
-  const optimized: GeocodedVisit[] = [];
-  const remaining = [...geocodedUnlocked];
-  let current = home;
-
-  while (remaining.length > 0) {
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < remaining.length; i++) {
-      const d = haversineKm(current, remaining[i].coords!);
-      if (d < bestDist) { bestDist = d; bestIdx = i; }
+  if (unlockedGeocoded.length + unlockedUngeocoded.length <= 1) {
+    // Nothing meaningful to reorder — fill slots as-is
+    let ptr = 0;
+    const pool = [...unlockedGeocoded, ...unlockedUngeocoded];
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] === undefined) result[i] = pool[ptr++];
     }
-    const next = remaining.splice(bestIdx, 1)[0];
-    optimized.push(next);
-    current = next.coords!;
+    return result as GeocodedVisit[];
   }
 
-  // Merge: fill a result array of same length, inserting locked at their original indices
-  // and filling remaining slots with optimized unlocked visits (then ungeocoded)
-  const orderedUnlocked = [...optimized, ...ungeocodedUnlocked];
-  const result: GeocodedVisit[] = new Array(visits.length);
-
-  // Place locked visits first
-  lockedSlots.forEach((v, idx) => { result[idx] = v; });
-
-  // Fill remaining slots in order with optimized unlocked
-  let ptr = 0;
+  // Find the free (unlocked) slot ranges between locked anchors
+  // For each range, run nearest-neighbor starting from the anchor before it
+  const freeSlots: number[] = [];
   for (let i = 0; i < result.length; i++) {
-    if (!result[i]) {
-      result[i] = orderedUnlocked[ptr++];
+    if (result[i] === undefined) freeSlots.push(i);
+  }
+
+  // Anchor points: home + locked visits with coords
+  // We'll fill free slots greedily from left to right, tracking current position
+  const remaining = [...unlockedGeocoded];
+  let currentPos: LatLng = home;
+
+  // Walk through all slots in order
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] !== undefined) {
+      // This is a locked waypoint — update current position
+      const locked = result[i]!;
+      if (locked.coords) currentPos = locked.coords;
+      continue;
+    }
+    // Free slot — pick nearest remaining geocoded visit
+    if (remaining.length > 0) {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let j = 0; j < remaining.length; j++) {
+        const d = haversineKm(currentPos, remaining[j].coords!);
+        if (d < bestDist) { bestDist = d; bestIdx = j; }
+      }
+      const next = remaining.splice(bestIdx, 1)[0];
+      result[i] = next;
+      if (next.coords) currentPos = next.coords;
     }
   }
 
-  return result;
+  // Fill any remaining slots (ungeocoded) in order
+  let ugPtr = 0;
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] === undefined) {
+      result[i] = unlockedUngeocoded[ugPtr++];
+    }
+  }
+
+  return result as GeocodedVisit[];
 }
