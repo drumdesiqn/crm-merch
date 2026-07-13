@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X, CheckCircle2, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X, CheckCircle2, Clock, AlertTriangle, TrendingUp, Check, Ban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
@@ -14,6 +15,8 @@ import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useVisits } from "@/lib/hooks/useVisits";
 import { useSummary } from "@/lib/hooks/useSummary";
 import { useSettings } from "@/lib/hooks/useSettings";
+import { useUpdateVisit } from "@/lib/hooks/useUpdateVisit";
+import { showToast } from "@/components/Toast";
 
 const EMPTY_VISITS: Visit[] = [];
 
@@ -351,73 +354,173 @@ function EmptyState({ text }: { text: string }) {
 
 function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number }) {
   const router = useRouter();
+  const updateVisit = useUpdateVisit();
+  const queryClient = useQueryClient();
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
   const isDone = visit.status === "done";
+  const isCancelled = visit.status === "cancelled";
+
+  // Swipe state
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [swiped, setSwiped] = useState(false);
+  const SWIPE_THRESHOLD = 60;
+  const ACTIONS_WIDTH = 128;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) {
+      e.preventDefault();
+      setSwipeOffset(Math.max(dx, -ACTIONS_WIDTH));
+    } else if (swiped) {
+      e.preventDefault();
+      setSwipeOffset(Math.min(0, -ACTIONS_WIDTH + dx));
+    }
+  }, [swiped]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (swipeOffset < -SWIPE_THRESHOLD) {
+      setSwipeOffset(-ACTIONS_WIDTH);
+      setSwiped(true);
+    } else {
+      setSwipeOffset(0);
+      setSwiped(false);
+    }
+  }, [swipeOffset]);
+
+  const closeSwipe = useCallback(() => {
+    setSwipeOffset(0);
+    setSwiped(false);
+  }, []);
+
+  const handleQuickStatus = useCallback(async (e: React.MouseEvent, newStatus: string) => {
+    e.stopPropagation();
+    closeSwipe();
+    try {
+      await updateVisit.mutateAsync({ id: visit.id, status: newStatus });
+      await queryClient.invalidateQueries({ queryKey: ["summary"] });
+      showToast("success", newStatus === "done" ? "Visite marquée effectuée" : "Visite annulée");
+    } catch {
+      showToast("error", "Erreur lors de la mise à jour");
+    }
+  }, [visit.id, updateVisit, queryClient, closeSwipe]);
 
   return (
-    <div
-      onClick={() => router.push(`/planning/${visit.id}`)}
-      onKeyDown={(e) => e.key === "Enter" && router.push(`/planning/${visit.id}`)}
-      role="button"
-      tabIndex={0}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-100 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] hover:shadow-sm transition-all cursor-pointer"
-    >
-      {/* Status dot */}
-      <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-cpm" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start gap-2">
-          <p className={`flex-1 text-sm font-medium leading-snug whitespace-normal lg:truncate ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`} title={visit.storeName}>
-            {visit.storeName}
-          </p>
-          <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-md border font-medium ${colorClass}`}>
-            {visit.visitType}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{visit.storeCity}</p>
-          {showDate && <span className="text-xs text-slate-400 shrink-0">· {formatDateShort(visit.visitDate)}</span>}
-          {totalVisits !== undefined && totalVisits > 1 && (
-            <span className="text-xs text-slate-400 shrink-0">· {completedVisits || 0}/{totalVisits}</span>
-          )}
-        </div>
-        {visit.remarks && (
-          <div className="flex items-center gap-1 mt-0.5">
-            <AlertTriangle className="w-3 h-3 text-orange-500 shrink-0" />
-            <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-1">{visit.remarks}</p>
-          </div>
+    <div className="relative overflow-hidden rounded-lg">
+      {/* Swipe actions — mobile only, revealed behind the card */}
+      <div className="absolute inset-y-0 right-0 flex items-stretch" style={{ width: ACTIONS_WIDTH }}>
+        {!isDone && (
+          <button
+            onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "done"); }}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-green-cpm text-white text-[10px] font-semibold"
+          >
+            <Check className="w-4 h-4" />
+            <span>Effectuée</span>
+          </button>
         )}
-        {visit.materialType && (
-          <div className="flex items-center gap-1 mt-1 flex-wrap">
-            <Wrench className="w-3 h-3 text-teal-cpm shrink-0" />
-            {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-              <span key={idx} className="text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-1.5 py-0.5 rounded font-medium">
-                {type}
-              </span>
-            ))}
-          </div>
+        {!isCancelled && (
+          <button
+            onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "cancelled"); }}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-red-500 text-white text-[10px] font-semibold"
+          >
+            <Ban className="w-4 h-4" />
+            <span>Annuler</span>
+          </button>
         )}
       </div>
 
-      {visit.salesRep && (
-        <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 shrink-0">
-          <User className="w-3 h-3" />
-          <span>{visit.salesRep.split(" ")[0]}</span>
-        </div>
-      )}
-      <a
-        href={wazeUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg text-[#00bfff] hover:bg-[#00bfff]/10 transition-colors"
-        title="Waze"
+      {/* Main card */}
+      <div
+        onClick={() => { if (swiped) { closeSwipe(); return; } router.push(`/planning/${visit.id}`); }}
+        onKeyDown={(e) => e.key === "Enter" && router.push(`/planning/${visit.id}`)}
+        role="button"
+        tabIndex={0}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ transform: `translateX(${swipeOffset}px)`, transition: swipeOffset === 0 || swipeOffset === -ACTIONS_WIDTH ? "transform 0.2s ease" : "none" }}
+        className="group relative flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-100 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] hover:shadow-sm transition-[border-color,box-shadow] cursor-pointer"
       >
-        <Navigation className="w-3.5 h-3.5" />
-      </a>
-      <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 group-hover:text-slate-400 transition-colors" />
+        {/* Status dot */}
+        <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-cpm" : isCancelled ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-2">
+            <p className={`flex-1 text-sm font-medium leading-snug whitespace-normal lg:truncate ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`} title={visit.storeName}>
+              {visit.storeName}
+            </p>
+            <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-md border font-medium ${colorClass}`}>
+              {visit.visitType}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{visit.storeCity}</p>
+            {showDate && <span className="text-xs text-slate-400 shrink-0">· {formatDateShort(visit.visitDate)}</span>}
+            {totalVisits !== undefined && totalVisits > 1 && (
+              <span className="text-xs text-slate-400 shrink-0">· {completedVisits || 0}/{totalVisits}</span>
+            )}
+          </div>
+          {visit.remarks && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <AlertTriangle className="w-3 h-3 text-orange-500 shrink-0" />
+              <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-1">{visit.remarks}</p>
+            </div>
+          )}
+          {visit.materialType && (
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              <Wrench className="w-3 h-3 text-teal-cpm shrink-0" />
+              {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
+                <span key={idx} className="text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-1.5 py-0.5 rounded font-medium">
+                  {type}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {visit.salesRep && (
+          <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 shrink-0">
+            <User className="w-3 h-3" />
+            <span>{visit.salesRep.split(" ")[0]}</span>
+          </div>
+        )}
+        <a
+          href={wazeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg text-[#00bfff] hover:bg-[#00bfff]/10 transition-colors"
+          title="Waze"
+        >
+          <Navigation className="w-3.5 h-3.5" />
+        </a>
+        {/* Desktop quick-done button — hidden on touch screens */}
+        {!isDone ? (
+          <button
+            onClick={(e) => handleQuickStatus(e, "done")}
+            disabled={updateVisit.isPending}
+            className="hidden sm:flex shrink-0 items-center justify-center w-7 h-7 rounded-lg bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm hover:bg-green-cpm/25 border border-green-cpm/30 transition-colors"
+            title="Marquer effectuée"
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <span className="hidden sm:flex shrink-0 items-center justify-center w-7 h-7 rounded-lg bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm">
+            <Check className="w-3.5 h-3.5" />
+          </span>
+        )}
+        <ChevronRight className="hidden sm:block w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 group-hover:text-slate-400 transition-colors" />
+      </div>
     </div>
   );
 }
