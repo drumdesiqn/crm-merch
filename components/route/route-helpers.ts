@@ -110,14 +110,35 @@ export function formatDuration(seconds: number): string {
   return m > 0 ? `~${h}h${String(m).padStart(2, "0")}` : `~${h}h`;
 }
 
-/** Nearest-neighbor heuristic starting from home */
-export function optimizeOrder(home: LatLng, visits: GeocodedVisit[]): GeocodedVisit[] {
-  const geocoded = visits.filter((v) => v.coords);
-  const ungeocoded = visits.filter((v) => !v.coords);
-  if (geocoded.length <= 1) return visits;
+/**
+ * Nearest-neighbor heuristic starting from home.
+ * Locked visits stay at their current index — the optimizer only moves the unlocked ones.
+ */
+export function optimizeOrder(home: LatLng, visits: GeocodedVisit[], lockedIds: Set<string> = new Set()): GeocodedVisit[] {
+  if (visits.length <= 1) return visits;
 
-  const result: GeocodedVisit[] = [];
-  const remaining = [...geocoded];
+  // Separate locked (with their original index) from unlocked
+  const lockedSlots = new Map<number, GeocodedVisit>(); // index → visit
+  const unlocked: GeocodedVisit[] = [];
+
+  visits.forEach((v, i) => {
+    if (lockedIds.has(v.id)) {
+      lockedSlots.set(i, v);
+    } else {
+      unlocked.push(v);
+    }
+  });
+
+  // If nothing to reorder
+  if (unlocked.length <= 1) return visits;
+
+  // Split unlocked into geocoded and ungeocoded
+  const geocodedUnlocked = unlocked.filter((v) => v.coords);
+  const ungeocodedUnlocked = unlocked.filter((v) => !v.coords);
+
+  // Run nearest-neighbor on unlocked geocoded visits, starting from home
+  const optimized: GeocodedVisit[] = [];
+  const remaining = [...geocodedUnlocked];
   let current = home;
 
   while (remaining.length > 0) {
@@ -128,9 +149,25 @@ export function optimizeOrder(home: LatLng, visits: GeocodedVisit[]): GeocodedVi
       if (d < bestDist) { bestDist = d; bestIdx = i; }
     }
     const next = remaining.splice(bestIdx, 1)[0];
-    result.push(next);
+    optimized.push(next);
     current = next.coords!;
   }
 
-  return [...result, ...ungeocoded];
+  // Merge: fill a result array of same length, inserting locked at their original indices
+  // and filling remaining slots with optimized unlocked visits (then ungeocoded)
+  const orderedUnlocked = [...optimized, ...ungeocodedUnlocked];
+  const result: GeocodedVisit[] = new Array(visits.length);
+
+  // Place locked visits first
+  lockedSlots.forEach((v, idx) => { result[idx] = v; });
+
+  // Fill remaining slots in order with optimized unlocked
+  let ptr = 0;
+  for (let i = 0; i < result.length; i++) {
+    if (!result[i]) {
+      result[i] = orderedUnlocked[ptr++];
+    }
+  }
+
+  return result;
 }

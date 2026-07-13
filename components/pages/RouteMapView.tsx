@@ -74,6 +74,15 @@ export default function RouteMapView({
   const [editAddress, setEditAddress] = useState({ address: "", zipcode: "", city: "" });
   const [savingAddress, setSavingAddress] = useState(false);
   const [hasUserReordered, setHasUserReordered] = useState(false);
+  const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+
+  const toggleLock = useCallback((id: string) => {
+    setLockedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }, []);
 
   // Track which day's visits we've initialized to avoid resetting user reorder
   const initializedDayRef = useRef<string>("");
@@ -104,6 +113,7 @@ export default function RouteMapView({
     if (selectedDay === initializedDayRef.current && hasUserReordered) return;
     initializedDayRef.current = selectedDay;
     setHasUserReordered(false);
+    setLockedIds(new Set()); // reset locks when switching day
 
     const dayVisits = initialVisits
       .filter((v) => v.visitDate.split("T")[0] === selectedDay)
@@ -193,6 +203,8 @@ export default function RouteMapView({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
+      // Block drag if either end is locked
+      if (lockedIds.has(String(active.id)) || lockedIds.has(String(over.id))) return;
       setOrderedVisits((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
@@ -234,7 +246,7 @@ export default function RouteMapView({
 
   const handleOptimize = () => {
     setOptimizing(true);
-    const optimized = optimizeOrder(home, orderedVisits);
+    const optimized = optimizeOrder(home, orderedVisits, lockedIds);
     setOrderedVisits(optimized);
     setHasUserReordered(true);
     setSaved(false);
@@ -300,7 +312,8 @@ export default function RouteMapView({
           <ol className="list-decimal list-inside space-y-0.5 text-slate-600 dark:text-slate-400">
             <li>Choisis un jour ci-dessous</li>
             <li>Clique <strong>&quot;Optimiser le trajet&quot;</strong> pour trier automatiquement</li>
-            <li>Ajuste manuellement en <strong>glissant-déposant</strong> les visites</li>
+            <li>Utilise le <strong>🔓 cadenas</strong> pour fixer un magasin à sa position avant d&apos;optimiser</li>
+            <li>Ajuste manuellement en <strong>glissant-déposant</strong> les visites non verrouillées</li>
             <li>Clique <strong>&quot;Sauvegarder&quot;</strong> pour enregistrer l&apos;ordre</li>
           </ol>
         </div>
@@ -452,6 +465,8 @@ export default function RouteMapView({
                       index={i}
                       geocoding={geocoding}
                       legInfo={legMap.get(i) ?? null}
+                      isLocked={lockedIds.has(v.id)}
+                      onToggleLock={() => toggleLock(v.id)}
                       onEditAddress={() => { setEditingVisit(v); setEditAddress({ address: v.storeAddress, zipcode: v.storeZipcode, city: v.storeCity }); }}
                     />
                   ));
