@@ -389,7 +389,7 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2">
-          <p className={`flex-1 text-sm font-medium leading-snug ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`}>
+          <p className={`flex-1 text-sm font-medium leading-snug whitespace-normal lg:truncate ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`} title={visit.storeName}>
             {visit.storeName}
           </p>
           <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-md border font-medium ${colorClass}`}>
