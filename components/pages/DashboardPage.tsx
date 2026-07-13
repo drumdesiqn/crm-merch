@@ -159,27 +159,6 @@ export default function DashboardPage() {
 
       {currentWeek && (
         <>
-          {/* ── Today banner ── */}
-          {todayVisits.length > 0 && (
-            <div className="rounded-xl bg-teal-cpm text-white px-5 py-4 flex items-center justify-between gap-4">
-              <div>
-                <p className="font-semibold text-base">
-                  {todayVisits.length} visite{todayVisits.length > 1 ? "s" : ""} aujourd&apos;hui
-                </p>
-                <p className="text-white/70 text-sm mt-0.5">
-                  {todayVisits.filter((v) => v.status === "done").length} terminée{todayVisits.filter((v) => v.status === "done").length > 1 ? "s" : ""} · {todayVisits.filter((v) => v.status === "pending" || !v.status).length} à faire
-                </p>
-              </div>
-              <Link href="/planning">
-                <button className="flex items-center gap-1.5 text-sm font-medium bg-white/15 hover:bg-white/25 transition-colors px-3 py-1.5 rounded-lg whitespace-nowrap">
-                  <Route className="w-4 h-4" />
-                  <span className="hidden sm:inline">Voir le planning</span>
-                  <span className="sm:hidden">Planning</span>
-                </button>
-              </Link>
-            </div>
-          )}
-
           {/* ── Stat cards ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard
