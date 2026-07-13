@@ -617,7 +617,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
             <span>Effectuée</span>
           </button>
         )}
-        {!isCancelled && (
+        {!isCancelled && !isDone && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "cancelled"); }}
             className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-red-500 text-white text-[10px] font-semibold"
