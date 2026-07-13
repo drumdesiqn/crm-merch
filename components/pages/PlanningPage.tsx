@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Upload, Calendar, MapPin, User, AlertCircle, ChevronRight, X, CheckCircle, List, Navigation, FileDown, Wrench, Route, Plus, CalendarDays, Trash2, Search } from "lucide-react";
+import { Upload, Calendar, MapPin, User, AlertCircle, ChevronRight, X, CheckCircle, List, Navigation, FileDown, Wrench, Route, Plus, CalendarDays, Trash2, Search, Check, Ban } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, VisitStatus } from "@/lib/utils";
@@ -542,109 +542,209 @@ export default function PlanningPage() {
 
 function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete }: { visit: Visit; totalVisits?: number; completedVisits?: number; onUpdateDate?: (id: string, date: string) => void; onDelete?: (id: string) => void }) {
   const router = useRouter();
+  const updateVisit = useUpdateVisit();
+  const queryClient = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
   const isDone = visit.status === "done";
+  const isCancelled = visit.status === "cancelled";
+
+  // Swipe state
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [swiped, setSwiped] = useState(false);
+  const SWIPE_THRESHOLD = 60;
+  const ACTIONS_WIDTH = 128;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) {
+      e.preventDefault();
+      setSwipeOffset(Math.max(dx, -ACTIONS_WIDTH));
+    } else if (swiped) {
+      e.preventDefault();
+      setSwipeOffset(Math.min(0, -ACTIONS_WIDTH + dx));
+    }
+  }, [swiped]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (swipeOffset < -SWIPE_THRESHOLD) {
+      setSwipeOffset(-ACTIONS_WIDTH);
+      setSwiped(true);
+    } else {
+      setSwipeOffset(0);
+      setSwiped(false);
+    }
+  }, [swipeOffset]);
+
+  const closeSwipe = useCallback(() => {
+    setSwipeOffset(0);
+    setSwiped(false);
+  }, []);
+
+  const handleQuickStatus = useCallback(async (e: React.MouseEvent, newStatus: string) => {
+    e.stopPropagation();
+    closeSwipe();
+    try {
+      await updateVisit.mutateAsync({ id: visit.id, status: newStatus });
+      await queryClient.invalidateQueries({ queryKey: ["summary"] });
+      showToast("success", newStatus === "done" ? "Visite marquée effectuée" : "Visite annulée");
+    } catch {
+      showToast("error", "Erreur lors de la mise à jour");
+    }
+  }, [visit.id, updateVisit, queryClient, closeSwipe]);
 
   return (
-    <div
-      onClick={() => { sessionStorage.setItem("planning-scroll", String(window.scrollY)); router.push(`/planning/${visit.id}`); }}
-      className="group cursor-pointer"
-    >
-      <div className={`flex items-stretch gap-0 rounded-xl border bg-white dark:bg-[#1a1a1b] transition-all hover:shadow-sm ${isDone ? "border-slate-100 dark:border-[#252526] opacity-70" : "border-slate-200 dark:border-[#2e2e30] hover:border-slate-300 dark:hover:border-[#3a3a3c]"}`}>
-        {/* Status accent bar */}
-        <div className={`w-1 rounded-l-xl shrink-0 ${isDone ? "bg-green-cpm" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-200 dark:bg-[#2e2e30]"}`} />
+    <div className="relative overflow-hidden rounded-xl">
+      {/* Swipe actions — revealed behind the card on mobile */}
+      <div className="absolute inset-y-0 right-0 flex items-stretch rounded-r-xl overflow-hidden" style={{ width: ACTIONS_WIDTH }}>
+        {!isDone && (
+          <button
+            onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "done"); }}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-green-cpm text-white text-[10px] font-semibold"
+          >
+            <Check className="w-4 h-4" />
+            <span>Effectuée</span>
+          </button>
+        )}
+        {!isCancelled && (
+          <button
+            onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "cancelled"); }}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-red-500 text-white text-[10px] font-semibold"
+          >
+            <Ban className="w-4 h-4" />
+            <span>Annuler</span>
+          </button>
+        )}
+      </div>
 
-        <div className="flex-1 p-3 min-w-0">
-          <div className="flex items-start gap-2">
-            <div className="flex-1 min-w-0">
-              {/* Store name + type + assortment */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className={`text-sm font-semibold truncate ${isDone ? "line-through text-slate-400 dark:text-zinc-500" : "text-slate-900 dark:text-zinc-100"}`}>
-                  {visit.storeName}
-                </p>
-                <span className={`text-xs px-1.5 py-0.5 rounded border font-medium shrink-0 ${typeColor}`}>
-                  {visit.visitType}
-                </span>
-                {visit.assortment && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${assortColor}`}>
-                    {visit.assortment}
+      {/* Main card */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ transform: `translateX(${swipeOffset}px)`, transition: swipeOffset === 0 || swipeOffset === -ACTIONS_WIDTH ? "transform 0.2s ease" : "none" }}
+        onClick={() => { if (swiped) { closeSwipe(); return; } sessionStorage.setItem("planning-scroll", String(window.scrollY)); router.push(`/planning/${visit.id}`); }}
+        className="group cursor-pointer"
+      >
+        <div className={`flex items-stretch gap-0 rounded-xl border bg-white dark:bg-[#1a1a1b] transition-[border-color,box-shadow] hover:shadow-sm ${isDone ? "border-slate-100 dark:border-[#252526] opacity-70" : "border-slate-200 dark:border-[#2e2e30] hover:border-slate-300 dark:hover:border-[#3a3a3c]"}`}>
+          {/* Status accent bar */}
+          <div className={`w-1 rounded-l-xl shrink-0 ${isDone ? "bg-green-cpm" : isCancelled ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-200 dark:bg-[#2e2e30]"}`} />
+
+          <div className="flex-1 p-3 min-w-0">
+            <div className="flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                {/* Store name + type + assortment */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className={`text-sm font-semibold truncate ${isDone ? "line-through text-slate-400 dark:text-zinc-500" : "text-slate-900 dark:text-zinc-100"}`}>
+                    {visit.storeName}
+                  </p>
+                  <span className={`text-xs px-1.5 py-0.5 rounded border font-medium shrink-0 ${typeColor}`}>
+                    {visit.visitType}
+                  </span>
+                  {visit.assortment && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${assortColor}`}>
+                      {visit.assortment}
+                    </span>
+                  )}
+                </div>
+
+                {/* Address */}
+                <div className="flex items-center gap-1 mt-1">
+                  <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
+                    {visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}
+                  </p>
+                  {totalVisits !== undefined && totalVisits > 0 && (
+                    <span className="text-xs text-slate-400 dark:text-zinc-500 shrink-0 ml-1">· {completedVisits || 0}/{totalVisits}</span>
+                  )}
+                </div>
+
+                {/* Sales rep */}
+                {visit.salesRep && (
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <User className="w-3 h-3 text-slate-400 shrink-0" />
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">{visit.salesRep}</p>
+                  </div>
+                )}
+
+                {/* Remarks */}
+                {visit.remarks && (
+                  <div className="flex items-start gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-1">{visit.remarks}</p>
+                  </div>
+                )}
+
+                {/* Material types */}
+                {visit.materialType && (
+                  <div className="flex items-center gap-1 mt-1 flex-wrap">
+                    <Wrench className="w-3 h-3 text-teal-cpm shrink-0" />
+                    {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
+                      <span key={idx} className="text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-1.5 py-0.5 rounded font-medium">
+                        {type}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Non-pending status badge */}
+                {visit.status && visit.status !== "pending" && (
+                  <StatusBadge status={visit.status as VisitStatus} size="sm" className="mt-1.5" />
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onUpdateDate?.(visit.id, visit.visitDate.split("T")[0]); }}
+                  className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#222223] transition-colors"
+                  title="Changer de jour"
+                >
+                  <CalendarDays className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+                  className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+                <a
+                  href={wazeUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center justify-center w-7 h-7 rounded-lg text-[#00bfff] hover:bg-[#00bfff]/10 transition-colors"
+                  title="Waze"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                </a>
+                {/* Desktop quick-done button */}
+                {!isDone ? (
+                  <button
+                    onClick={(e) => handleQuickStatus(e, "done")}
+                    disabled={updateVisit.isPending}
+                    className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm hover:bg-green-cpm/25 border border-green-cpm/30 transition-colors"
+                    title="Marquer effectuée"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <span className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm">
+                    <Check className="w-3.5 h-3.5" />
                   </span>
                 )}
+                <ChevronRight className="w-4 h-4 text-slate-300 dark:text-zinc-600 group-hover:text-slate-400 transition-colors" />
               </div>
-
-              {/* Address */}
-              <div className="flex items-center gap-1 mt-1">
-                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                  {visit.storeAddress}, {visit.storeZipcode} {visit.storeCity}
-                </p>
-                {totalVisits !== undefined && totalVisits > 0 && (
-                  <span className="text-xs text-slate-400 dark:text-zinc-500 shrink-0 ml-1">· {completedVisits || 0}/{totalVisits}</span>
-                )}
-              </div>
-
-              {/* Sales rep */}
-              {visit.salesRep && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <User className="w-3 h-3 text-slate-400 shrink-0" />
-                  <p className="text-xs text-slate-500 dark:text-zinc-400">{visit.salesRep}</p>
-                </div>
-              )}
-
-              {/* Remarks */}
-              {visit.remarks && (
-                <div className="flex items-start gap-1 mt-1">
-                  <AlertCircle className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-1">{visit.remarks}</p>
-                </div>
-              )}
-
-              {/* Material types */}
-              {visit.materialType && (
-                <div className="flex items-center gap-1 mt-1 flex-wrap">
-                  <Wrench className="w-3 h-3 text-teal-cpm shrink-0" />
-                  {visit.materialType.split(", ").filter(Boolean).map((type, idx) => (
-                    <span key={idx} className="text-xs text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15 px-1.5 py-0.5 rounded font-medium">
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Non-pending status badge */}
-              {visit.status && visit.status !== "pending" && (
-                <StatusBadge status={visit.status as VisitStatus} size="sm" className="mt-1.5" />
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                onClick={(e) => { e.stopPropagation(); onUpdateDate?.(visit.id, visit.visitDate.split("T")[0]); }}
-                className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#222223] transition-colors"
-                title="Changer de jour"
-              >
-                <CalendarDays className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
-                className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                title="Supprimer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-              <a
-                href={wazeUrl} target="_blank" rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center justify-center w-7 h-7 rounded-lg text-[#00bfff] hover:bg-[#00bfff]/10 transition-colors"
-                title="Waze"
-              >
-                <Navigation className="w-3.5 h-3.5" />
-              </a>
-              <ChevronRight className="w-4 h-4 text-slate-300 dark:text-zinc-600 group-hover:text-slate-400 transition-colors" />
             </div>
           </div>
         </div>
