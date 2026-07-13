@@ -4,14 +4,14 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
 
-  --color-blue-mars: #0074d7;
-  --color-blue-mars-light: #dbeafe;
-  --color-blue-cpm: #0074d7;
+  --color-blue-mars: #4b7dba;
+  --color-blue-mars-light: #dbe8f4;
+  --color-blue-cpm: #4b7dba;
   --color-red-mars: #C8102E;
   --color-red-mars-light: #fee2e2;
-  --color-green-cpm: #059669;
-  --color-green-cpm-light: #ecfdf5;
-  --color-teal-cpm: #0074d7;
+  --color-green-cpm: #84b03d;
+  --color-green-cpm-light: #eef5e0;
+  --color-teal-cpm: #4b7dba;
 
   /* Dark mode warm neutral palette */
   --color-dark-bg: #0e0e0f;

@@ -8,23 +8,23 @@ export const PDF_BASE_STYLES = `
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
   body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-  .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0074d7; }
-  .header h1 { color: #0074d7; margin: 0 0 10px; font-size: 24px; }
+  .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #4b7dba; }
+  .header h1 { color: #4b7dba; margin: 0 0 10px; font-size: 24px; }
   .header p { color: #64748b; margin: 0; font-size: 14px; }
   .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
   .info-box { background: #f8fafc; padding: 15px; border-radius: 8px; }
   .info-box label { display: block; color: #64748b; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
   .info-box value { display: block; color: #1e293b; font-size: 16px; font-weight: 600; }
   .section { margin-bottom: 30px; }
-  .section h2 { color: #0074d7; font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+  .section h2 { color: #4b7dba; font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
   .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
   .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
   .status-pending { background: #fef3c7; color: #d97706; }
-  .status-done { background: #d1fae5; color: #059669; }
+  .status-done { background: #eef5e0; color: #84b03d; }
   .status-cancelled { background: #fee2e2; color: #C8102E; }
   .status-postponed { background: #e0e7ff; color: #4f46e5; }
   .no-content { color: #9ca3af; font-style: italic; }
-  .note-item { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #0074d7; }
+  .note-item { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #4b7dba; }
   .note-content { margin: 0; color: #334155; font-size: 14px; }
   .note-date { margin: 4px 0 0; color: #94a3b8; font-size: 12px; }
 `;
@@ -173,7 +173,7 @@ export function pdfBatchDocument(
     </head>
     <body>
       <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="color: #0074d7; font-size: 28px; margin: 0;">Rapport Hebdomadaire</h1>
+        <h1 style="color: #4b7dba; font-size: 28px; margin: 0;">Rapport Hebdomadaire</h1>
         <p style="color: #64748b; font-size: 16px; margin: 8px 0 0;">${escapeHtml(weekLabel)} — ${visits.length} visite${visits.length !== 1 ? "s" : ""}</p>
       </div>
       ${pages}

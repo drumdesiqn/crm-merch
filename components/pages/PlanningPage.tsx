@@ -555,7 +555,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
     >
       <div className={`flex items-stretch gap-0 rounded-xl border bg-white dark:bg-[#1a1a1b] transition-all hover:shadow-sm ${isDone ? "border-slate-100 dark:border-[#252526] opacity-70" : "border-slate-200 dark:border-[#2e2e30] hover:border-slate-300 dark:hover:border-[#3a3a3c]"}`}>
         {/* Status accent bar */}
-        <div className={`w-1 rounded-l-xl shrink-0 ${isDone ? "bg-green-500" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-200 dark:bg-[#2e2e30]"}`} />
+        <div className={`w-1 rounded-l-xl shrink-0 ${isDone ? "bg-green-cpm" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-200 dark:bg-[#2e2e30]"}`} />
 
         <div className="flex-1 p-3 min-w-0">
           <div className="flex items-start gap-2">

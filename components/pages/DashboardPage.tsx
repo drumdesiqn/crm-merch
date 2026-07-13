@@ -354,7 +354,7 @@ function StatCard({ label, value, icon, accent, progress }: { label: string; val
       <p className={`text-2xl font-bold ${s.value}`}>{value}</p>
       {progress !== undefined && (
         <div className="mt-2 h-1 w-full bg-slate-100 dark:bg-[#2e2e30] rounded-full overflow-hidden">
-          <div className="h-1 bg-green-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+          <div className="h-1 bg-green-cpm rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
       )}
     </div>
@@ -385,7 +385,7 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
       className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-100 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] hover:shadow-sm transition-all cursor-pointer"
     >
       {/* Status dot */}
-      <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-500" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
+      <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-cpm" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

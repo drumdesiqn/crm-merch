@@ -234,7 +234,7 @@ export default function StoresPage() {
               {/* Left accent based on completions */}
               <div className={`w-1 rounded-l-xl shrink-0 ${
                 store.totalVisits === 0 ? "bg-slate-200 dark:bg-[#2e2e30]" :
-                store.completedVisits === store.totalVisits ? "bg-green-500" : "bg-teal-cpm"
+                store.completedVisits === store.totalVisits ? "bg-green-cpm" : "bg-teal-cpm"
               }`} />
               <div className="flex-1 p-3 min-w-0">
                 <div className="flex items-start gap-2">

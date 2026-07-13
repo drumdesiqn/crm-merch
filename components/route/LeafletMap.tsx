@@ -67,7 +67,7 @@ export function LeafletMap({
 
     // Home marker
     const homeIcon = L.divIcon({
-      html: `<div style="background:#0074d7;color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">🏠</div>`,
+      html: `<div style="background:#4b7dba;color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">🏠</div>`,
       className: "",
       iconSize: [32, 32],
       iconAnchor: [16, 16],
@@ -100,11 +100,11 @@ export function LeafletMap({
     // Route polyline — use OSRM geometry if available, otherwise straight lines
     if (routeGeometry && routeGeometry.length > 1) {
       const latLngs: [number, number][] = routeGeometry.map(([lng, lat]) => [lat, lng]);
-      const line = L.polyline(latLngs, { color: "#0074d7", weight: 4, opacity: 0.8 }).addTo(map);
+      const line = L.polyline(latLngs, { color: "#4b7dba", weight: 4, opacity: 0.8 }).addTo(map);
       layersRef.current.push(line);
       map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
     } else if (fallbackPoints.length > 1) {
-      const line = L.polyline(fallbackPoints, { color: "#0074d7", weight: 2.5, opacity: 0.7, dashArray: "6, 6" }).addTo(map);
+      const line = L.polyline(fallbackPoints, { color: "#4b7dba", weight: 2.5, opacity: 0.7, dashArray: "6, 6" }).addTo(map);
       layersRef.current.push(line);
       map.fitBounds(L.latLngBounds(fallbackPoints), { padding: [40, 40] });
     }

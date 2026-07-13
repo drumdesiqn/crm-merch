@@ -22,7 +22,7 @@ import {
 import { User } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
-  done: "#059669",
+  done: "#84b03d",
   pending: "#d97706",
   cancelled: "#C8102E",
   postponed: "#4f46e5",
@@ -35,9 +35,9 @@ const STATUS_LABELS: Record<string, string> = {
   postponed: "Reporté",
 };
 
-const PIE_COLORS = ["#0074d7", "#059669", "#d97706", "#8b5cf6", "#ec4899", "#ef4444"];
-const BAR_CITY_COLOR = "#0074d7";
-const BAR_MATERIAL_COLOR = "#0074d7";
+const PIE_COLORS = ["#4b7dba", "#84b03d", "#d97706", "#8b5cf6", "#ec4899", "#ef4444"];
+const BAR_CITY_COLOR = "#4b7dba";
+const BAR_MATERIAL_COLOR = "#4b7dba";
 
 export default function AnalyticsPage() {
   const [selectedWeek, setSelectedWeek] = useState<string>("");
@@ -136,8 +136,8 @@ export default function AnalyticsPage() {
                       name === "total" ? "Total" : name === "done" ? "Effectuées" : "Taux %",
                     ]}
                   />
-                  <Line yAxisId="left" type="monotone" dataKey="total" stroke="#0074d7" strokeWidth={2} dot={{ r: 3 }} name="total" />
-                  <Line yAxisId="left" type="monotone" dataKey="done" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} name="done" />
+                  <Line yAxisId="left" type="monotone" dataKey="total" stroke="#4b7dba" strokeWidth={2} dot={{ r: 3 }} name="total" />
+                  <Line yAxisId="left" type="monotone" dataKey="done" stroke="#84b03d" strokeWidth={2} dot={{ r: 3 }} name="done" />
                   <Line yAxisId="right" type="monotone" dataKey="rate" stroke="#6366f1" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="rate" />
                 </LineChart>
               </ResponsiveContainer>

@@ -221,7 +221,7 @@ export default function StoreHistoryPage() {
               <div key={visit.id} className="flex items-stretch gap-0 rounded-xl border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] transition-colors">
                 {/* Status accent */}
                 <div className={`w-1 rounded-l-xl shrink-0 ${
-                  visit.status === "done" ? "bg-green-500" :
+                  visit.status === "done" ? "bg-green-cpm" :
                   visit.status === "cancelled" ? "bg-red-400" : "bg-amber-400"
                 }`} />
                 <div className="flex-1 p-3 min-w-0">
