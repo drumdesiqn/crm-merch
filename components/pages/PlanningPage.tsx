@@ -728,8 +728,8 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
                 >
                   <Navigation className="w-3.5 h-3.5" />
                 </a>
-                {/* Desktop quick-done button */}
-                {!isDone ? (
+                {/* Desktop quick-done button — only when not done */}
+                {!isDone && (
                   <button
                     onClick={(e) => handleQuickStatus(e, "done")}
                     disabled={updateVisit.isPending}
@@ -738,10 +738,6 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
                   >
                     <Check className="w-3.5 h-3.5" />
                   </button>
-                ) : (
-                  <span className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm">
-                    <Check className="w-3.5 h-3.5" />
-                  </span>
                 )}
                 <ChevronRight className="w-4 h-4 text-slate-300 dark:text-zinc-600 group-hover:text-slate-400 transition-colors" />
               </div>
