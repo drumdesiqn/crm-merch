@@ -2,7 +2,7 @@
   "name": "CPM Mars",
   "short_name": "CPM Mars",
   "description": "Application de gestion pour merchandisers CPM chez Mars",
-  "theme_color": "#0010A4",
+  "theme_color": "#0074d7",
   "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",

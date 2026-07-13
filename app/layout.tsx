@@ -6,6 +6,7 @@ import ToastContainer from "@/components/Toast";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ReactQueryProvider from "@/components/ReactQueryProvider";
+import RouteRestorer from "@/components/RouteRestorer";
 import dynamic from "next/dynamic";
 
 const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
@@ -56,6 +57,7 @@ export default function RootLayout({
         </a>
         <ReactQueryProvider>
           <ThemeProvider>
+            <RouteRestorer />
             <ToastContainer />
             <ChatWidget />
             <Navbar />
