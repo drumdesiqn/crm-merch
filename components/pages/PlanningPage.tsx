@@ -557,7 +557,8 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [swiped, setSwiped] = useState(false);
   const SWIPE_THRESHOLD = 60;
-  const ACTIONS_WIDTH = 128;
+  // Only 1 button (Effectuée) when not cancelled, 2 buttons otherwise; 0 when done
+  const ACTIONS_WIDTH = isDone ? 0 : (!isCancelled ? 128 : 64);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -565,6 +566,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (ACTIONS_WIDTH === 0) return;
     const dx = e.touches[0].clientX - touchStartX.current;
     const dy = e.touches[0].clientY - touchStartY.current;
     if (Math.abs(dy) > Math.abs(dx)) return;
@@ -575,7 +577,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
       e.preventDefault();
       setSwipeOffset(Math.min(0, -ACTIONS_WIDTH + dx));
     }
-  }, [swiped]);
+  }, [swiped, ACTIONS_WIDTH]);
 
   const handleTouchEnd = useCallback(() => {
     if (swipeOffset < -SWIPE_THRESHOLD) {
@@ -611,7 +613,8 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
         {!isDone && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "done"); }}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-green-cpm text-white text-[10px] font-semibold"
+            disabled={updateVisit.isPending}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-green-cpm text-white text-[10px] font-semibold disabled:opacity-60"
           >
             <Check className="w-4 h-4" />
             <span>Effectuée</span>
@@ -620,7 +623,8 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
         {!isCancelled && !isDone && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleQuickStatus(e as unknown as React.MouseEvent, "cancelled"); }}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-red-500 text-white text-[10px] font-semibold"
+            disabled={updateVisit.isPending}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 bg-red-500 text-white text-[10px] font-semibold disabled:opacity-60"
           >
             <Ban className="w-4 h-4" />
             <span>Annuler</span>
