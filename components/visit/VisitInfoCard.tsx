@@ -80,7 +80,7 @@ export default function VisitInfoCard({ visit, mapsUrl, wazeUrl, onUpdate }: Vis
                       className="flex-1 px-2 py-1 text-sm rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                       placeholder="Nom du représentant"
                     />
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={saveSalesRep} disabled={saving}><Check className="w-3.5 h-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-green-cpm" onClick={saveSalesRep} disabled={saving}><Check className="w-3.5 h-3.5" /></Button>
                     <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400" onClick={() => { setSalesRepValue(visit.salesRep || ""); setEditingSalesRep(false); }}><X className="w-3.5 h-3.5" /></Button>
                   </div>
                 ) : (

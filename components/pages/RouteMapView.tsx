@@ -340,13 +340,13 @@ export default function RouteMapView({
 
       {/* Geocoding progress */}
       {geocoding && geocodingProgress && (
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-3 space-y-2">
+        <div className="bg-slate-50 dark:bg-[#222223] rounded-xl px-4 py-3 space-y-2">
           <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <div className="w-4 h-4 border-2 border-teal-cpm border-t-transparent rounded-full animate-spin shrink-0" />
             <span>Géolocalisation des adresses…</span>
             <span className="ml-auto text-xs text-slate-400">{geocodingProgress.done}/{geocodingProgress.total}</span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+          <div className="w-full bg-slate-200 dark:bg-[#2e2e30] rounded-full h-2">
             <div
               className="bg-teal-cpm h-2 rounded-full transition-all duration-500"
               style={{ width: `${Math.round((geocodingProgress.done / geocodingProgress.total) * 100)}%` }}
@@ -358,7 +358,7 @@ export default function RouteMapView({
       {/* Map + list layout */}
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Map */}
-        <div className="lg:flex-1 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 h-[50vh] lg:h-[450px]">
+        <div className="lg:flex-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2e2e30] bg-slate-100 dark:bg-[#222223] h-[50vh] lg:h-[450px]">
           <LeafletMap visits={orderedVisits} home={home} homeLabel={homeLabel} routeGeometry={osrmRoute?.geometry ?? null} />
         </div>
 
@@ -400,7 +400,7 @@ export default function RouteMapView({
             const totalDist = osrmRoute ? osrmRoute.totalDistance : fallback.reduce((s, l) => s + l.distanceM, 0);
             const totalDur = osrmRoute ? osrmRoute.totalDuration : fallback.reduce((s, l) => s + l.durationS, 0);
             return (
-              <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#222223] border border-slate-200 dark:border-[#2e2e30]">
                 <div className="flex items-center gap-1.5">
                   <Navigation className="w-3.5 h-3.5 text-teal-cpm" />
                   <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatKm(totalDist)}</span>
@@ -409,7 +409,7 @@ export default function RouteMapView({
                 <span className="text-sm text-slate-600 dark:text-slate-300">{formatDuration(totalDur)}</span>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
                 <span className="text-sm text-slate-500">{geocodedCount} étapes</span>
-                <span className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-medium ${osrmRoute ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400" : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"}`}>
+                <span className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-medium ${osrmRoute ? "bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm" : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"}`}>
                   {osrmRoute ? "route réelle" : "estimation"}
                 </span>
               </div>
@@ -479,7 +479,7 @@ export default function RouteMapView({
       {/* Edit address modal */}
       {editingVisit && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4" onClick={() => setEditingVisit(null)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-5 w-full max-w-sm space-y-4 border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-2xl p-5 w-full max-w-sm space-y-4 border border-slate-200 dark:border-[#2e2e30]" onClick={(e) => e.stopPropagation()}>
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Modifier l&apos;adresse</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{editingVisit.storeName}</p>
@@ -491,7 +491,7 @@ export default function RouteMapView({
                   type="text"
                   value={editAddress.address}
                   onChange={(e) => setEditAddress((p) => ({ ...p, address: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
+                  className="mt-1 w-full rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] px-3 py-2 text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                   placeholder="Rue Example 42"
                 />
               </div>
@@ -502,7 +502,7 @@ export default function RouteMapView({
                     type="text"
                     value={editAddress.zipcode}
                     onChange={(e) => setEditAddress((p) => ({ ...p, zipcode: e.target.value }))}
-                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] px-3 py-2 text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                     placeholder="1000"
                   />
                 </div>
@@ -512,7 +512,7 @@ export default function RouteMapView({
                     type="text"
                     value={editAddress.city}
                     onChange={(e) => setEditAddress((p) => ({ ...p, city: e.target.value }))}
-                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] px-3 py-2 text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
                     placeholder="Bruxelles"
                   />
                 </div>

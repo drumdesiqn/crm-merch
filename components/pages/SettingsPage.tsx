@@ -196,7 +196,7 @@ export default function SettingsPage() {
             <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">Backup des données</p>
             <p className="text-xs text-slate-500 dark:text-zinc-500">Exporte toutes tes données en JSON dans Vercel Blob (cron auto à 02h00)</p>
             {backupResult && (
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              <p className="text-xs text-green-cpm mt-1">
                 ✓ {new Date(backupResult.exportedAt).toLocaleString("fr-BE")} — {backupResult.counts.visits} visites, {backupResult.counts.weeks} semaines
               </p>
             )}
@@ -296,7 +296,7 @@ export default function SettingsPage() {
           {passwordMsg && (
             <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
               passwordMsg.type === "success"
-                ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                ? "bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm border border-green-cpm/30 dark:border-green-cpm/40"
                 : "bg-red-mars-light dark:bg-red-950/30 text-red-mars dark:text-red-400 border border-red-200 dark:border-red-800"
             }`}>
               {passwordMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
@@ -332,7 +332,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-2">
                   {w.excelUrl && (
                     <button onClick={() => openExcelPreview(w.id)} disabled={loadingExcel === w.id}
-                      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50" title="Voir l'Excel importé">
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-green-cpm/30 dark:border-green-cpm/40 bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm hover:bg-green-cpm/20 transition-colors disabled:opacity-50" title="Voir l'Excel importé">
                       {loadingExcel === w.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
                       <span className="hidden sm:inline">Excel</span>
                     </button>
@@ -359,7 +359,7 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-slate-200 dark:border-[#2e2e30]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-[#2e2e30] shrink-0">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <FileSpreadsheet className="w-4 h-4 text-green-cpm" />
                 <h3 className="text-base font-semibold text-slate-900 dark:text-zinc-100">{excelPreview.label}</h3>
                 <span className="text-xs text-slate-400 dark:text-zinc-500">{excelPreview.totalRows} ligne{excelPreview.totalRows > 1 ? "s" : ""}{excelPreview.truncated && " (aperçu limité à 500)"}</span>
               </div>

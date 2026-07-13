@@ -52,7 +52,7 @@ export default function ChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-[calc(100vw-2rem)] max-w-sm h-[70vh] max-h-[560px] flex flex-col bg-white dark:bg-[#1a1a1b] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#2e2e30] overflow-hidden">
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 py-3 bg-teal-cpm shrink-0">
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -121,13 +121,13 @@ export default function ChatWidget() {
                   className={`max-w-[82%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                     msg.role === "user"
                       ? "bg-teal-cpm text-white rounded-tr-sm"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-tl-sm"
+                      : "bg-slate-100 dark:bg-[#222223] text-slate-900 dark:text-zinc-100 rounded-tl-sm"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 {msg.role === "user" && (
-                  <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-slate-200 dark:bg-[#2e2e30] rounded-full flex items-center justify-center shrink-0 mt-0.5">
                     <User className="w-3 h-3 text-slate-600 dark:text-slate-300" />
                   </div>
                 )}
@@ -139,11 +139,11 @@ export default function ChatWidget() {
                 <div className="w-6 h-6 bg-teal-cpm rounded-full flex items-center justify-center shrink-0">
                   <Bot className="w-3 h-3 text-white" />
                 </div>
-                <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-tl-sm px-3 py-2">
+                <div className="bg-slate-100 dark:bg-[#222223] rounded-2xl rounded-tl-sm px-3 py-2">
                   <div className="flex gap-1 items-center h-4">
-                    <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:0ms]" />
-                    <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:150ms]" />
-                    <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                    <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:300ms]" />
                   </div>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export default function ChatWidget() {
           </div>
 
           {/* Input */}
-          <div className="px-3 py-2.5 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
+          <div className="px-3 py-2.5 border-t border-slate-100 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] shrink-0">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -173,7 +173,7 @@ export default function ChatWidget() {
                 }}
                 placeholder="Pose ta question... (Entrée)"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-cpm max-h-24 overflow-y-auto"
+                className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-[#2e2e30] bg-white dark:bg-[#222223] px-3 py-2 text-xs text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-teal-cpm max-h-24 overflow-y-auto"
                 style={{ minHeight: "36px" }}
               />
               <Button
@@ -200,7 +200,7 @@ export default function ChatWidget() {
         }}
         className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
           open
-            ? "bg-slate-700 hover:bg-slate-800 rotate-0"
+            ? "bg-[#2e2e30] hover:bg-[#3a3a3c] rotate-0"
             : "bg-teal-cpm hover:bg-teal-cpm/85"
         } ${open ? "scale-90" : "scale-100 hover:scale-105"}`}
         aria-label="Assistant IA"

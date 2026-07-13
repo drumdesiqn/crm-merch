@@ -494,7 +494,7 @@ export default function VisitDetailPage() {
               <Navigation className="w-4 h-4" />
             </a>
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors" title="Google Maps">
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-teal-cpm hover:bg-teal-cpm/10 dark:hover:bg-teal-cpm/15 transition-colors" title="Google Maps">
               <MapPin className="w-4 h-4" />
             </a>
             <button onClick={exportVisitPDF} disabled={exportingPdf}

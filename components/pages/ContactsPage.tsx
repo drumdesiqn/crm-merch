@@ -300,7 +300,7 @@ export default function ContactsPage() {
                     <div className="flex items-center gap-1.5 pl-[52px] sm:pl-0 shrink-0">
                       <a
                         href={`tel:${c.phone.replace(/\s/g, "")}`}
-                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm border border-green-cpm/30 dark:border-green-cpm/40 hover:bg-green-cpm/20 transition-colors"
                         title={`Appeler ${c.phone}`}
                         aria-label={`Appeler ${c.name}`}
                       >

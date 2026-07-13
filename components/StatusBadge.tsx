@@ -26,8 +26,8 @@ export const STATUS_CONFIG: Record<VisitStatus, {
   },
   done: {
     label: "Effectuée",
-    color: "bg-green-cpm-light text-green-700 border-green-200",
-    darkColor: "dark:bg-green-cpm/20 dark:text-green-cpm dark:border-green-600",
+    color: "bg-green-cpm-light text-green-cpm border-green-cpm/30",
+    darkColor: "dark:bg-green-cpm/20 dark:text-green-cpm dark:border-green-cpm/40",
     icon: <CheckCircle2 className="w-3 h-3" />,
   },
   cancelled: {
