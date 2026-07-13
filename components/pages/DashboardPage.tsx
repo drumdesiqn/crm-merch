@@ -388,20 +388,18 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
       <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-cpm" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className={`text-sm font-medium truncate ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`}>
-            {visit.storeName}
-          </p>
+        <p className={`text-sm font-medium leading-snug ${isDone ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"}`}>
+          {visit.storeName}
+        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
           <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-md border font-medium ${colorClass}`}>
             {visit.visitType}
           </span>
-        </div>
-        <div className="flex items-center gap-1.5 mt-0.5">
           <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{visit.storeCity}</p>
-          {showDate && <span className="text-xs text-slate-400">· {formatDateShort(visit.visitDate)}</span>}
+          {showDate && <span className="text-xs text-slate-400 shrink-0">· {formatDateShort(visit.visitDate)}</span>}
           {totalVisits !== undefined && totalVisits > 1 && (
-            <span className="text-xs text-slate-400">· {completedVisits || 0}/{totalVisits}</span>
+            <span className="text-xs text-slate-400 shrink-0">· {completedVisits || 0}/{totalVisits}</span>
           )}
         </div>
         {visit.remarks && (
