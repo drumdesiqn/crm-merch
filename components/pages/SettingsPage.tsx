@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, RefreshCw, Sun, Moon, Lock, Database, FileSpreadsheet, X, Loader2, LogOut, UserPlus } from "lucide-react";
+import { Save, Eye, EyeOff, Plus, Trash2, CheckCircle2, AlertCircle, BookOpen, RefreshCw, Sun, Moon, Lock, Database, FileSpreadsheet, X, Loader2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { fetchApi } from "@/lib/client-api";
@@ -43,12 +43,6 @@ export default function SettingsPage() {
   const [showPasswords, setShowPasswords] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
-  const [newUserName, setNewUserName] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPassword, setNewUserPassword] = useState("");
-  const [creatingUser, setCreatingUser] = useState(false);
-  const [newUserMsg, setNewUserMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -156,40 +150,6 @@ export default function SettingsPage() {
       setErrorMsg("Erreur lors de la suppression de la semaine");
     }
     setConfirmDeleteWeekId(null);
-  };
-
-  const createNewUser = async () => {
-    setNewUserMsg(null);
-    if (!newUserEmail.trim() || !newUserPassword) {
-      setNewUserMsg({ type: "error", text: "Email et mot de passe requis" });
-      return;
-    }
-    if (newUserPassword.length < 6) {
-      setNewUserMsg({ type: "error", text: "Le mot de passe doit faire au moins 6 caractères" });
-      return;
-    }
-
-    setCreatingUser(true);
-    const data = await fetchApi<{ success?: boolean; error?: string }>("/api/auth/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newUserName.trim(),
-        email: newUserEmail.trim(),
-        password: newUserPassword,
-      }),
-      suppressToast: true,
-    });
-
-    if (data?.success) {
-      setNewUserMsg({ type: "success", text: "Nouvel utilisateur créé" });
-      setNewUserName("");
-      setNewUserEmail("");
-      setNewUserPassword("");
-    } else {
-      setNewUserMsg({ type: "error", text: data?.error || "Erreur lors de la création utilisateur" });
-    }
-    setCreatingUser(false);
   };
 
   const handleLogout = async () => {
@@ -368,48 +328,6 @@ export default function SettingsPage() {
           }}>
           <Lock className="w-4 h-4" />{savingPassword ? "Enregistrement..." : "Changer le mot de passe"}
         </Button>
-
-        <div className={dividerCls} />
-
-        <div className="space-y-2">
-          <p className="text-xs text-slate-400 dark:text-zinc-500">Créer un nouvel utilisateur</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input
-              value={newUserName}
-              onChange={(e) => setNewUserName(e.target.value)}
-              placeholder="Nom (optionnel)"
-              className={inputCls}
-            />
-            <input
-              type="email"
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
-              placeholder="Email"
-              className={inputCls}
-            />
-            <input
-              type={showPasswords ? "text" : "password"}
-              value={newUserPassword}
-              onChange={(e) => setNewUserPassword(e.target.value)}
-              placeholder="Mot de passe"
-              className={inputCls}
-            />
-          </div>
-          {newUserMsg && (
-            <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
-              newUserMsg.type === "success"
-                ? "bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm border border-green-cpm/30 dark:border-green-cpm/40"
-                : "bg-red-mars-light dark:bg-red-950/30 text-red-mars dark:text-red-400 border border-red-200 dark:border-red-800"
-            }`}>
-              {newUserMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
-              {newUserMsg.text}
-            </div>
-          )}
-          <Button size="sm" variant="outline" onClick={createNewUser} disabled={creatingUser || !newUserEmail || !newUserPassword}>
-            <UserPlus className="w-4 h-4" />
-            {creatingUser ? "Création..." : "Créer l'utilisateur"}
-          </Button>
-        </div>
 
         <div className={dividerCls} />
 
