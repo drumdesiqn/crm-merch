@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 import * as XLSX from "xlsx";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ weekId: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { weekId } = await params;
-    const week = await prisma.week.findUnique({
-      where: { id: weekId },
+    const week = await prisma.week.findFirst({
+      where: { id: weekId, userId: auth.user.userId },
       select: { id: true, label: true, excelUrl: true },
     });
 

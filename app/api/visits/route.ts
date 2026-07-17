@@ -5,6 +5,7 @@ import { errorResponse } from "@/lib/api-utils";
 import { getISOWeek } from "@/lib/utils";
 import { geocodeAddressServer } from "@/lib/geocode-server";
 import { waitUntil } from "@vercel/functions";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,11 +17,14 @@ function getWeekLabel(date: Date) {
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const weekId = searchParams.get("weekId");
 
     const visits = await prisma.visit.findMany({
-      where: weekId ? { weekId } : undefined,
+      where: { userId: auth.user.userId, ...(weekId ? { weekId } : {}) },
       orderBy: [{ sortOrder: "asc" }, { visitDate: "asc" }],
       select: {
         id: true,
@@ -60,6 +64,9 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
 
     // Bulk reorder: { orders: [{ id, sortOrder }] }
@@ -70,7 +77,7 @@ export async function PATCH(req: NextRequest) {
       }
       await Promise.all(
         validation.data.orders.map((u) =>
-          prisma.visit.update({ where: { id: u.id }, data: { sortOrder: u.sortOrder } })
+          prisma.visit.updateMany({ where: { id: u.id, userId: auth.user.userId }, data: { sortOrder: u.sortOrder } })
         )
       );
       return NextResponse.json({ success: true });
@@ -91,6 +98,14 @@ export async function PATCH(req: NextRequest) {
     if (data.visitDate && typeof data.visitDate === "string") {
       const [y, m, d] = data.visitDate.split("-").map(Number);
       data.visitDate = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+    }
+
+    const targetVisit = await prisma.visit.findFirst({
+      where: { id, userId: auth.user.userId },
+      select: { id: true },
+    });
+    if (!targetVisit) {
+      return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
     }
 
     // Use transaction to prevent race condition when propagating changes
@@ -128,6 +143,7 @@ export async function PATCH(req: NextRequest) {
         await tx.visit.updateMany({
           where: {
             storeId: visit.storeId,
+            userId: auth.user.userId,
             visitDate: { gte: visit.visitDate },
             id: { not: id },
           },
@@ -142,7 +158,7 @@ export async function PATCH(req: NextRequest) {
       if (data.storeCity) addressFields.storeCity = data.storeCity as string;
       if (Object.keys(addressFields).length > 0 && visit.storeId) {
         await tx.visit.updateMany({
-          where: { storeId: visit.storeId, id: { not: id } },
+          where: { storeId: visit.storeId, userId: auth.user.userId, id: { not: id } },
           data: addressFields,
         });
       }
@@ -163,7 +179,7 @@ export async function PATCH(req: NextRequest) {
             const coords = await geocodeAddressServer(addr, zip, city);
             if (coords) {
               await prisma.visit.updateMany({
-                where: { storeId },
+                where: { storeId, userId: auth.user.userId },
                 data: { latitude: coords.lat, longitude: coords.lng },
               });
             }
@@ -182,6 +198,9 @@ export async function PATCH(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     const validation = validate(CreateVisitSchema, body);
     if (!validation.success) {
@@ -193,13 +212,13 @@ export async function POST(req: NextRequest) {
     // Look up store: first in Store table, then fall back to Visit history
     let store: { storeId: string; storeName: string; storeAddress: string; storeZipcode: string; storeCity: string; assortment: string; visitType: string; visitFrequence: string | null; salesRep?: string | null } | null = null;
     try {
-      store = await prisma.store.findUnique({ where: { storeId } });
+      store = await prisma.store.findFirst({ where: { storeId, userId: auth.user.userId } });
     } catch {
       // Store table may not exist yet
     }
     if (!store) {
       const lastVisit = await prisma.visit.findFirst({
-        where: { storeId },
+        where: { storeId, userId: auth.user.userId },
         orderBy: { createdAt: "desc" },
         select: { storeId: true, storeName: true, storeAddress: true, storeZipcode: true, storeCity: true, assortment: true, visitType: true, visitFrequence: true, salesRep: true },
       });
@@ -215,18 +234,19 @@ export async function POST(req: NextRequest) {
 
     let week;
     if (weekId) {
-      week = await prisma.week.findUnique({ where: { id: weekId } });
+      week = await prisma.week.findFirst({ where: { id: weekId, userId: auth.user.userId } });
     }
     if (!week) {
-      week = await prisma.week.upsert({
-        where: { weekNum_year: { weekNum, year } },
-        update: {},
-        create: { weekNum, year, label },
+      week = await prisma.week.findFirst({ where: { weekNum, year, userId: auth.user.userId } });
+    }
+    if (!week) {
+      week = await prisma.week.create({
+        data: { weekNum, year, label, userId: auth.user.userId },
       });
     }
 
     const maxOrder = await prisma.visit.aggregate({
-      where: { weekId: week.id },
+      where: { weekId: week.id, userId: auth.user.userId },
       _max: { sortOrder: true },
     });
 
@@ -246,6 +266,7 @@ export async function POST(req: NextRequest) {
         remarks: remarks || null,
         salesRep: salesRep || store.salesRep || null,
         sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,
+        userId: auth.user.userId,
       },
     });
 

@@ -4,17 +4,21 @@ import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/request-ip";
 import { del } from "@vercel/blob";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
-    const visit = await prisma.visit.findUnique({
-      where: { id },
+    const visit = await prisma.visit.findFirst({
+      where: { id, userId: auth.user.userId },
       select: {
         id: true,
         weekId: true,
@@ -61,9 +65,12 @@ export async function DELETE(
   }
 
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
 
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { id: true, weekId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { id: true, weekId: true } });
     if (!visit) {
       return NextResponse.json({ error: "Visite non trouvée" }, { status: 404 });
     }
@@ -77,7 +84,7 @@ export async function DELETE(
     await prisma.$transaction([
       prisma.visitNote.deleteMany({ where: { visitId: id } }),
       prisma.visitPhoto.deleteMany({ where: { visitId: id } }),
-      prisma.visit.delete({ where: { id } }),
+      prisma.visit.deleteMany({ where: { id, userId: auth.user.userId } }),
     ]);
 
     // Delete blobs from Vercel Blob Storage (best-effort, non-blocking)
@@ -86,9 +93,9 @@ export async function DELETE(
     }
 
     // Clean up week if it has no more visits
-    const remaining = await prisma.visit.count({ where: { weekId: visit.weekId } });
+    const remaining = await prisma.visit.count({ where: { weekId: visit.weekId, userId: auth.user.userId } });
     if (remaining === 0) {
-      await prisma.week.delete({ where: { id: visit.weekId } });
+      await prisma.week.deleteMany({ where: { id: visit.weekId, userId: auth.user.userId } });
     }
 
     return NextResponse.json({ success: true });

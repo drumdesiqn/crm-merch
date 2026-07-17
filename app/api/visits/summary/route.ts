@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,19 +10,23 @@ export const dynamic = 'force-dynamic';
  * Returns lightweight aggregated stats without full visit data.
  * Used by Dashboard for cross-week store stats.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const [storeStats, statusCounts] = await Promise.all([
       // Count visits and completed visits per store
       prisma.visit.groupBy({
         by: ["storeId"],
         _count: { id: true },
-        where: { storeId: { not: "" } },
+        where: { storeId: { not: "" }, userId: auth.user.userId },
       }),
       // Count by status
       prisma.visit.groupBy({
         by: ["status"],
         _count: { id: true },
+        where: { userId: auth.user.userId },
       }),
     ]);
 
@@ -29,7 +34,7 @@ export async function GET() {
     const completedByStore = await prisma.visit.groupBy({
       by: ["storeId"],
       _count: { id: true },
-      where: { storeId: { not: "" }, status: "done" },
+      where: { storeId: { not: "" }, status: "done", userId: auth.user.userId },
     });
 
     const completedMap: Record<string, number> = {};

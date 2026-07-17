@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { NoteSchema, NoteIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { storeId: true } });
+    if (!visit) return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
     const storeId = visit?.storeId;
 
     const notes = await prisma.visitNote.findMany({
@@ -20,6 +25,7 @@ export async function GET(
           { visitId: id },
           ...(storeId ? [{ storeId }] : []),
         ],
+        userId: auth.user.userId,
       },
       orderBy: { createdAt: "desc" },
       include: {
@@ -42,6 +48,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const body = await req.json();
     
@@ -51,10 +60,11 @@ export async function POST(
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { storeId: true } });
+    if (!visit) return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
     
     const note = await prisma.visitNote.create({
-      data: { visitId: id, storeId: visit?.storeId || null, content: validation.data.content.trim() },
+      data: { visitId: id, storeId: visit?.storeId || null, content: validation.data.content.trim(), userId: auth.user.userId },
     });
     return NextResponse.json(note);
   } catch (error) {
@@ -67,6 +77,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const body = await req.json();
 
@@ -76,12 +89,14 @@ export async function DELETE(
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { storeId: true } });
+    if (!visit) return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
 
     // Only allow deleting notes that belong to this visit or this store
-    await prisma.visitNote.delete({
+    await prisma.visitNote.deleteMany({
       where: {
         id: validation.data.noteId,
+        userId: auth.user.userId,
         OR: [
           { visitId: id },
           ...(visit?.storeId ? [{ storeId: visit.storeId }] : []),

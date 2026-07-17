@@ -3,21 +3,27 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_GLOSSARY } from "@/lib/utils";
 import { GlossaryTermSchema, GlossaryIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     let terms = await prisma.glossaryTerm.findMany({ 
+      where: { userId: auth.user.userId },
       orderBy: { term: "asc" },
       take: 100, // Limit to prevent performance issues
     });
     if (terms.length === 0) {
       await prisma.glossaryTerm.createMany({
-        data: DEFAULT_GLOSSARY,
+        data: DEFAULT_GLOSSARY.map((t) => ({ ...t, userId: auth.user.userId })),
         skipDuplicates: true,
       });
       terms = await prisma.glossaryTerm.findMany({ 
+        where: { userId: auth.user.userId },
         orderBy: { term: "asc" },
         take: 100,
       });
@@ -30,6 +36,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     
     // Validate with Zod
@@ -38,11 +47,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
     
-    const term = await prisma.glossaryTerm.upsert({
-      where: { term: validation.data.term },
-      create: validation.data,
-      update: { definition: validation.data.definition },
+    const existing = await prisma.glossaryTerm.findFirst({
+      where: { term: validation.data.term, userId: auth.user.userId },
+      select: { id: true },
     });
+
+    const term = existing
+      ? await prisma.glossaryTerm.update({
+          where: { id: existing.id },
+          data: { definition: validation.data.definition },
+        })
+      : await prisma.glossaryTerm.create({
+          data: { ...validation.data, userId: auth.user.userId },
+        });
     return NextResponse.json(term);
   } catch (error) {
     return errorResponse(error, "POST /api/glossary");
@@ -51,6 +68,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     
     // Validate with Zod
@@ -59,7 +79,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
     
-    await prisma.glossaryTerm.delete({ where: { id: validation.data.id } });
+    await prisma.glossaryTerm.deleteMany({ where: { id: validation.data.id, userId: auth.user.userId } });
     return NextResponse.json({ success: true });
   } catch (error) {
     return errorResponse(error, "DELETE /api/glossary");

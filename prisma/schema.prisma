@@ -8,6 +8,8 @@ datasource db {
 
 model Store {
   id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   storeId       String   @unique
   storeName     String
   storeAddress  String
@@ -20,12 +22,15 @@ model Store {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  @@index([userId])
   @@index([storeName])
   @@index([storeCity])
 }
 
 model Week {
   id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   weekNum   Int
   year      Int
   label     String
@@ -33,11 +38,14 @@ model Week {
   createdAt DateTime @default(now())
   visits    Visit[]
 
+  @@index([userId])
   @@unique([weekNum, year])
 }
 
 model Visit {
   id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   weekId        String
   week          Week     @relation(fields: [weekId], references: [id])
   assortment    String
@@ -64,6 +72,7 @@ model Visit {
   photos        VisitPhoto[]
   modifications Modification[]
 
+  @@index([userId])
   @@index([storeId])
   @@index([visitDate])
   @@index([weekId, visitDate])
@@ -71,18 +80,23 @@ model Visit {
 
 model VisitNote {
   id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   visitId   String
   visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
   storeId   String?
   content   String
   createdAt DateTime @default(now())
 
+  @@index([userId])
   @@index([visitId])
   @@index([storeId])
 }
 
 model VisitPhoto {
   id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   visitId   String
   visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
   storeId   String?
@@ -92,6 +106,7 @@ model VisitPhoto {
   starred   Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  @@index([userId])
   @@index([visitId])
   @@index([storeId])
   @@index([starred])
@@ -136,14 +151,20 @@ model MaterialGuide {
 
 model GlossaryTerm {
   id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   term       String   @unique
   definition String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Settings {
   id          String   @id @default("singleton")
+  userId      String?  @unique
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   openaiKey   String?
   userName    String?
   userZone    String?
@@ -162,20 +183,35 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  weeks         Week[]
+  visits        Visit[]
+  visitNotes    VisitNote[]
+  visitPhotos   VisitPhoto[]
+  stores        Store[]
+  settings      Settings[]
+  glossaryTerms GlossaryTerm[]
+  contactTeams  ContactTeam[]
+  contacts      Contact[]
 }
 
 model ContactTeam {
   id        String    @id @default(cuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   name      String    @unique
   color     String    @default("bg-slate-50 border-slate-200 text-slate-700")
   sortOrder Int       @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   contacts  Contact[]
+
+  @@index([userId])
 }
 
 model Contact {
   id        String      @id @default(cuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   teamId    String
   team      ContactTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
   name      String
