@@ -305,6 +305,95 @@ const migrations = [
       `CREATE INDEX IF NOT EXISTS "Store_storeCity_idx" ON "Store"("storeCity");`,
     ],
   },
+  {
+    name: "20260717000000_add_user_scope_core_models",
+    sql: [
+      `ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "Week" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "Visit" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "VisitNote" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "VisitPhoto" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "GlossaryTerm" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "Settings" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "ContactTeam" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+      `ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "userId" TEXT;`,
+
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Store_userId_fkey') THEN
+          ALTER TABLE "Store" ADD CONSTRAINT "Store_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Week_userId_fkey') THEN
+          ALTER TABLE "Week" ADD CONSTRAINT "Week_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Visit_userId_fkey') THEN
+          ALTER TABLE "Visit" ADD CONSTRAINT "Visit_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'VisitNote_userId_fkey') THEN
+          ALTER TABLE "VisitNote" ADD CONSTRAINT "VisitNote_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'VisitPhoto_userId_fkey') THEN
+          ALTER TABLE "VisitPhoto" ADD CONSTRAINT "VisitPhoto_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'GlossaryTerm_userId_fkey') THEN
+          ALTER TABLE "GlossaryTerm" ADD CONSTRAINT "GlossaryTerm_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Settings_userId_fkey') THEN
+          ALTER TABLE "Settings" ADD CONSTRAINT "Settings_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ContactTeam_userId_fkey') THEN
+          ALTER TABLE "ContactTeam" ADD CONSTRAINT "ContactTeam_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Contact_userId_fkey') THEN
+          ALTER TABLE "Contact" ADD CONSTRAINT "Contact_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+
+      `CREATE INDEX IF NOT EXISTS "Store_userId_idx" ON "Store"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "Week_userId_idx" ON "Week"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "Visit_userId_idx" ON "Visit"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "VisitNote_userId_idx" ON "VisitNote"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "VisitPhoto_userId_idx" ON "VisitPhoto"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "GlossaryTerm_userId_idx" ON "GlossaryTerm"("userId");`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Settings_userId_key" ON "Settings"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "ContactTeam_userId_idx" ON "ContactTeam"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "Contact_userId_idx" ON "Contact"("userId");`,
+
+      `UPDATE "Store" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "Week" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "Visit" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "VisitNote" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "VisitPhoto" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "GlossaryTerm" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "Settings" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "ContactTeam" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+      `UPDATE "Contact" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {
