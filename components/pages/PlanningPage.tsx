@@ -48,7 +48,7 @@ export default function PlanningPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  const { data: weeks = [] } = useWeeks();
+  const { data: weeks = [], isLoading: weeksLoading, isError: weeksError } = useWeeks();
   const effectiveWeekId = selectedWeekId || (weeks[0]?.id ?? "");
   const { data: visitsResult } = useVisits(effectiveWeekId);
   const visits: Visit[] = visitsResult?.visits ?? EMPTY_VISITS;
@@ -240,9 +240,14 @@ export default function PlanningPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
-      {!isReady || weeks.length === 0 || effectiveWeekId === "" ? (
+      {!isReady || weeksLoading ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-6 h-6 border-2 border-teal-cpm border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : weeksError ? (
+        <div className="text-center py-16">
+          <p className="font-semibold text-slate-700 dark:text-zinc-300">Impossible de charger le planning</p>
+          <p className="text-sm text-slate-400 dark:text-zinc-500 mt-1">Recharge la page ou reconnecte-toi.</p>
         </div>
       ) : (
         <>

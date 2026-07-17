@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const weekId = searchParams.get("weekId") || undefined;
-    const weekFilter = weekId ? { weekId } : {};
-    const photoFilter = weekId ? { visit: { weekId } } : {};
+    const weekFilter = { userId: auth.user.userId, ...(weekId ? { weekId } : {}) };
+    const photoFilter = { userId: auth.user.userId, ...(weekId ? { visit: { weekId } } : {}) };
 
     // Run all aggregation queries in parallel
     const [
@@ -32,7 +36,8 @@ export async function GET(req: NextRequest) {
           COUNT(CASE WHEN v."status" = 'done' THEN 1 END) as done
         FROM "Visit" v
         JOIN "Week" w ON v."weekId" = w."id"
-        ${weekId ? Prisma.sql`WHERE v."weekId" = ${weekId}` : Prisma.empty}
+        WHERE v."userId" = ${auth.user.userId}
+        ${weekId ? Prisma.sql`AND v."weekId" = ${weekId}` : Prisma.empty}
         GROUP BY w."id", w."label", w."weekNum", w."year", w."createdAt"
         ORDER BY w."createdAt" ASC
       `,

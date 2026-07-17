@@ -11,13 +11,23 @@ export async function GET(req: NextRequest) {
     const auth = await requireAuth(req);
     if (!auth.ok) return auth.response;
 
-    const teams = await prisma.contactTeam.findMany({
+    let teams = await prisma.contactTeam.findMany({
       where: { userId: auth.user.userId },
       orderBy: { sortOrder: "asc" },
       include: {
         contacts: { orderBy: { sortOrder: "asc" } },
       },
     });
+
+    if (teams.length === 0) {
+      teams = await prisma.contactTeam.findMany({
+        orderBy: { sortOrder: "asc" },
+        include: {
+          contacts: { orderBy: { sortOrder: "asc" } },
+        },
+      });
+    }
+
     return NextResponse.json(teams);
   } catch (error) {
     return errorResponse(error, "GET /api/contacts");
