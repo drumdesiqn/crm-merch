@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { put } from "@vercel/blob";
-import { jwtVerify } from "jose";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -69,14 +69,8 @@ export async function GET(req: NextRequest) {
 
 // Called manually from SettingsPage — authenticated via JWT cookie.
 export async function POST(req: NextRequest) {
-  try {
-    const token = req.cookies.get("auth-token")?.value;
-    if (!token) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
-    await jwtVerify(token, JWT_SECRET);
-  } catch {
-    return NextResponse.json({ error: "Session invalide" }, { status: 401 });
-  }
+  const auth = await requireAuth(req);
+  if (!auth.ok) return auth.response;
   try {
     const result = await runBackup();
     return NextResponse.json({ success: true, ...result });

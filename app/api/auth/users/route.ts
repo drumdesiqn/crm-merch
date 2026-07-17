@@ -1,28 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
 import { createUser } from "@/lib/auth-simple";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
-  const token = req.cookies.get("auth-token")?.value;
-  if (!token) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-  }
-
-  if (!process.env.JWT_SECRET) {
-    return NextResponse.json({ error: "JWT secret manquant" }, { status: 500 });
-  }
-
-  try {
-    const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
-    await jwtVerify(token, jwtSecret);
-  } catch {
-    return NextResponse.json({ error: "Session invalide" }, { status: 401 });
-  }
+  const auth = await requireAuth(req);
+  if (!auth.ok) return auth.response;
 
   try {
     const body = await req.json();

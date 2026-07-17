@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
-
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is not set");
-}
-
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+import { verifyAuthToken } from "@/lib/auth-server";
 
 const publicPaths = ["/login", "/api/auth/login", "/api/auth/logout", "/api/health", "/offline"];
 
@@ -35,15 +29,14 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    try {
-      await jwtVerify(token, JWT_SECRET);
+    const user = await verifyAuthToken(token);
+    if (user) {
       return NextResponse.next();
-    } catch {
-      return NextResponse.json(
-        { error: "Token invalide" },
-        { status: 401 }
-      );
     }
+    return NextResponse.json(
+      { error: "Token invalide" },
+      { status: 401 }
+    );
   }
 
   const token = request.cookies.get("auth-token")?.value;
@@ -58,23 +51,22 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  try {
-    await jwtVerify(token, JWT_SECRET);
+  const user = await verifyAuthToken(token);
+  if (user) {
     if (pathname === "/login") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
-  } catch {
-    if (pathname === "/login") {
-      return NextResponse.next();
-    }
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    if (pathname !== "/") url.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(url);
   }
+  if (pathname === "/login") {
+    return NextResponse.next();
+  }
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  if (pathname !== "/") url.searchParams.set("redirect", pathname);
+  return NextResponse.redirect(url);
 }
 
 export const config = {

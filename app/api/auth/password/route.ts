@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, hashPassword } from "@/lib/auth-simple";
-import { jwtVerify } from "jose";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/api-utils";
 import { getClientIp } from "@/lib/request-ip";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
-
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function PATCH(req: NextRequest) {
   const ip = getClientIp(req);
@@ -21,19 +19,8 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    // Verify JWT from cookie
-    const token = req.cookies.get("auth-token")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
-
-    let payload: { userId: string; email: string };
-    try {
-      const { payload: p } = await jwtVerify(token, JWT_SECRET);
-      payload = p as { userId: string; email: string };
-    } catch {
-      return NextResponse.json({ error: "Session invalide" }, { status: 401 });
-    }
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
 
     const { currentPassword, newPassword } = await req.json();
 
@@ -45,14 +32,14 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Le nouveau mot de passe doit faire au moins 6 caractères" }, { status: 400 });
     }
 
-    const verify = await verifyPassword(payload.email, currentPassword);
+    const verify = await verifyPassword(auth.user.email, currentPassword);
     if (!verify.success) {
       return NextResponse.json({ error: "Mot de passe actuel incorrect" }, { status: 401 });
     }
 
     const hashed = await hashPassword(newPassword);
     await prisma.user.update({
-      where: { id: payload.userId },
+      where: { id: auth.user.userId },
       data: { password: hashed },
     });
 
