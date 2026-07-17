@@ -3,8 +3,10 @@ import bcrypt from "bcryptjs";
 
 export async function verifyPassword(email: string, password: string): Promise<{ success: boolean; user?: { id: string; email: string; name: string | null } }> {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
+
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       select: { id: true, email: true, name: true, password: true },
     });
 
@@ -29,9 +31,10 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function createUser(email: string, password: string, name?: string) {
   const hashedPassword = await hashPassword(password);
+  const normalizedEmail = email.trim().toLowerCase();
   return await prisma.user.create({
     data: {
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       name,
     },
