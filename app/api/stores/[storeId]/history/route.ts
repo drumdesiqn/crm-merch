@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ storeId: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { storeId } = await params;
     const visits = await prisma.visit.findMany({
-      where: { storeId },
+      where: { storeId, userId: auth.user.userId },
       orderBy: { visitDate: "desc" },
       select: {
         id: true,
@@ -42,6 +46,7 @@ export async function GET(
 
     const notes = await prisma.visitNote.findMany({
       where: {
+        userId: auth.user.userId,
         OR: [
           { visitId: { in: visitIds } },
           { storeId },
@@ -53,6 +58,7 @@ export async function GET(
 
     const photos = await prisma.visitPhoto.findMany({
       where: {
+        userId: auth.user.userId,
         OR: [
           { visitId: { in: visitIds } },
           { storeId },

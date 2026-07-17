@@ -6,11 +6,15 @@ import { CreateStoreSchema, PatchStoreSchema, validate } from "@/lib/validation"
 import { getClientIp } from "@/lib/request-ip";
 import { geocodeAddressServer } from "@/lib/geocode-server";
 import { waitUntil } from "@vercel/functions";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const sortBy = searchParams.get("sortBy") || "name";
     const order = searchParams.get("order") || "asc";
@@ -21,22 +25,25 @@ export async function GET(req: NextRequest) {
         by: ["storeId"],
         _count: { id: true },
         _max: { visitDate: true },
+        where: { userId: auth.user.userId },
       }),
       prisma.visitPhoto.groupBy({
         by: ["storeId"],
         _count: { id: true },
-        where: { storeId: { not: null } },
+        where: { storeId: { not: null }, userId: auth.user.userId },
       }),
       prisma.visit.groupBy({
         by: ["storeId"],
         _count: { id: true },
-        where: { status: "done" },
+        where: { status: "done", userId: auth.user.userId },
       }),
       prisma.visit.findMany({
+        where: { userId: auth.user.userId },
         select: { storeId: true, materialType: true },
         distinct: ["storeId", "materialType"],
       }),
       prisma.visit.findMany({
+        where: { userId: auth.user.userId },
         select: { storeId: true, storeName: true, storeAddress: true, storeZipcode: true, storeCity: true, assortment: true, visitType: true, visitFrequence: true, salesRep: true },
         distinct: ["storeId"],
         orderBy: { createdAt: "desc" },
@@ -85,7 +92,7 @@ export async function GET(req: NextRequest) {
 
     // Overlay with manually created stores from Store table (if it exists)
     try {
-      const manualStores = await prisma.store.findMany();
+      const manualStores = await prisma.store.findMany({ where: { userId: auth.user.userId } });
       for (const s of manualStores) {
         const agg = visitMap.get(s.storeId);
         storeMap.set(s.storeId, {
@@ -134,6 +141,9 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     const validation = validate(PatchStoreSchema, body);
     if (!validation.success) {
@@ -145,9 +155,9 @@ export async function PATCH(req: NextRequest) {
     // Update Store table if row exists
     let updated = null;
     try {
-      const existing = await prisma.store.findUnique({ where: { storeId } });
+      const existing = await prisma.store.findFirst({ where: { storeId, userId: auth.user.userId } });
       if (existing) {
-        updated = await prisma.store.update({ where: { storeId }, data });
+        updated = await prisma.store.update({ where: { id: existing.id }, data });
       }
     } catch {
       // Store table may not exist yet
@@ -164,13 +174,13 @@ export async function PATCH(req: NextRequest) {
     if (data.visitFrequence !== undefined) visitDataAll.visitFrequence = data.visitFrequence;
 
     if (Object.keys(visitDataAll).length > 0) {
-      await prisma.visit.updateMany({ where: { storeId }, data: visitDataAll });
+      await prisma.visit.updateMany({ where: { storeId, userId: auth.user.userId }, data: visitDataAll });
     }
 
     // salesRep propagates only to future visits (past visits keep their historical value)
     if (data.salesRep !== undefined) {
       await prisma.visit.updateMany({
-        where: { storeId, visitDate: { gte: new Date() } },
+        where: { storeId, userId: auth.user.userId, visitDate: { gte: new Date() } },
         data: { salesRep: data.salesRep },
       });
     }
@@ -179,7 +189,7 @@ export async function PATCH(req: NextRequest) {
     const addressChanged = data.storeAddress || data.storeZipcode || data.storeCity;
     if (addressChanged) {
       // Get the full address from the updated store or visits
-      const refVisit = await prisma.visit.findFirst({ where: { storeId }, select: { storeAddress: true, storeZipcode: true, storeCity: true } });
+      const refVisit = await prisma.visit.findFirst({ where: { storeId, userId: auth.user.userId }, select: { storeAddress: true, storeZipcode: true, storeCity: true } });
       if (refVisit) {
         const addr = (data.storeAddress || refVisit.storeAddress) as string;
         const zip = (data.storeZipcode || refVisit.storeZipcode) as string;
@@ -190,7 +200,7 @@ export async function PATCH(req: NextRequest) {
               const coords = await geocodeAddressServer(addr, zip, city);
               if (coords) {
                 await prisma.visit.updateMany({
-                  where: { storeId },
+                  where: { storeId, userId: auth.user.userId },
                   data: { latitude: coords.lat, longitude: coords.lng },
                 });
               }
@@ -216,13 +226,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     const validation = validate(CreateStoreSchema, body);
     if (!validation.success) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const existing = await prisma.store.findUnique({ where: { storeId: validation.data.storeId } });
+    const existing = await prisma.store.findFirst({ where: { storeId: validation.data.storeId, userId: auth.user.userId } });
     if (existing) {
       return NextResponse.json({ error: "Un magasin avec cet ID existe déjà" }, { status: 409 });
     }
@@ -232,6 +245,7 @@ export async function POST(req: NextRequest) {
         ...validation.data,
         assortment: validation.data.assortment || "",
         visitType: validation.data.visitType || "Maintenance",
+        userId: auth.user.userId,
       },
     });
 

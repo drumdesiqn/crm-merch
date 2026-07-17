@@ -5,6 +5,7 @@ import { PhotoIdSchema, validate } from "@/lib/validation";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/request-ip";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
@@ -28,12 +29,16 @@ function photoRateLimit(req: NextRequest) {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { storeId: true } });
+    if (!visit) return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
     const storeId = visit?.storeId;
 
     const photos = await prisma.visitPhoto.findMany({
@@ -42,6 +47,7 @@ export async function GET(
           { visitId: id },
           ...(storeId ? [{ storeId }] : []),
         ],
+        userId: auth.user.userId,
       },
       orderBy: { createdAt: "desc" },
       include: {
@@ -66,6 +72,9 @@ export async function POST(
   const rateLimitResponse = photoRateLimit(req);
   if (rateLimitResponse) return rateLimitResponse;
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -83,7 +92,7 @@ export async function POST(
       return NextResponse.json({ error: "Fichier trop volumineux (max 10 Mo)" }, { status: 400 });
     }
 
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { storeId: true } });
     if (!visit) {
       return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
     }
@@ -100,6 +109,7 @@ export async function POST(
       data: {
         visitId: id,
         storeId: visit?.storeId || null,
+        userId: auth.user.userId,
         url: blob.url,
         blobKey: blob.url,
         caption,
@@ -119,6 +129,9 @@ export async function DELETE(
   const rateLimitResponse = photoRateLimit(req);
   if (rateLimitResponse) return rateLimitResponse;
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const body = await req.json();
 
@@ -128,10 +141,11 @@ export async function DELETE(
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const visit = await prisma.visit.findUnique({ where: { id }, select: { storeId: true } });
+    const visit = await prisma.visit.findFirst({ where: { id, userId: auth.user.userId }, select: { storeId: true } });
+    if (!visit) return NextResponse.json({ error: "Visite introuvable" }, { status: 404 });
 
     // Only allow deleting photos that belong to this visit or this store
-    const photo = await prisma.visitPhoto.findUnique({ where: { id: validation.data.photoId } });
+    const photo = await prisma.visitPhoto.findFirst({ where: { id: validation.data.photoId, userId: auth.user.userId } });
     if (!photo) return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     const belongsToVisit = photo.visitId === id;
     const belongsToStore = visit?.storeId && photo.storeId === visit.storeId;
@@ -144,7 +158,7 @@ export async function DELETE(
     } catch (blobError) {
       console.error("Failed to delete blob, proceeding with DB cleanup:", blobError);
     }
-    await prisma.visitPhoto.delete({ where: { id: validation.data.photoId } });
+    await prisma.visitPhoto.deleteMany({ where: { id: validation.data.photoId, userId: auth.user.userId } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

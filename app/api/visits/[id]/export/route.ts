@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,11 +10,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
 
     // Get single visit
-    const visit = await prisma.visit.findUnique({
-      where: { id },
+    const visit = await prisma.visit.findFirst({
+      where: { id, userId: auth.user.userId },
       select: {
         id: true,
         weekId: true,
@@ -50,6 +54,7 @@ export async function GET(
           { visitId: id },
           ...(visit.storeId ? [{ storeId: visit.storeId }] : []),
         ],
+        userId: auth.user.userId,
       },
       select: { id: true, url: true, caption: true },
       orderBy: { createdAt: "desc" },
@@ -62,6 +67,7 @@ export async function GET(
           { visitId: id },
           ...(visit.storeId ? [{ storeId: visit.storeId }] : []),
         ],
+        userId: auth.user.userId,
       },
       select: { content: true, createdAt: true },
       orderBy: { createdAt: "desc" },
