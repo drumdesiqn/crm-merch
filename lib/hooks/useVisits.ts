@@ -17,6 +17,12 @@ export function useVisits(weekId?: string) {
         return { visits: data, truncated: false };
       }
       const res = await fetch("/api/visits");
+      if (res.status === 401) {
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+          window.location.href = "/login";
+        }
+        throw new Error("Non authentifié");
+      }
       if (!res.ok) throw new Error("Failed to load visits");
       const data: Visit[] = await res.json();
       return { visits: data, truncated: res.headers.get("X-Results-Truncated") === "true" };

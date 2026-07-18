@@ -21,10 +21,16 @@ const settingsWithEndSelect = {
 } as const;
 
 function isMissingEndAddressColumn(error: unknown): boolean {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
-  if (error.code !== "P2022") return false;
-  const column = typeof error.meta?.column === "string" ? error.meta.column : "";
-  return column.includes("endAddress");
+  // Check Prisma known error P2022 (column does not exist)
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2022") {
+      const column = typeof error.meta?.column === "string" ? error.meta.column : "";
+      if (column.includes("endAddress") || column.includes("end_address")) return true;
+    }
+  }
+  // Fallback: check error message for column reference (Neon adapter may wrap errors)
+  const msg = error instanceof Error ? error.message : String(error);
+  return /endAddress|end_address|column .* does not exist/i.test(msg);
 }
 
 export async function GET(req: NextRequest) {

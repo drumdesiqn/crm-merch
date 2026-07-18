@@ -407,6 +407,10 @@ const migrations = [
       `CREATE UNIQUE INDEX IF NOT EXISTS "GlossaryTerm_userId_term_key" ON "GlossaryTerm"("userId", "term");`,
     ],
   },
+  {
+    name: "20260718120000_add_end_address_to_settings",
+    sql: `ALTER TABLE "Settings" ADD COLUMN IF NOT EXISTS "endAddress" TEXT;`,
+  },
 ];
 
 for (const migration of migrations) {
