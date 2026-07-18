@@ -80,7 +80,7 @@ export const GlossaryIdSchema = z.object({
 export const SettingsSchema = z.object({
   userName: z.string().max(100).optional(),
   userZone: z.string().max(100).optional(),
-  userEmail: z.string().email("Email invalide").max(100).optional(),
+  userEmail: z.union([z.string().email("Email invalide").max(100), z.literal("")]).optional(),
   homeAddress: z.string().max(200).optional(),
   endAddress: z.string().max(200).optional(),
 });
