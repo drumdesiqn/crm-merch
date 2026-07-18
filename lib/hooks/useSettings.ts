@@ -6,6 +6,7 @@ export interface SettingsData {
   userZone?: string;
   userEmail?: string;
   homeAddress?: string;
+  endAddress?: string;
   hasApiKey?: boolean;
 }
 

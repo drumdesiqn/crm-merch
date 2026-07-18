@@ -7,11 +7,15 @@ export function LeafletMap({
   visits,
   home,
   homeLabel,
+  destination,
+  destinationLabel,
   routeGeometry,
 }: {
   visits: GeocodedVisit[];
   home: LatLng;
   homeLabel: string;
+  destination: LatLng | null;
+  destinationLabel: string;
   routeGeometry: [number, number][] | null;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -97,6 +101,20 @@ export function LeafletMap({
       layersRef.current.push(marker);
     });
 
+    if (destination) {
+      fallbackPoints.push([destination.lat, destination.lng]);
+      const destinationIcon = L.divIcon({
+        html: `<div style="background:#0f766e;color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">🏁</div>`,
+        className: "",
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+      const destinationMarker = L.marker([destination.lat, destination.lng], { icon: destinationIcon })
+        .addTo(map)
+        .bindPopup(destinationLabel);
+      layersRef.current.push(destinationMarker);
+    }
+
     // Route polyline — use OSRM geometry if available, otherwise straight lines
     if (routeGeometry && routeGeometry.length > 1) {
       const latLngs: [number, number][] = routeGeometry.map(([lng, lat]) => [lat, lng]);
@@ -108,7 +126,7 @@ export function LeafletMap({
       layersRef.current.push(line);
       map.fitBounds(L.latLngBounds(fallbackPoints), { padding: [40, 40] });
     }
-  }, [visits, home, homeLabel, routeGeometry]);
+  }, [visits, home, homeLabel, destination, destinationLabel, routeGeometry]);
 
   return <div ref={mapRef} style={{ width: "100%", height: "100%", minHeight: "300px" }} />;
 }

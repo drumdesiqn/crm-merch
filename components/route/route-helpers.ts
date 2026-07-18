@@ -85,7 +85,7 @@ export async function fetchOSRMRoute(points: LatLng[]): Promise<OSRMRouteData | 
 }
 
 /** Fallback: estimate distances using haversine */
-export function fallbackLegDistances(home: LatLng, visits: GeocodedVisit[]): { distanceM: number; durationS: number }[] {
+export function fallbackLegDistances(home: LatLng, visits: GeocodedVisit[], destination?: LatLng | null): { distanceM: number; durationS: number }[] {
   const legs: { distanceM: number; durationS: number }[] = [];
   let prev: LatLng = home;
   for (const v of visits) {
@@ -93,6 +93,10 @@ export function fallbackLegDistances(home: LatLng, visits: GeocodedVisit[]): { d
     const km = haversineKm(prev, v.coords) * 1.3;
     legs.push({ distanceM: km * 1000, durationS: (km / 40) * 3600 });
     prev = v.coords;
+  }
+  if (destination) {
+    const km = haversineKm(prev, destination) * 1.3;
+    legs.push({ distanceM: km * 1000, durationS: (km / 40) * 3600 });
   }
   return legs;
 }
@@ -115,7 +119,7 @@ export function formatDuration(seconds: number): string {
  * Locked visits stay at their current index.
  * The optimizer runs in segments between locked waypoints so distances are geographically accurate.
  */
-export function optimizeOrder(home: LatLng, visits: GeocodedVisit[], lockedIds: Set<string> = new Set()): GeocodedVisit[] {
+export function optimizeOrder(home: LatLng, visits: GeocodedVisit[], lockedIds: Set<string> = new Set(), destination?: LatLng | null): GeocodedVisit[] {
   if (visits.length <= 1) return visits;
 
   // Build a sparse result array: locked visits placed at their original index
@@ -168,8 +172,10 @@ export function optimizeOrder(home: LatLng, visits: GeocodedVisit[], lockedIds: 
       let bestIdx = 0;
       let bestDist = Infinity;
       for (let j = 0; j < remaining.length; j++) {
-        const d = haversineKm(currentPos, remaining[j].coords!);
-        if (d < bestDist) { bestDist = d; bestIdx = j; }
+        const dCurrent = haversineKm(currentPos, remaining[j].coords!);
+        const dDestination = destination ? haversineKm(remaining[j].coords!, destination) : 0;
+        const score = dCurrent + dDestination * 0.35;
+        if (score < bestDist) { bestDist = score; bestIdx = j; }
       }
       const next = remaining.splice(bestIdx, 1)[0];
       result[i] = next;

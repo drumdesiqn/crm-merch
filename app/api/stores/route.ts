@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
       // Store table may not exist yet — gracefully ignore
     }
 
-    const result = Array.from(storeMap.values());
+    const result = Array.from(storeMap.values()).filter((store) => store.totalVisits > 0);
 
     if (sortBy === "visits") {
       result.sort((a, b) => order === "desc" ? b.totalVisits - a.totalVisits : a.totalVisits - b.totalVisits);

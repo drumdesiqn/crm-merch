@@ -13,11 +13,11 @@ export async function GET(req: NextRequest) {
 
     const settings = await prisma.settings.findFirst({
       where: { userId: auth.user.userId },
-      select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true },
+      select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true, endAddress: true },
     });
     const hasEnvApiKey = Boolean(process.env.OPENAI_API_KEY);
     if (!settings) {
-      return NextResponse.json({ id: "singleton", userName: null, userZone: null, userEmail: null, hasApiKey: hasEnvApiKey });
+      return NextResponse.json({ id: "singleton", userName: null, userZone: null, userEmail: null, homeAddress: null, endAddress: null, hasApiKey: hasEnvApiKey });
     }
     return NextResponse.json({ ...settings, hasApiKey: hasEnvApiKey });
   } catch (error) {
@@ -38,12 +38,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
     
-    const { userName, userZone, userEmail, homeAddress } = validation.data;
+    const { userName, userZone, userEmail, homeAddress, endAddress } = validation.data;
     const allowed: Record<string, string | undefined> = {};
     if (userName !== undefined) allowed.userName = userName;
     if (userZone !== undefined) allowed.userZone = userZone;
     if (userEmail !== undefined) allowed.userEmail = userEmail;
     if (homeAddress !== undefined) allowed.homeAddress = homeAddress;
+    if (endAddress !== undefined) allowed.endAddress = endAddress;
 
     const existing = await prisma.settings.findFirst({
       where: { userId: auth.user.userId },
@@ -54,11 +55,11 @@ export async function POST(req: NextRequest) {
       ? await prisma.settings.update({
           where: { id: existing.id },
           data: allowed,
-          select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true },
+          select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true, endAddress: true },
         })
       : await prisma.settings.create({
           data: { ...allowed, userId: auth.user.userId },
-          select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true },
+          select: { id: true, userName: true, userZone: true, userEmail: true, homeAddress: true, endAddress: true },
         });
 
     return NextResponse.json({ ...settings, hasApiKey: Boolean(process.env.OPENAI_API_KEY) });

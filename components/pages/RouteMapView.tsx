@@ -75,6 +75,8 @@ export default function RouteMapView({
   const [savingAddress, setSavingAddress] = useState(false);
   const [hasUserReordered, setHasUserReordered] = useState(false);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+  const [destination, setDestination] = useState<LatLng | null>(null);
+  const [destinationLabel, setDestinationLabel] = useState("Arrivée — dernière visite");
 
   const toggleLock = useCallback((id: string) => {
     setLockedIds((prev) => {
@@ -101,6 +103,23 @@ export default function RouteMapView({
     }).catch(() => {});
     return () => { cancelled = true; };
   }, [settingsData?.homeAddress]);
+
+  useEffect(() => {
+    const addr = settingsData?.endAddress?.trim();
+    if (!addr) {
+      setDestination(null);
+      setDestinationLabel("Arrivée — dernière visite");
+      return;
+    }
+    let cancelled = false;
+    geocodeAddress(addr, "", "").then((coords) => {
+      if (!cancelled && coords) {
+        setDestination(coords);
+        setDestinationLabel(`Arrivée — ${addr}`);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [settingsData?.endAddress]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -190,7 +209,7 @@ export default function RouteMapView({
     if (geocoding) return;
     const geocoded = orderedVisits.filter((v) => v.coords);
     if (geocoded.length < 1) { setOsrmRoute(null); return; }
-    const points: LatLng[] = [home, ...geocoded.map((v) => v.coords!)];
+    const points: LatLng[] = [home, ...geocoded.map((v) => v.coords!), ...(destination ? [destination] : [])];
     let cancelled = false;
     const timer = setTimeout(() => {
       fetchOSRMRoute(points).then((data) => {
@@ -198,7 +217,7 @@ export default function RouteMapView({
       });
     }, 800);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [orderedVisits, geocoding, home]);
+  }, [orderedVisits, geocoding, home, destination]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -246,7 +265,7 @@ export default function RouteMapView({
 
   const handleOptimize = () => {
     setOptimizing(true);
-    const optimized = optimizeOrder(home, orderedVisits, lockedIds);
+    const optimized = optimizeOrder(home, orderedVisits, lockedIds, destination);
     setOrderedVisits(optimized);
     setHasUserReordered(true);
     setSaved(false);
@@ -359,6 +378,18 @@ export default function RouteMapView({
             <span>Géolocalisation des adresses…</span>
             <span className="ml-auto text-xs text-slate-400">{geocodingProgress.done}/{geocodingProgress.total}</span>
           </div>
+
+          {destination && (
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
+              <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-sm shrink-0 text-white">
+                🏁
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Arrivée</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{destinationLabel.replace("Arrivée — ", "")}</p>
+              </div>
+            </div>
+          )}
           <div className="w-full bg-slate-200 dark:bg-[#2e2e30] rounded-full h-2">
             <div
               className="bg-teal-cpm h-2 rounded-full transition-all duration-500"
@@ -372,7 +403,14 @@ export default function RouteMapView({
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Map */}
         <div className="lg:flex-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2e2e30] bg-slate-100 dark:bg-[#222223] h-[50vh] lg:h-[450px]">
-          <LeafletMap visits={orderedVisits} home={home} homeLabel={homeLabel} routeGeometry={osrmRoute?.geometry ?? null} />
+          <LeafletMap
+            visits={orderedVisits}
+            home={home}
+            homeLabel={homeLabel}
+            destination={destination}
+            destinationLabel={destinationLabel}
+            routeGeometry={osrmRoute?.geometry ?? null}
+          />
         </div>
 
         {/* Sidebar */}
@@ -409,7 +447,7 @@ export default function RouteMapView({
 
           {/* Route stats */}
           {geocodedCount > 0 && !geocoding && (() => {
-            const fallback = !osrmRoute ? fallbackLegDistances(home, orderedVisits) : [];
+            const fallback = !osrmRoute ? fallbackLegDistances(home, orderedVisits, destination) : [];
             const totalDist = osrmRoute ? osrmRoute.totalDistance : fallback.reduce((s, l) => s + l.distanceM, 0);
             const totalDur = osrmRoute ? osrmRoute.totalDuration : fallback.reduce((s, l) => s + l.durationS, 0);
             return (
@@ -421,7 +459,7 @@ export default function RouteMapView({
                 <span className="text-slate-300 dark:text-slate-600">·</span>
                 <span className="text-sm text-slate-600 dark:text-slate-300">{formatDuration(totalDur)}</span>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
-                <span className="text-sm text-slate-500">{geocodedCount} étapes</span>
+                <span className="text-sm text-slate-500">{geocodedCount + (destination ? 1 : 0)} étapes</span>
                 <span className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-medium ${osrmRoute ? "bg-green-cpm/10 dark:bg-green-cpm/15 text-green-cpm" : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"}`}>
                   {osrmRoute ? "route réelle" : "estimation"}
                 </span>

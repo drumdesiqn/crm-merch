@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [userZone, setUserZone] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [homeAddress, setHomeAddress] = useState("");
+  const [endAddress, setEndAddress] = useState("");
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -63,13 +64,14 @@ export default function SettingsPage() {
     setUserZone(settingsData.userZone || "");
     setUserEmail(settingsData.userEmail || "");
     setHomeAddress(settingsData.homeAddress || "");
+    setEndAddress(settingsData.endAddress || "");
     setSettingsInitialized(true);
   }
 
   const saveSettings = async () => {
     setSavingSettings(true);
     setErrorMsg(null);
-    const body: Record<string, string> = { userName, userZone, userEmail, homeAddress };
+    const body: Record<string, string> = { userName, userZone, userEmail, homeAddress, endAddress };
     const data = await fetchApi<{ success: boolean }>("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -247,6 +249,11 @@ export default function SettingsPage() {
           <label htmlFor="settings-home" className="text-xs text-slate-500 dark:text-zinc-400">Adresse domicile</label>
           <input id="settings-home" value={homeAddress} onChange={(e) => setHomeAddress(e.target.value)} placeholder="Rue Georges Tourneur 12, 6030 Marchienne-au-Pont" className={inputCls} />
           <p className="text-xs text-slate-400 dark:text-zinc-500">Utilisée comme point de départ sur la carte des itinéraires</p>
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="settings-end" className="text-xs text-slate-500 dark:text-zinc-400">Adresse d&apos;arrivée (optionnel)</label>
+          <input id="settings-end" value={endAddress} onChange={(e) => setEndAddress(e.target.value)} placeholder="Ex: Domicile, dépôt ou autre point final" className={inputCls} />
+          <p className="text-xs text-slate-400 dark:text-zinc-500">Si vide, l&apos;arrivée reste la dernière visite planifiée</p>
         </div>
         <div className="space-y-1">
           <label htmlFor="settings-email" className="text-xs text-slate-500 dark:text-zinc-400">Email</label>
