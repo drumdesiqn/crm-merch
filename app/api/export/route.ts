@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const weekId = searchParams.get("weekId");
 
@@ -15,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     // Get visits for the week
     const visits = await prisma.visit.findMany({
-      where: { weekId },
+      where: { weekId, userId: auth.user.userId },
       orderBy: { visitDate: "asc" },
       select: {
         id: true,
@@ -56,6 +60,7 @@ export async function GET(req: NextRequest) {
             { visitId: { in: visitIds } },
             ...(storeIds.length > 0 ? [{ storeId: { in: storeIds } }] : []),
           ],
+          userId: auth.user.userId,
         },
         select: { id: true, url: true, visitId: true, storeId: true },
       }),
@@ -65,6 +70,7 @@ export async function GET(req: NextRequest) {
             { visitId: { in: visitIds } },
             ...(storeIds.length > 0 ? [{ storeId: { in: storeIds } }] : []),
           ],
+          userId: auth.user.userId,
         },
         orderBy: { createdAt: "desc" },
         select: { content: true, createdAt: true, visitId: true, storeId: true },

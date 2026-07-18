@@ -394,6 +394,19 @@ const migrations = [
       `UPDATE "Contact" SET "userId" = (SELECT "id" FROM "User" ORDER BY "createdAt" ASC LIMIT 1) WHERE "userId" IS NULL;`,
     ],
   },
+  {
+    name: "20260718000000_user_scoped_uniques",
+    sql: [
+      `DROP INDEX IF EXISTS "Week_weekNum_year_key";`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Week_userId_weekNum_year_key" ON "Week"("userId", "weekNum", "year");`,
+      `DROP INDEX IF EXISTS "Store_storeId_key";`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Store_userId_storeId_key" ON "Store"("userId", "storeId");`,
+      `DROP INDEX IF EXISTS "ContactTeam_name_key";`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "ContactTeam_userId_name_key" ON "ContactTeam"("userId", "name");`,
+      `DROP INDEX IF EXISTS "GlossaryTerm_term_key";`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "GlossaryTerm_userId_term_key" ON "GlossaryTerm"("userId", "term");`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {

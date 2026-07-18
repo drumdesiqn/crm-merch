@@ -8,6 +8,7 @@ import { geocodeAddressServer } from "@/lib/geocode-server";
 import { getClientIp } from "@/lib/request-ip";
 import { put, del } from "@vercel/blob";
 import { waitUntil } from "@vercel/functions";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,9 @@ const ALLOWED_EXCEL_MIME_TYPES = new Set([
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const ip = getClientIp(req);
     const rateLimit = checkRateLimit(`import:${ip}`, 10, 60 * 60 * 1000);
     if (!rateLimit.allowed) {
@@ -61,8 +65,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No visits found in file" }, { status: 400 });
     }
 
-    const existingWeek = await prisma.week.findUnique({
-      where: { weekNum_year: { weekNum, year } },
+    const existingWeek = await prisma.week.findFirst({
+      where: { weekNum, year, userId: auth.user.userId },
     });
 
     if (existingWeek && mode === "check") {
@@ -81,18 +85,18 @@ export async function POST(req: NextRequest) {
     if (existingWeek && mode === "replace") {
       // Clean up Vercel Blob photos before deleting visits
       const orphanPhotos = await prisma.visitPhoto.findMany({
-        where: { visit: { weekId: existingWeek.id } },
+        where: { visit: { weekId: existingWeek.id, userId: auth.user.userId }, userId: auth.user.userId },
         select: { blobKey: true },
       });
       if (orphanPhotos.length > 0) {
         void del(orphanPhotos.map((p) => p.blobKey)).catch(() => {});
       }
-      await prisma.visit.deleteMany({ where: { weekId: existingWeek.id } });
+      await prisma.visit.deleteMany({ where: { weekId: existingWeek.id, userId: auth.user.userId } });
       week = existingWeek;
     } else if (existingWeek && mode === "merge") {
       week = existingWeek;
       const existing = await prisma.visit.findMany({
-        where: { weekId: existingWeek.id },
+        where: { weekId: existingWeek.id, userId: auth.user.userId },
         select: { storeId: true, visitDate: true },
       });
       const existingKeys = new Set(
@@ -109,14 +113,14 @@ export async function POST(req: NextRequest) {
       // We use offsets 1000+, 2000+, etc. — purely internal, display uses the label
       let virtualWeekNum = weekNum + 1000;
       let suffix = 2;
-      while (await prisma.week.findUnique({ where: { weekNum_year: { weekNum: virtualWeekNum, year } } })) {
+      while (await prisma.week.findFirst({ where: { weekNum: virtualWeekNum, year, userId: auth.user.userId } })) {
         virtualWeekNum = weekNum + 1000 * suffix;
         suffix++;
       }
       const newLabel = `${label} (${suffix - 1})`;
-      week = await prisma.week.create({ data: { weekNum: virtualWeekNum, year, label: newLabel } });
+      week = await prisma.week.create({ data: { weekNum: virtualWeekNum, year, label: newLabel, userId: auth.user.userId } });
     } else if (!existingWeek) {
-      week = await prisma.week.create({ data: { weekNum, year, label } });
+      week = await prisma.week.create({ data: { weekNum, year, label, userId: auth.user.userId } });
     } else {
       week = existingWeek;
     }
@@ -141,6 +145,7 @@ export async function POST(req: NextRequest) {
     const latestVisits = await prisma.visit.findMany({
       where: {
         storeId: { in: storeIds },
+        userId: auth.user.userId,
       },
       orderBy: { visitDate: "desc" },
       select: { storeId: true, materialType: true, latitude: true, longitude: true },
@@ -161,7 +166,7 @@ export async function POST(req: NextRequest) {
     const storeDataMap: Record<string, { salesRep: string | null; storeAddress: string; storeZipcode: string; storeCity: string }> = {};
     try {
       const storeRecords = await prisma.store.findMany({
-        where: { storeId: { in: storeIds } },
+        where: { storeId: { in: storeIds }, userId: auth.user.userId },
         select: { storeId: true, salesRep: true, storeAddress: true, storeZipcode: true, storeCity: true },
       });
       storeRecords.forEach((s) => { storeDataMap[s.storeId] = { salesRep: s.salesRep ?? null, storeAddress: s.storeAddress, storeZipcode: s.storeZipcode, storeCity: s.storeCity }; });
@@ -174,6 +179,7 @@ export async function POST(req: NextRequest) {
         const storeData = storeDataMap[v.storeId];
         const coords = latestCoords[v.storeId];
         return {
+          userId: auth.user.userId,
           weekId: week!.id,
           assortment: v.assortment,
           storeId: v.storeId,
@@ -201,16 +207,27 @@ export async function POST(req: NextRequest) {
     const uniqueVisits = Array.from(new Map(visitsToCreate.map((v) => [v.storeId, v])).values());
     try {
       await Promise.all(
-        uniqueVisits.map((v) =>
-          prisma.store.upsert({
-            where: { storeId: v.storeId },
-            update: {
-              // Only update non-address fields; address corrections are preserved
-              ...(v.assortment ? { assortment: v.assortment } : {}),
-              ...(v.visitType ? { visitType: v.visitType } : {}),
-              ...(v.visitFrequence ? { visitFrequence: v.visitFrequence } : {}),
-            },
-            create: {
+        uniqueVisits.map(async (v) => {
+          const existingStore = await prisma.store.findFirst({
+            where: { storeId: v.storeId, userId: auth.user.userId },
+            select: { id: true },
+          });
+
+          if (existingStore) {
+            await prisma.store.update({
+              where: { id: existingStore.id },
+              data: {
+                ...(v.assortment ? { assortment: v.assortment } : {}),
+                ...(v.visitType ? { visitType: v.visitType } : {}),
+                ...(v.visitFrequence ? { visitFrequence: v.visitFrequence } : {}),
+              },
+            });
+            return;
+          }
+
+          await prisma.store.create({
+            data: {
+              userId: auth.user.userId,
               storeId: v.storeId,
               storeName: v.storeName,
               storeAddress: v.storeAddress,
@@ -221,8 +238,8 @@ export async function POST(req: NextRequest) {
               visitFrequence: v.visitFrequence || null,
               salesRep: v.salesRep || null,
             },
-          })
-        )
+          });
+        })
       );
     } catch {
       // Store table may not exist yet — gracefully ignore
@@ -248,7 +265,7 @@ export async function POST(req: NextRequest) {
             const coords = await geocodeAddressServer(v.storeAddress, v.storeZipcode, v.storeCity);
             if (coords) {
               await prisma.visit.updateMany({
-                where: { storeId: v.storeId, latitude: null },
+                where: { storeId: v.storeId, latitude: null, userId: auth.user.userId },
                 data: { latitude: coords.lat, longitude: coords.lng },
               });
             }

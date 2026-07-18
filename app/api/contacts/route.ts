@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 import { CreateContactSchema, PatchContactSchema, DeleteContactSchema } from "@/lib/validation";
 import { requireAuth } from "@/lib/auth-server";
+import { TEAMS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,36 @@ export async function GET(req: NextRequest) {
     });
 
     if (teams.length === 0) {
+      await prisma.$transaction(async (tx) => {
+        for (let i = 0; i < TEAMS.length; i++) {
+          const t = TEAMS[i];
+          const createdTeam = await tx.contactTeam.create({
+            data: {
+              userId: auth.user.userId,
+              name: t.name,
+              color: t.color,
+              sortOrder: i + 1,
+            },
+            select: { id: true },
+          });
+
+          if (t.contacts.length > 0) {
+            await tx.contact.createMany({
+              data: t.contacts.map((c, idx) => ({
+                userId: auth.user.userId,
+                teamId: createdTeam.id,
+                name: c.name,
+                phone: c.phone,
+                email: c.email,
+                sortOrder: idx + 1,
+              })),
+            });
+          }
+        }
+      });
+
       teams = await prisma.contactTeam.findMany({
+        where: { userId: auth.user.userId },
         orderBy: { sortOrder: "asc" },
         include: {
           contacts: { orderBy: { sortOrder: "asc" } },

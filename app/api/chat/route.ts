@@ -5,11 +5,15 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/api-utils";
 import { ChatSchema, validate } from "@/lib/validation";
 import { getClientIp } from "@/lib/request-ip";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const ip = getClientIp(req);
     const rateLimit = checkRateLimit(`chat:${ip}`, 20, 60 * 1000);
     if (!rateLimit.allowed) {
@@ -26,8 +30,8 @@ export async function POST(req: NextRequest) {
     }
     const { messages } = validation.data;
 
-    const settings = await prisma.settings.findUnique({
-      where: { id: "singleton" },
+    const settings = await prisma.settings.findFirst({
+      where: { userId: auth.user.userId },
       select: { userName: true, userZone: true },
     });
     const apiKey = process.env.OPENAI_API_KEY;
@@ -37,12 +41,13 @@ export async function POST(req: NextRequest) {
     }
 
     const currentWeek = await prisma.week.findFirst({
+      where: { userId: auth.user.userId },
       orderBy: [{ year: "desc" }, { weekNum: "desc" }],
     });
     
     const currentWeekVisits = currentWeek 
       ? await prisma.visit.findMany({
-          where: { weekId: currentWeek.id },
+          where: { weekId: currentWeek.id, userId: auth.user.userId },
           orderBy: [{ sortOrder: "asc" }, { visitDate: "asc" }],
           select: {
             storeName: true,
@@ -58,11 +63,11 @@ export async function POST(req: NextRequest) {
         })
       : [];
 
-    const glossary = await prisma.glossaryTerm.findMany({ orderBy: { term: "asc" } });
+    const glossary = await prisma.glossaryTerm.findMany({ where: { userId: auth.user.userId }, orderBy: { term: "asc" } });
     const glossaryText = glossary.map((g) => `- ${g.term}: ${g.definition}`).join("\n");
 
     const recentMods = await prisma.modification.findMany({
-      where: { applied: true },
+      where: { applied: true, visit: { userId: auth.user.userId } },
       orderBy: { createdAt: "desc" },
       take: 10,
       include: { mailLog: true },
