@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 import ToastContainer from "@/components/Toast";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import RouteRestorer from "@/components/RouteRestorer";
-import dynamic from "next/dynamic";
-
-const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
-  loading: () => null,
-});
+import AppChrome from "@/components/AppChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,13 +14,13 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "CPM Mars — Mon Planning",
-  description: "Application de gestion pour merchandisers CPM chez Mars",
+  title: "Connexion",
+  description: "",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "CPM Mars",
+    title: "Connexion",
   },
   other: {
     "mobile-web-app-capable": "yes",
@@ -59,8 +54,7 @@ export default function RootLayout({
           <ThemeProvider>
             <RouteRestorer />
             <ToastContainer />
-            <ChatWidget />
-            <Navbar />
+            <AppChrome />
             <main id="main-content" className="pt-[env(safe-area-inset-top)] md:pt-14 pb-20 md:pb-4 min-h-screen">
               <ErrorBoundary>
                 {children}

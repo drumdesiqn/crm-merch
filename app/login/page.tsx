@@ -2,9 +2,8 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function LoginPage() {
   return (
@@ -50,19 +49,9 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-cpm/5 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4">
-            <Image src="/logo-cpm-mars.png" alt="CPM Mars" width={140} height={45} className="h-10 w-auto dark:hidden" style={{ width: "auto", height: "auto" }} priority />
-            <Image src="/logo-cpm-mars-white.png" alt="CPM Mars" width={140} height={45} className="h-10 w-auto hidden dark:block" style={{ width: "auto", height: "auto" }} priority />
-          </div>
-          <CardTitle className="text-2xl font-bold">CPM Mars Merch</CardTitle>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Plateforme de gestion merchandising · Mars Belgique
-          </p>
-        </CardHeader>
-        <CardContent>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900 p-4">
+      <Card className="w-full max-w-sm">
+        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -74,8 +63,8 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-cpm dark:bg-slate-800 dark:text-white"
-                placeholder="votre@email.com"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-slate-800 dark:text-white"
+                placeholder="email@example.com"
               />
             </div>
             <div>
@@ -88,21 +77,21 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-cpm dark:bg-slate-800 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-slate-800 dark:text-white"
                 placeholder="••••••••"
               />
             </div>
             {error && (
-              <div className="bg-red-mars-light dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-mars dark:text-red-400 px-4 py-2 rounded-lg text-sm">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg text-sm">
                 {error}
               </div>
             )}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-cpm hover:bg-teal-cpm/85 text-white"
+              className="w-full bg-slate-700 hover:bg-slate-800 text-white"
             >
-              {loading ? "Connexion..." : "Se connecter"}
+              {loading ? "..." : "Se connecter"}
             </Button>
           </form>
         </CardContent>
