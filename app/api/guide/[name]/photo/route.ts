@@ -4,10 +4,14 @@ import { put, del } from "@vercel/blob";
 import { errorResponse } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/request-ip";
+import { requireAuth } from "@/lib/auth-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
+  const auth = await requireAuth(req);
+  if (!auth.ok) return auth.response;
+
   const ip = getClientIp(req);
   const rateLimit = checkRateLimit(`guide-photo:${ip}`, 20, 60 * 60 * 1000);
   if (!rateLimit.allowed) {
@@ -46,6 +50,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ nam
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
+  const auth = await requireAuth(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const { name } = await params;
     const decodedName = decodeURIComponent(name);

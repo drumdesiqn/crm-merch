@@ -6,22 +6,27 @@ import { requireAuth } from "@/lib/auth-server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-async function runBackup() {
-  const [weeks, visits, notes, photos, mailLogs, modifications, settings, glossary] =
-    await Promise.all([
-      prisma.week.findMany(),
-      prisma.visit.findMany(),
-      prisma.visitNote.findMany(),
-      prisma.visitPhoto.findMany({ select: { id: true, visitId: true, storeId: true, url: true, blobKey: true, caption: true, createdAt: true } }),
-      prisma.mailLog.findMany(),
-      prisma.modification.findMany(),
-      prisma.settings.findMany(),
-      prisma.glossaryTerm.findMany(),
-    ]);
+async function runBackup(userId?: string) {
+  const [weeks, visits, notes, photos, mailLogs, settings, glossary] = await Promise.all([
+    userId ? prisma.week.findMany({ where: { userId } }) : prisma.week.findMany(),
+    userId ? prisma.visit.findMany({ where: { userId } }) : prisma.visit.findMany(),
+    userId ? prisma.visitNote.findMany({ where: { userId } }) : prisma.visitNote.findMany(),
+    userId
+      ? prisma.visitPhoto.findMany({ where: { userId }, select: { id: true, visitId: true, storeId: true, url: true, blobKey: true, caption: true, createdAt: true } })
+      : prisma.visitPhoto.findMany({ select: { id: true, visitId: true, storeId: true, url: true, blobKey: true, caption: true, createdAt: true } }),
+    prisma.mailLog.findMany(),
+    userId ? prisma.settings.findMany({ where: { userId } }) : prisma.settings.findMany(),
+    userId ? prisma.glossaryTerm.findMany({ where: { userId } }) : prisma.glossaryTerm.findMany(),
+  ]);
+
+  const visitIds = visits.map((v) => v.id);
+  const modifications = userId
+    ? await prisma.modification.findMany({ where: { visitId: { in: visitIds } } })
+    : await prisma.modification.findMany();
 
   let stores: unknown[] = [];
   try {
-    stores = await prisma.store.findMany();
+    stores = userId ? await prisma.store.findMany({ where: { userId } }) : await prisma.store.findMany();
   } catch { /* Store table may not exist */ }
 
   const backup = {
@@ -72,7 +77,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.response;
   try {
-    const result = await runBackup();
+    const result = await runBackup(auth.user.userId);
     return NextResponse.json({ success: true, ...result });
   } catch (error) {
     console.error("[backup POST]", error);

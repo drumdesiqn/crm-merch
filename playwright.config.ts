@@ -3,6 +3,9 @@ import { config } from "dotenv";
 
 config({ path: ".env.test" });
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
+const isLocalBaseUrl = /localhost|127\.0\.0\.1/i.test(baseURL);
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -11,7 +14,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
   },
   projects: [
@@ -20,9 +23,11 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: isLocalBaseUrl
+    ? {
+        command: "npm run dev",
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+      }
+    : undefined,
 });
