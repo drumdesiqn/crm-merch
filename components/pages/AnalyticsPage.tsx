@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, MapPin, Loader2 } from "lucide-react";
+import { BarChart3, MapPin, Loader2, Route, FileText, Camera, TrendingUp, Clock } from "lucide-react";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useTheme } from "@/components/ThemeProvider";
@@ -117,6 +117,25 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
+      {/* Personal stats cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: "Notes", value: data.summary.totalNotes, sub: `${data.summary.avgNotesPerVisit} par visite`, icon: FileText, accent: "text-blue-500" },
+          { label: "Kilomètres", value: `${data.summary.totalKm} km`, sub: `${data.summary.totalHours}h route`, icon: Route, accent: "text-purple-500" },
+          { label: "Visites / jour", value: data.summary.avgVisitsPerDay, sub: `${data.summary.routeCount} jours route`, icon: TrendingUp, accent: "text-green-500" },
+          { label: "Photos avant/après", value: `${data.summary.photosBefore}/${data.summary.photosAfter}`, sub: "Avant / Après", icon: Camera, accent: "text-amber-500" },
+        ].map(({ label, value, sub, icon: Icon, accent }) => (
+          <div key={label} className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl px-4 py-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Icon className={`w-4 h-4 ${accent}`} />
+              <p className="text-xs text-slate-500 dark:text-zinc-500">{label}</p>
+            </div>
+            <p className="text-xl font-bold text-slate-900 dark:text-zinc-100">{value}</p>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-600 mt-0.5">{sub}</p>
+          </div>
+        ))}
+      </div>
+
       {/* Visits per week — line chart */}
       {data.visitsByWeek.length > 0 && (
         <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
@@ -211,6 +230,31 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
+
+      {/* Visits by day of week — bar chart */}
+      {data.visitsByDow && data.visitsByDow.length > 0 && (
+        <div className="bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] rounded-xl p-4">
+          <p className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-3 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-teal-cpm" />
+            Activité par jour de la semaine
+          </p>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.visitsByDow} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(value, name) => [value, name === "total" ? "Total" : name === "done" ? "Effectuées" : value]}
+                />
+                <Bar dataKey="total" fill="#4b7dba" radius={[4, 4, 0, 0]} name="total" />
+                <Bar dataKey="done" fill="#84b03d" radius={[4, 4, 0, 0]} name="done" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Top cities bar chart */}
       {data.visitsByCity.length > 0 && (

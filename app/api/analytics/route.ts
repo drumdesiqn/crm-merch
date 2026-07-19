@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
     const weekId = searchParams.get("weekId") || undefined;
     const weekFilter = { userId: auth.user.userId, ...(weekId ? { weekId } : {}) };
     const photoFilter = { userId: auth.user.userId, ...(weekId ? { visit: { weekId } } : {}) };
+    const noteFilter = { userId: auth.user.userId, ...(weekId ? { visit: { weekId } } : {}) };
+    const routeFilter = { userId: auth.user.userId, ...(weekId ? { week: { weekId } } : {}) };
 
     // Run all aggregation queries in parallel
     const [
@@ -26,6 +28,13 @@ export async function GET(req: NextRequest) {
       totalStores,
       totalPhotos,
       visitsBySalesRep,
+      totalNotes,
+      photosBefore,
+      photosAfter,
+      visitsByDow,
+      totalDistance,
+      totalDuration,
+      routeCount,
     ] = await Promise.all([
       // Visits per week with completion rate
       prisma.$queryRaw<
@@ -91,11 +100,63 @@ export async function GET(req: NextRequest) {
         orderBy: { _count: { id: "desc" } },
         take: 15,
       }),
+
+      // Total notes
+      prisma.visitNote.count({ where: noteFilter }),
+
+      // Photos before
+      prisma.visitPhoto.count({ where: { ...photoFilter, category: "before" } }),
+
+      // Photos after
+      prisma.visitPhoto.count({ where: { ...photoFilter, category: "after" } }),
+
+      // Visits by day of week (0=Sunday ... 6=Saturday)
+      prisma.$queryRaw<
+        { dow: number; total: bigint; done: bigint }[]
+      >`
+        SELECT EXTRACT(DOW FROM v."visitDate")::int as dow,
+          COUNT(v."id") as total,
+          COUNT(CASE WHEN v."status" = 'done' THEN 1 END) as done
+        FROM "Visit" v
+        WHERE v."userId" = ${auth.user.userId}
+        ${weekId ? Prisma.sql`AND v."weekId" = ${weekId}` : Prisma.empty}
+        GROUP BY dow
+        ORDER BY dow ASC
+      `,
+
+      // Total distance from DayRoutes
+      prisma.dayRoute.aggregate({
+        where: routeFilter,
+        _sum: { distanceM: true },
+      }),
+
+      // Total duration from DayRoutes
+      prisma.dayRoute.aggregate({
+        where: routeFilter,
+        _sum: { durationS: true },
+      }),
+
+      // Route count
+      prisma.dayRoute.count({ where: routeFilter }),
     ]);
 
     // Total visits + done
     const totalVisits = visitsByWeek.reduce((sum, w) => sum + Number(w.total), 0);
     const totalDone = visitsByWeek.reduce((sum, w) => sum + Number(w.done), 0);
+
+    // Day of week labels (1=Monday ... 7=Sunday in ISO, but DOW returns 0=Sunday)
+    const DOW_LABELS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+    const visitsByDowData = visitsByDow.map((d) => ({
+      day: DOW_LABELS[d.dow] || "?",
+      total: Number(d.total),
+      done: Number(d.done),
+    }));
+    // Reorder to Mon-Sun
+    const dayOrder = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+    visitsByDowData.sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
+
+    const totalKm = totalDistance._sum.distanceM ? totalDistance._sum.distanceM / 1000 : 0;
+    const totalHours = totalDuration._sum.durationS ? totalDuration._sum.durationS / 3600 : 0;
 
     return NextResponse.json({
       summary: {
@@ -103,6 +164,14 @@ export async function GET(req: NextRequest) {
         completionRate: totalVisits > 0 ? Math.round((totalDone / totalVisits) * 100) : 0,
         totalStores: totalStores.length,
         totalPhotos,
+        totalNotes,
+        photosBefore,
+        photosAfter,
+        totalKm: Math.round(totalKm),
+        totalHours: Math.round(totalHours * 10) / 10,
+        routeCount,
+        avgVisitsPerDay: routeCount > 0 ? Math.round((totalVisits / routeCount) * 10) / 10 : 0,
+        avgNotesPerVisit: totalVisits > 0 ? Math.round((totalNotes / totalVisits) * 10) / 10 : 0,
       },
       visitsByWeek: visitsByWeek.map((w) => ({
         label: w.week_label,
@@ -130,6 +199,7 @@ export async function GET(req: NextRequest) {
         name: s.salesRep || "Non renseigné",
         count: s._count.id,
       })),
+      visitsByDow: visitsByDowData,
     });
   } catch (error) {
     return errorResponse(error, "GET /api/analytics");

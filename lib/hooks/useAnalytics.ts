@@ -7,6 +7,14 @@ export interface AnalyticsData {
     completionRate: number;
     totalStores: number;
     totalPhotos: number;
+    totalNotes: number;
+    photosBefore: number;
+    photosAfter: number;
+    totalKm: number;
+    totalHours: number;
+    routeCount: number;
+    avgVisitsPerDay: number;
+    avgNotesPerVisit: number;
   };
   visitsByWeek: { label: string; total: number; done: number; rate: number }[];
   visitsByStatus: { status: string; count: number }[];
@@ -14,6 +22,7 @@ export interface AnalyticsData {
   visitsByCity: { city: string; count: number }[];
   materialCounts: { type: string; count: number }[];
   visitsBySalesRep: { name: string; count: number }[];
+  visitsByDow: { day: string; total: number; done: number }[];
 }
 
 export function useAnalytics(weekId?: string) {
