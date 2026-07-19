@@ -18,6 +18,7 @@ import { useStores } from "@/lib/hooks/useStores";
 import { useCreateVisit } from "@/lib/hooks/useCreateVisit";
 import { useUpdateVisit } from "@/lib/hooks/useUpdateVisit";
 import { useDeleteVisit } from "@/lib/hooks/useDeleteVisit";
+import { useOfflineQueue } from "@/lib/hooks/useOfflineQueue";
 import { showToast } from "@/components/Toast";
 import { fetchApi } from "@/lib/client-api";
 import FrenchDatePicker from "@/components/FrenchDatePicker";
@@ -549,6 +550,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
   const router = useRouter();
   const updateVisit = useUpdateVisit();
   const queryClient = useQueryClient();
+  const { enqueueStatusChange } = useOfflineQueue();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const typeColor = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const assortColor = ASSORTMENT_COLORS[visit.assortment] || "bg-slate-100 text-slate-700";
@@ -602,6 +604,11 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
   const handleQuickStatus = useCallback(async (e: React.MouseEvent, newStatus: string) => {
     e.stopPropagation();
     closeSwipe();
+    if (!navigator.onLine) {
+      enqueueStatusChange(visit.id, newStatus);
+      showToast("success", newStatus === "done" ? "Visite marquée (hors ligne)" : "Visite annulée (hors ligne)");
+      return;
+    }
     try {
       await updateVisit.mutateAsync({ id: visit.id, status: newStatus });
       await queryClient.invalidateQueries({ queryKey: ["summary"] });
@@ -609,7 +616,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
     } catch {
       showToast("error", "Erreur lors de la mise à jour");
     }
-  }, [visit.id, updateVisit, queryClient, closeSwipe]);
+  }, [visit.id, updateVisit, queryClient, closeSwipe, enqueueStatusChange]);
 
   return (
     <div className="relative overflow-hidden rounded-xl">

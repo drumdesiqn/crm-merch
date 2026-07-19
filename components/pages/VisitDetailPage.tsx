@@ -16,6 +16,7 @@ import { useVisitPhotos } from "@/lib/hooks/useVisitPhotos";
 import { useStoreHistory } from "@/lib/hooks/useStoreHistory";
 import { useDeleteVisit } from "@/lib/hooks/useDeleteVisit";
 import type { VisitNote, VisitPhoto, PhotoCategory } from "@/types/visit";
+import { useOfflineQueue } from "@/lib/hooks/useOfflineQueue";
 import VisitInfoCard from "@/components/visit/VisitInfoCard";
 import MaterialTypeSelector from "@/components/visit/MaterialTypeSelector";
 import VisitNotes from "@/components/visit/VisitNotes";
@@ -50,6 +51,7 @@ export default function VisitDetailPage() {
   const [confirmDeleteNoteId, setConfirmDeleteNoteId] = useState<string | null>(null);
   const [confirmDeletePhotos, setConfirmDeletePhotos] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<VisitStatus | null>(null);
+  const { enqueueStatusChange } = useOfflineQueue();
 
   const visitId = params?.id as string;
 
@@ -205,6 +207,12 @@ export default function VisitDetailPage() {
     const previousStatus = status;
     setSavingStatus(true);
     setStatus(newStatus);
+    if (!navigator.onLine) {
+      enqueueStatusChange(visitId, newStatus);
+      showToast("success", "Statut mis à jour (hors ligne)");
+      setSavingStatus(false);
+      return;
+    }
     const ok = await fetchApi("/api/visits", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

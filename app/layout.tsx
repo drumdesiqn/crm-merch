@@ -7,6 +7,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import RouteRestorer from "@/components/RouteRestorer";
 import AppChrome from "@/components/AppChrome";
+import OfflineBanner from "@/components/OfflineBanner";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,6 +57,8 @@ export default function RootLayout({
             <RouteRestorer />
             <ToastContainer />
             <AppChrome />
+            <OfflineBanner />
+            <ServiceWorkerRegister />
             <main id="main-content" className="pt-[env(safe-area-inset-top)] md:pt-14 pb-20 md:pb-4 min-h-screen">
               <ErrorBoundary>
                 {children}

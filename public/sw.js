@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2026.06.29.22.09"; // Bump this on each deploy to bust caches
+const CACHE_VERSION = "v2026.07.01.00.01"; // Bump this on each deploy to bust caches
 const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
 const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
 // Only precache the two most-used pages; others are cached on first visit (stale-while-revalidate)
@@ -8,6 +8,8 @@ const CACHEABLE_API_GET_PREFIXES = [
   "/api/visits",
   "/api/stores",
   "/api/visits/summary",
+  "/api/analytics",
+  "/api/routes",
 ];
 
 function isCacheableApiGet(pathname) {
