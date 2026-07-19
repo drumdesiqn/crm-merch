@@ -147,6 +147,7 @@ export async function GET(req: NextRequest) {
         remarks: v.remarks,
         materials: v.materials,
         materialType: v.materialType,
+        salesRep: v.salesRep,
         latitude: v.latitude,
         longitude: v.longitude,
         photos: photosByVisit[v.id] || [],

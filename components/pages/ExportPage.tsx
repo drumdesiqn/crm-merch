@@ -65,40 +65,44 @@ export default function ExportPage() {
         <style>${PDF_BASE_STYLES}</style>
       </head>
       <body>
-        <div class="header">
-          <h1>Rapport de Visite</h1>
-          <p>${formatDate(visit.visitDate)}</p>
+        <div class="brand-bar">
+          <div>
+            <div class="brand-title">Rapport de Visite</div>
+            <div class="brand-sub">CPM Mars · ${formatDate(visit.visitDate)}</div>
+          </div>
+          <span class="status-badge status-${visit.status}">${visit.status === "done" ? "Effectué" : visit.status === "cancelled" ? "Annulé" : visit.status === "postponed" ? "Reporté" : "En attente"}</span>
         </div>
 
-        <div class="info-grid">
-          ${pdfInfoBox("Magasin", visit.storeName)}
-          ${pdfInfoBox("Type", visit.visitType)}
-          ${pdfInfoBox("Adresse", `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`)}
-          <div class="info-box">
-            <label>Statut</label>
-            <value>
-              <span class="status-badge status-${visit.status}">${visit.status}</span>
-            </value>
+        <div class="visit-header" style="border-bottom: 2px solid #003478; margin-bottom: 20px; padding-bottom: 14px;">
+          <div>
+            <h1 style="color: #003478; margin: 0; font-size: 22px; font-weight: 800;">${escapeHtml(visit.storeName)}</h1>
+            <p style="color: #64748b; font-size: 13px; margin: 4px 0 0;">${escapeHtml(visit.storeAddress)}, ${escapeHtml(visit.storeZipcode)} ${escapeHtml(visit.storeCity)}</p>
           </div>
         </div>
 
+        <div class="info-grid">
+          ${pdfInfoBox("Type", visit.visitType)}
+          ${visit.materialType ? pdfInfoBox("Matériel", visit.materialType) : ""}
+          ${visit.salesRep ? pdfInfoBox("Sales Rep", visit.salesRep) : ""}
+        </div>
+
         <div class="section">
-          <h2>📝 Remarques</h2>
+          <h2>Remarques</h2>
           <p>${visit.remarks ? escapeHtml(visit.remarks).replace(/\n/g, "<br>") : "Aucune remarque"}</p>
         </div>
 
         <div class="section">
-          <h2>🛠️ Matériel</h2>
+          <h2>Matériel</h2>
           <p>${visit.materials ? escapeHtml(visit.materials).replace(/\n/g, "<br>") : "Non spécifié"}</p>
         </div>
 
         <div class="section">
-          <h2>📋 Notes (${visit.notes.length})</h2>
+          <h2>Notes (${visit.notes.length})</h2>
           ${notesHtml}
         </div>
 
         <div class="section">
-          <h2>📷 Photos (${visit.photos.length})</h2>
+          <h2>Photos (${visit.photos.length})</h2>
           <div class="photos-grid">
             ${photosHtml}
           </div>

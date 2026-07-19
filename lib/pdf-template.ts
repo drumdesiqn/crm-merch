@@ -2,31 +2,164 @@ import { escapeHtml } from "./utils";
 
 /**
  * Shared PDF template styles used by ExportPage and VisitDetailPage.
+ * Professional design with Mars branding.
  */
 export const PDF_BASE_STYLES = `
   @media print {
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    @page { margin: 18mm 16mm 20mm 16mm; }
   }
-  body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-  .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #4b7dba; }
-  .header h1 { color: #4b7dba; margin: 0 0 10px; font-size: 24px; }
-  .header p { color: #64748b; margin: 0; font-size: 14px; }
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-  .info-box { background: #f8fafc; padding: 15px; border-radius: 8px; }
-  .info-box label { display: block; color: #64748b; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
-  .info-box value { display: block; color: #1e293b; font-size: 16px; font-weight: 600; }
-  .section { margin-bottom: 30px; }
-  .section h2 { color: #4b7dba; font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-  .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-  .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
-  .status-pending { background: #fef3c7; color: #d97706; }
-  .status-done { background: #eef5e0; color: #84b03d; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: #1e293b;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    background: #fff;
+  }
+
+  /* ── Brand header bar ── */
+  .brand-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #003478 0%, #005392 100%);
+    border-radius: 10px;
+    margin-bottom: 28px;
+    color: #fff;
+  }
+  .brand-bar .brand-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .brand-bar .brand-sub { font-size: 12px; opacity: 0.85; }
+
+  /* ── Section headers ── */
+  .section { margin-bottom: 28px; }
+  .section h2 {
+    color: #003478;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 12px;
+    padding: 8px 14px;
+    background: #f0f5fa;
+    border-radius: 6px;
+    border-left: 4px solid #005392;
+  }
+
+  /* ── Info grid ── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .info-box {
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid #e9eef5;
+  }
+  .info-box label { display: block; color: #64748b; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .info-box value { display: block; color: #1e293b; font-size: 15px; font-weight: 600; }
+
+  /* ── Status badges ── */
+  .status-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .status-pending { background: #fef3c7; color: #b45309; }
+  .status-done { background: #dcfce7; color: #15803d; }
   .status-cancelled { background: #fee2e2; color: #C8102E; }
   .status-postponed { background: #e0e7ff; color: #4f46e5; }
-  .no-content { color: #9ca3af; font-style: italic; }
-  .note-item { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #4b7dba; }
+
+  /* ── Photos ── */
+  .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+  /* ── Notes ── */
+  .note-item {
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 3px solid #005392;
+  }
   .note-content { margin: 0; color: #334155; font-size: 14px; }
-  .note-date { margin: 4px 0 0; color: #94a3b8; font-size: 12px; }
+  .note-date { margin: 4px 0 0; color: #94a3b8; font-size: 11px; }
+
+  .no-content { color: #9ca3af; font-style: italic; font-size: 13px; }
+
+  /* ── Cover page ── */
+  .cover-page {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    page-break-after: always;
+  }
+  .cover-logo {
+    width: 64px; height: 64px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #003478 0%, #005392 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    color: #fff; font-size: 28px; font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .cover-title { font-size: 32px; font-weight: 800; color: #003478; margin: 0 0 8px; letter-spacing: -0.5px; }
+  .cover-subtitle { font-size: 16px; color: #64748b; margin: 0 0 40px; }
+  .cover-meta {
+    display: flex; gap: 32px;
+    margin-bottom: 40px;
+  }
+  .cover-meta-item { text-align: center; }
+  .cover-meta-item .num { font-size: 28px; font-weight: 800; color: #005392; }
+  .cover-meta-item .lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-top: 2px; }
+
+  /* ── Summary table ── */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .summary-table th {
+    background: #003478;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .summary-table th:first-child { border-radius: 6px 0 0 0; }
+  .summary-table th:last-child { border-radius: 0 6px 0 0; }
+  .summary-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e9eef5;
+    color: #334155;
+  }
+  .summary-table tr:nth-child(even) td { background: #f8fafc; }
+
+  /* ── Visit page ── */
+  .visit-page { page-break-inside: avoid; }
+  .visit-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #003478;
+  }
+  .visit-header h1 { color: #003478; margin: 0; font-size: 22px; font-weight: 800; }
+  .visit-header .visit-date { color: #64748b; font-size: 13px; margin: 4px 0 0; }
+
+  /* ── Footer ── */
+  .pdf-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11px;
+  }
 `;
 
 /**
@@ -39,6 +172,13 @@ export function pdfInfoBox(label: string, value: string): string {
       <value>${escapeHtml(value)}</value>
     </div>
   `;
+}
+
+/**
+ * Status label in French.
+ */
+function statusLabel(status: string): string {
+  return status === "done" ? "Effectu\u00e9" : status === "cancelled" ? "Annul\u00e9" : status === "postponed" ? "Report\u00e9" : "En attente";
 }
 
 /**
@@ -70,7 +210,7 @@ export function pdfNoteItem(content: string, dateStr: string): string {
  */
 export function pdfFooter(): string {
   return `
-    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 12px;">
+    <div class="pdf-footer">
       Généré par CPM Mars le ${new Date().toLocaleDateString("fr-BE")}
     </div>
     <script>
@@ -93,6 +233,7 @@ export function pdfVisitPage(visit: {
   remarks?: string | null;
   materials?: string | null;
   materialType?: string | null;
+  salesRep?: string | null;
   photos: { url: string }[];
   notes: { content: string; createdAt: string }[];
 }): string {
@@ -107,19 +248,19 @@ export function pdfVisitPage(visit: {
 
   return `
     <div class="visit-page">
-      <div class="header">
-        <h1>${escapeHtml(visit.storeName)}</h1>
-        <p>${date}</p>
+      <div class="visit-header">
+        <div>
+          <h1>${escapeHtml(visit.storeName)}</h1>
+          <p class="visit-date">${date}</p>
+        </div>
+        <span class="status-badge status-${visit.status}">${statusLabel(visit.status)}</span>
       </div>
 
       <div class="info-grid">
         ${pdfInfoBox("Type", visit.visitType)}
         ${pdfInfoBox("Adresse", `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`)}
-        <div class="info-box">
-          <label>Statut</label>
-          <value><span class="status-badge status-${visit.status}">${visit.status === "done" ? "Effectué" : visit.status === "cancelled" ? "Annulé" : visit.status === "postponed" ? "Reporté" : "En attente"}</span></value>
-        </div>
         ${visit.materialType ? pdfInfoBox("Matériel", visit.materialType) : ""}
+        ${visit.salesRep ? pdfInfoBox("Sales Rep", visit.salesRep) : ""}
       </div>
 
       ${visit.remarks ? `<div class="section"><h2>Remarques</h2><p>${escapeHtml(visit.remarks).replace(/\n/g, "<br>")}</p></div>` : ""}
@@ -153,12 +294,30 @@ export function pdfBatchDocument(
     remarks?: string | null;
     materials?: string | null;
     materialType?: string | null;
+    salesRep?: string | null;
     photos: { url: string }[];
     notes: { content: string; createdAt: string }[];
   }[],
   weekLabel: string,
 ): string {
   const pages = visits.map((v) => pdfVisitPage(v)).join('<div style="page-break-after: always;"></div>');
+
+  const doneCount = visits.filter((v) => v.status === "done").length;
+  const pendingCount = visits.filter((v) => v.status === "pending").length;
+  const totalPhotos = visits.reduce((s, v) => s + v.photos.length, 0);
+  const totalNotes = visits.reduce((s, v) => s + v.notes.length, 0);
+
+  const summaryRows = visits.map((v, i) => {
+    const d = new Date(v.visitDate).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit" });
+    return `<tr>
+      <td>${i + 1}</td>
+      <td>${d}</td>
+      <td>${escapeHtml(v.storeName)}</td>
+      <td>${escapeHtml(v.storeCity)}</td>
+      <td>${escapeHtml(v.visitType)}</td>
+      <td><span class="status-badge status-${v.status}">${statusLabel(v.status)}</span></td>
+    </tr>`;
+  }).join("");
 
   return `
     <!DOCTYPE html>
@@ -172,12 +331,56 @@ export function pdfBatchDocument(
       </style>
     </head>
     <body>
-      <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="color: #4b7dba; font-size: 28px; margin: 0;">Rapport Hebdomadaire</h1>
-        <p style="color: #64748b; font-size: 16px; margin: 8px 0 0;">${escapeHtml(weekLabel)} — ${visits.length} visite${visits.length !== 1 ? "s" : ""}</p>
+      <!-- Cover page -->
+      <div class="cover-page">
+        <div class="cover-logo">M</div>
+        <h1 class="cover-title">Rapport Hebdomadaire</h1>
+        <p class="cover-subtitle">${escapeHtml(weekLabel)}</p>
+
+        <div class="cover-meta">
+          <div class="cover-meta-item">
+            <div class="num">${visits.length}</div>
+            <div class="lbl">Visites</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="num">${doneCount}</div>
+            <div class="lbl">Effectuées</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="num">${pendingCount}</div>
+            <div class="lbl">En attente</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="num">${totalPhotos}</div>
+            <div class="lbl">Photos</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="num">${totalNotes}</div>
+            <div class="lbl">Notes</div>
+          </div>
+        </div>
+
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Magasin</th>
+              <th>Ville</th>
+              <th>Type</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${summaryRows}
+          </tbody>
+        </table>
       </div>
+
+      <!-- Visit pages -->
       ${pages}
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 12px;">
+
+      <div class="pdf-footer">
         Généré par CPM Mars le ${new Date().toLocaleDateString("fr-BE")}
       </div>
       <script>
