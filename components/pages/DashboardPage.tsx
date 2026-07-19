@@ -107,13 +107,13 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 animate-fade-in-up">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
-            {currentWeek ? currentWeek.label : "Tableau de bord"}
+            {currentWeek ? currentWeek.label : "Tableau de bord"} · {new Intl.DateTimeFormat("fr-BE", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}
           </p>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {userName ? `Bonjour, ${userName}` : "Tableau de bord"}
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+            {userName ? `${new Date().getHours() < 12 ? "Bonjour" : new Date().getHours() < 18 ? "Bon après-midi" : "Bonsoir"}, ${userName}` : "Tableau de bord"}
           </h1>
           {currentWeek && (
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
@@ -161,31 +161,31 @@ export default function DashboardPage() {
         <>
           {/* ── Stat cards ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatCard
+            <div className="animate-fade-in-up stagger-1"><StatCard
               label="Maintenance"
               value={maintenanceCount}
               icon={<Wrench className="w-4 h-4" />}
               accent="blue"
-            />
-            <StatCard
+            /></div>
+            <div className="animate-fade-in-up stagger-2"><StatCard
               label="Ad Hoc"
               value={adHocCount}
               icon={<Route className="w-4 h-4" />}
               accent="orange"
-            />
-            <StatCard
+            /></div>
+            <div className="animate-fade-in-up stagger-3"><StatCard
               label="Remarques"
               value={withRemarks.length}
               icon={<AlertTriangle className="w-4 h-4" />}
               accent="yellow"
-            />
-            <StatCard
+            /></div>
+            <div className="animate-fade-in-up stagger-4"><StatCard
               label="Effectuées"
               value={doneCount}
               icon={<CheckCircle2 className="w-4 h-4" />}
               accent="green"
               progress={completionPct}
-            />
+            /></div>
           </div>
 
           {/* ── Filters ── */}
@@ -228,7 +228,7 @@ export default function DashboardPage() {
           {/* ── Visit lists ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Aujourd'hui */}
-            <Card className="h-fit shadow-sm">
+            <Card className="h-fit animate-fade-in-up stagger-3">
               <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                   <Calendar className="w-4 h-4 text-teal-cpm" />
@@ -258,7 +258,7 @@ export default function DashboardPage() {
 
             {/* Prochaines visites */}
             {upcomingVisits.length > 0 && (
-              <Card className="h-fit shadow-sm">
+              <Card className="h-fit animate-fade-in-up stagger-4">
                 <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                   <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                     <TrendingUp className="w-4 h-4 text-slate-400" />
@@ -314,26 +314,27 @@ export default function DashboardPage() {
 }
 
 const ACCENT_STYLES = {
-  blue:   { border: "border-l-teal-cpm",   icon: "text-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15",   value: "text-slate-900 dark:text-slate-100" },
-  orange: { border: "border-l-orange-500",  icon: "text-orange-500 bg-orange-50 dark:bg-orange-950/40", value: "text-slate-900 dark:text-slate-100" },
-  yellow: { border: "border-l-yellow-500",  icon: "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40", value: "text-slate-900 dark:text-slate-100" },
-  green:  { border: "border-l-green-cpm",   icon: "text-green-cpm bg-green-cpm/10 dark:bg-green-cpm/15",  value: "text-slate-900 dark:text-slate-100" },
+  blue:   { icon: "text-teal-cpm bg-gradient-to-br from-teal-cpm/15 to-teal-cpm/5 dark:from-teal-cpm/25 dark:to-teal-cpm/10",   glow: "from-teal-cpm/[0.04]" },
+  orange: { icon: "text-orange-500 bg-gradient-to-br from-orange-100 to-orange-50 dark:from-orange-950/60 dark:to-orange-950/20", glow: "from-orange-500/[0.04]" },
+  yellow: { icon: "text-yellow-600 bg-gradient-to-br from-yellow-100 to-yellow-50 dark:from-yellow-950/60 dark:to-yellow-950/20", glow: "from-yellow-500/[0.04]" },
+  green:  { icon: "text-green-cpm bg-gradient-to-br from-green-cpm/15 to-green-cpm/5 dark:from-green-cpm/25 dark:to-green-cpm/10",  glow: "from-green-cpm/[0.04]" },
 };
 
 function StatCard({ label, value, icon, accent, progress }: { label: string; value: number; icon: React.ReactNode; accent: keyof typeof ACCENT_STYLES; progress?: number }) {
   const s = ACCENT_STYLES[accent];
   return (
-    <div className={`bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#2e2e30] border-l-4 ${s.border} rounded-xl px-4 py-3 shadow-sm`}>
-      <div className="flex items-center justify-between mb-2">
+    <div className={`relative overflow-hidden bg-white dark:bg-[#1a1a1b] border border-slate-200/80 dark:border-[#2e2e30] rounded-2xl px-4 py-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-none hover-lift`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${s.glow} to-transparent pointer-events-none`} />
+      <div className="relative flex items-center justify-between mb-2">
         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">{label}</p>
-        <span className={`flex items-center justify-center w-7 h-7 rounded-lg ${s.icon}`}>
+        <span className={`flex items-center justify-center w-8 h-8 rounded-xl ${s.icon}`}>
           {icon}
         </span>
       </div>
-      <p className={`text-2xl font-bold ${s.value}`}>{value}</p>
+      <p className="relative text-[1.75rem] leading-none font-bold tabular-nums tracking-tight text-slate-900 dark:text-slate-100">{value}</p>
       {progress !== undefined && (
-        <div className="mt-2 h-1 w-full bg-slate-100 dark:bg-[#2e2e30] rounded-full overflow-hidden">
-          <div className="h-1 bg-green-cpm rounded-full transition-all" style={{ width: `${progress}%` }} />
+        <div className="relative mt-2.5 h-1.5 w-full bg-slate-100 dark:bg-[#2e2e30] rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-green-cpm to-[#a3cc5e] rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
         </div>
       )}
     </div>
@@ -342,9 +343,11 @@ function StatCard({ label, value, icon, accent, progress }: { label: string; val
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="flex items-center gap-2 py-3 text-sm text-slate-400 dark:text-slate-500">
-      <Clock className="w-4 h-4 shrink-0" />
-      <span>{text}</span>
+    <div className="flex flex-col items-center gap-2.5 py-6 text-center">
+      <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#222223] flex items-center justify-center">
+        <Clock className="w-4.5 h-4.5 text-slate-400 dark:text-slate-500" />
+      </div>
+      <span className="text-sm text-slate-400 dark:text-slate-500">{text}</span>
     </div>
   );
 }
@@ -361,7 +364,7 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
       onKeyDown={(e) => e.key === "Enter" && router.push(`/planning/${visit.id}`)}
       role="button"
       tabIndex={0}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-100 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] hover:shadow-sm transition-all cursor-pointer"
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-100 dark:border-[#2e2e30] bg-white dark:bg-[#1a1a1b] hover:border-slate-300 dark:hover:border-[#3a3a3c] hover-lift cursor-pointer"
     >
       <span className={`shrink-0 w-2 h-2 rounded-full ${isDone ? "bg-green-cpm" : visit.status === "cancelled" ? "bg-red-400" : visit.status === "postponed" ? "bg-orange-400" : "bg-slate-300 dark:bg-slate-600"}`} />
 

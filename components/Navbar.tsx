@@ -56,7 +56,7 @@ export default function Navbar() {
   return (
     <>
       {/* Top bar desktop */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 bg-white dark:bg-[#0e0e0f] border-b border-slate-200 dark:border-[#2e2e30] items-center px-4 gap-1">
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 bg-white/80 dark:bg-[#0e0e0f]/80 backdrop-blur-xl border-b border-slate-200/70 dark:border-[#2e2e30]/70 items-center px-4 gap-1">
         <div className="flex items-center mr-6">
           <Image src="/logo-cpm-mars.png" alt="CPM Mars" width={100} height={32} className="h-8 w-auto dark:hidden" style={{ width: "auto", height: "auto" }} priority />
           <Image src="/logo-cpm-mars-white.png" alt="CPM Mars" width={100} height={32} className="h-8 w-auto hidden dark:block" style={{ width: "auto", height: "auto" }} priority />
@@ -110,7 +110,7 @@ export default function Navbar() {
       </header>
 
       {/* Bottom nav mobile — 4 items + menu Plus */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-[#0e0e0f] border-t border-slate-200 dark:border-[#2e2e30] flex px-2 pb-safe-extra">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white/85 dark:bg-[#0e0e0f]/85 backdrop-blur-xl border-t border-slate-200/70 dark:border-[#2e2e30]/70 flex px-2 pb-safe-extra">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           return (
