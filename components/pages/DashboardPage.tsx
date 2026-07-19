@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X, CheckCircle2, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+import { Calendar, MapPin, User, ChevronRight, Upload, Navigation, Wrench, Search, Route, X, CheckCircle2, Clock, AlertTriangle, TrendingUp, Check, Undo2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDateShort, VISIT_TYPE_COLORS, VisitStatus, parseLocalDate } from "@/lib/utils";
@@ -14,6 +14,7 @@ import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useVisits } from "@/lib/hooks/useVisits";
 import { useSummary } from "@/lib/hooks/useSummary";
 import { useSettings } from "@/lib/hooks/useSettings";
+import { useUpdateVisit } from "@/lib/hooks/useUpdateVisit";
 
 const EMPTY_VISITS: Visit[] = [];
 
@@ -101,6 +102,9 @@ export default function DashboardPage() {
     return counts;
   }, [summaryStores]);
 
+  const nextVisit = useMemo(() => todayVisits.find((v) => v.status === "pending") ?? null, [todayVisits]);
+  const todayDone = useMemo(() => todayVisits.filter((v) => v.status === "done").length, [todayVisits]);
+
   if (loading) return <DashboardSkeleton />;
 
   return (
@@ -159,6 +163,41 @@ export default function DashboardPage() {
 
       {currentWeek && (
         <>
+          {/* ── Prochaine visite ── */}
+          {nextVisit && (
+            <div className="animate-fade-in-up stagger-1 relative overflow-hidden rounded-2xl border border-teal-cpm/25 bg-gradient-to-br from-teal-cpm/[0.07] to-transparent dark:from-teal-cpm/[0.12] p-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-teal-cpm mb-1">Prochaine visite</p>
+                  <Link href={`/planning/${nextVisit.id}`} className="block group">
+                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-teal-cpm transition-colors">{nextVisit.storeName}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                      {nextVisit.storeAddress}, {nextVisit.storeZipcode} {nextVisit.storeCity}
+                    </p>
+                  </Link>
+                </div>
+                <a
+                  href={`https://waze.com/ul?q=${encodeURIComponent(`${nextVisit.storeAddress} ${nextVisit.storeZipcode} ${nextVisit.storeCity}`)}&navigate=yes`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-[#00bfff] hover:bg-[#00acdf] text-white text-sm font-semibold shadow-[0_2px_8px_rgba(0,191,255,0.35)] transition-colors"
+                >
+                  <Navigation className="w-4 h-4" />
+                  Waze
+                </a>
+              </div>
+              {todayVisits.length > 0 && (
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="flex-1 h-1.5 bg-slate-200/70 dark:bg-[#2e2e30] rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-teal-cpm to-[#6fa3d8] rounded-full transition-all duration-700" style={{ width: `${todayVisits.length > 0 ? Math.round((todayDone / todayVisits.length) * 100) : 0}%` }} />
+                  </div>
+                  <span className="text-xs font-semibold tabular-nums text-slate-500 dark:text-slate-400 shrink-0">{todayDone}/{todayVisits.length} aujourd&apos;hui</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ── Stat cards ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="animate-fade-in-up stagger-1"><StatCard
@@ -251,7 +290,7 @@ export default function DashboardPage() {
                     return <EmptyState text="Aucune visite aujourd'hui" />;
                   })()
                 ) : (
-                  todayVisits.map((v) => <VisitRow key={v.id} visit={v} totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />)
+                  todayVisits.map((v) => <VisitRow key={v.id} visit={v} quickCheck totalVisits={storeVisitCount.get(v.storeId || v.storeName) || 0} completedVisits={storeCompletedCount.get(v.storeId || v.storeName) || 0} />)
                 )}
               </CardContent>
             </Card>
@@ -352,11 +391,18 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; totalVisits?: number; completedVisits?: number }) {
+function VisitRow({ visit, showDate, quickCheck, totalVisits, completedVisits }: { visit: Visit; showDate?: boolean; quickCheck?: boolean; totalVisits?: number; completedVisits?: number }) {
   const router = useRouter();
+  const updateVisit = useUpdateVisit();
   const colorClass = VISIT_TYPE_COLORS[visit.visitType] || "bg-slate-100 text-slate-700 border-slate-200";
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${visit.storeAddress} ${visit.storeZipcode} ${visit.storeCity}`)}&navigate=yes`;
   const isDone = visit.status === "done";
+
+  const toggleDone = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (updateVisit.isPending) return;
+    updateVisit.mutate({ id: visit.id, status: isDone ? "pending" : "done" });
+  };
 
   return (
     <div
@@ -419,6 +465,21 @@ function VisitRow({ visit, showDate, totalVisits, completedVisits }: { visit: Vi
       >
         <Navigation className="w-3.5 h-3.5" />
       </a>
+      {quickCheck && (
+        <button
+          onClick={toggleDone}
+          disabled={updateVisit.isPending}
+          className={`shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border transition-all disabled:opacity-50 ${
+            isDone
+              ? "bg-green-cpm border-green-cpm text-white hover:bg-green-cpm/80"
+              : "border-slate-200 dark:border-[#2e2e30] text-slate-400 hover:border-green-cpm hover:text-green-cpm hover:bg-green-cpm/10"
+          }`}
+          title={isDone ? "Remettre à faire" : "Marquer terminée"}
+          aria-label={isDone ? "Remettre à faire" : "Marquer terminée"}
+        >
+          {isDone ? <Undo2 className="w-3.5 h-3.5" /> : <Check className="w-4 h-4" />}
+        </button>
+      )}
       <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 group-hover:text-slate-400 transition-colors" />
     </div>
   );
