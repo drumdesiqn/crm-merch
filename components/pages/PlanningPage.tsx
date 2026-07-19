@@ -165,8 +165,9 @@ export default function PlanningPage() {
         setSelectedWeekId(imported.id);
       }
       await queryClient.invalidateQueries({ queryKey: ["visits"] });
-    } catch {
-      setImportMsg({ type: "error", text: "Erreur réseau lors de l'import" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur réseau lors de l'import";
+      setImportMsg({ type: "error", text: msg });
     }
   };
 

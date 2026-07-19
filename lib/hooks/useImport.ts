@@ -20,7 +20,7 @@ export function useImport() {
         body: formData,
         suppressToast: true,
       });
-      if (data === null) throw new Error("Erreur lors de l'import");
+      if (data === null) throw new Error("Import échoué — vérifie le format du fichier (Excel .xlsx) et sa taille (max 5MB).");
       return data;
     },
   });

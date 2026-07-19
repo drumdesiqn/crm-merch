@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2026.07.01.13.15"; // Bump this on each deploy to bust caches
+const CACHE_VERSION = "v2026.07.01.14.55"; // Bump this on each deploy to bust caches
 const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
 const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
 // Only precache the two most-used pages; others are cached on first visit (stale-while-revalidate)
@@ -44,22 +44,12 @@ self.addEventListener("fetch", (event) => {
   // Skip auth routes entirely — let the browser handle redirects
   if (url.pathname.startsWith("/api/auth/")) return;
 
-  // API calls - network first with offline queue for mutations
-  if (url.pathname.startsWith("/api/")) {
-    if (event.request.method !== "GET") {
-      // Never queue critical mutations automatically (imports, deletes, uploads, etc.).
-      event.respondWith(
-        fetch(event.request)
-          .catch(() => {
-            return new Response(JSON.stringify({ offline: true, error: "Action indisponible hors ligne" }), {
-              status: 503,
-              headers: { "Content-Type": "application/json" } 
-            });
-          })
-      );
-      return;
-    }
+  // Non-GET API requests (POST, PUT, DELETE, PATCH) — let the browser handle them directly
+  // Don't intercept with respondWith to avoid issues with FormData, timeouts, etc.
+  if (url.pathname.startsWith("/api/") && event.request.method !== "GET") return;
 
+  // GET API calls - cache for offline use
+  if (url.pathname.startsWith("/api/")) {
     if (!isCacheableApiGet(url.pathname)) {
       event.respondWith(
         fetch(event.request).catch(() =>
