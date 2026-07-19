@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2026.07.01.00.01"; // Bump this on each deploy to bust caches
+const CACHE_VERSION = "v2026.07.01.13.15"; // Bump this on each deploy to bust caches
 const CACHE_NAME = `mars-merch-${CACHE_VERSION}`;
 const DATA_CACHE = `mars-merch-data-${CACHE_VERSION}`;
 // Only precache the two most-used pages; others are cached on first visit (stale-while-revalidate)
@@ -41,6 +41,9 @@ self.addEventListener("fetch", (event) => {
   // Skip non-http(s)
   if (!url.protocol.startsWith("http")) return;
   
+  // Skip auth routes entirely — let the browser handle redirects
+  if (url.pathname.startsWith("/api/auth/")) return;
+
   // API calls - network first with offline queue for mutations
   if (url.pathname.startsWith("/api/")) {
     if (event.request.method !== "GET") {
@@ -90,13 +93,35 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   
-  // Static assets - cache first
+  // Navigation requests (HTML pages) - network first, fallback to cache only when offline
+  if (event.request.method === "GET" && event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Only cache successful, non-redirect HTML responses
+          if (response.ok && response.status === 200 && url.origin === self.location.origin) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          // Fallback to cached "/" if available
+          return caches.match("/");
+        }))
+    );
+    return;
+  }
+
+  // Static assets - cache first (JS, CSS, images, fonts)
   if (event.request.method === "GET") {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;
         return fetch(event.request).then((response) => {
-          if (response.ok && url.origin === self.location.origin) {
+          // Only cache successful same-origin responses, never redirects
+          if (response.ok && response.status === 200 && response.type === "basic" && url.origin === self.location.origin) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }

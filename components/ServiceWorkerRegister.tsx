@@ -17,7 +17,7 @@ export default function ServiceWorkerRegister() {
         // Also clear old caches that don't match current version
         if (window.caches) {
           window.caches.keys().then((keys) => {
-            const currentVersion = "v2026.07.01.00.01";
+            const currentVersion = "v2026.07.01.13.15";
             keys.forEach((key) => {
               if (!key.includes(currentVersion)) {
                 window.caches.delete(key).catch(() => {});
