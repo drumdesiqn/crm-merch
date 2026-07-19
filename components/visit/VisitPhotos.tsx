@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { Image as ImageIcon, Upload, X, Trash2, Share2, CheckSquare, Square } from "lucide-react";
+import { Image as ImageIcon, Upload, X, Trash2, Share2, CheckSquare, Square, Camera, GalleryHorizontalEnd } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { VisitPhoto } from "@/types/visit";
+import type { VisitPhoto, PhotoCategory } from "@/types/visit";
 
 interface VisitPhotosProps {
   photos: VisitPhoto[];
@@ -13,7 +13,7 @@ interface VisitPhotosProps {
   selectMode: boolean;
   selectedPhotos: Set<string>;
   sharing: boolean;
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File, category: PhotoCategory) => void;
   onDeletePhoto: (photoId: string) => void;
   onDeleteSelected: () => void;
   onShareSelected: () => void;
@@ -23,6 +23,8 @@ interface VisitPhotosProps {
   onOpenLightbox: (url: string) => void;
 }
 
+type PhotoTab = "all" | "before" | "after";
+
 export default function VisitPhotos({
   photos, uploadingPhoto, selectMode, selectedPhotos, sharing,
   onFileSelect, onDeletePhoto, onDeleteSelected, onShareSelected,
@@ -30,6 +32,23 @@ export default function VisitPhotos({
 }: VisitPhotosProps) {
   const photoRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<PhotoTab>("all");
+  const [uploadCategory, setUploadCategory] = useState<PhotoCategory>("before");
+
+  const filteredPhotos = activeTab === "all"
+    ? photos
+    : photos.filter((p) => p.category === activeTab);
+
+  const beforeCount = photos.filter((p) => p.category === "before").length;
+  const afterCount = photos.filter((p) => p.category === "after").length;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      onFileSelect(f, uploadCategory);
+      e.target.value = "";
+    }
+  };
 
   return (
     <>
@@ -41,6 +60,29 @@ export default function VisitPhotos({
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Category selector */}
+          <div className="flex gap-1.5 mb-3">
+            <button
+              onClick={() => setUploadCategory("before")}
+              className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                uploadCategory === "before"
+                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                  : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+              }`}
+            >
+              Avant
+            </button>
+            <button
+              onClick={() => setUploadCategory("after")}
+              className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                uploadCategory === "after"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+              }`}
+            >
+              Après
+            </button>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => photoRef.current?.click()}
@@ -51,7 +93,7 @@ export default function VisitPhotos({
               {uploadingPhoto ? (
                 <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Upload className="w-4 h-4" />
+                <Camera className="w-4 h-4" />
               )}
               {uploadingPhoto ? "Envoi..." : "Caméra"}
             </button>
@@ -64,7 +106,7 @@ export default function VisitPhotos({
               {uploadingPhoto ? (
                 <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
               ) : (
-                <ImageIcon className="w-4 h-4" />
+                <GalleryHorizontalEnd className="w-4 h-4" />
               )}
               {uploadingPhoto ? "Envoi..." : "Galerie"}
             </button>
@@ -75,26 +117,14 @@ export default function VisitPhotos({
             accept="image/*"
             capture="environment"
             className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) {
-                onFileSelect(f);
-                e.target.value = "";
-              }
-            }}
+            onChange={handleFileChange}
           />
           <input
             ref={galleryRef}
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) {
-                onFileSelect(f);
-                e.target.value = "";
-              }
-            }}
+            onChange={handleFileChange}
           />
         </CardContent>
       </Card>
@@ -103,7 +133,32 @@ export default function VisitPhotos({
       {photos.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Photos ({photos.length})</p>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  activeTab === "all" ? "bg-teal-cpm text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                }`}
+              >
+                Toutes ({photos.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("before")}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  activeTab === "before" ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+              }`}
+              >
+                Avant ({beforeCount})
+              </button>
+              <button
+                onClick={() => setActiveTab("after")}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  activeTab === "after" ? "bg-green-500 text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+              }`}
+              >
+                Après ({afterCount})
+              </button>
+            </div>
             <button
               onClick={() => selectMode ? onExitSelectMode() : onSetSelectMode(true)}
               className="text-xs text-teal-cpm font-medium hover:underline"
@@ -111,8 +166,11 @@ export default function VisitPhotos({
               {selectMode ? "Annuler" : "Sélectionner"}
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {[...photos]
+          {filteredPhotos.length === 0 ? (
+            <p className="text-sm text-slate-400 text-center py-8">Aucune photo dans cette catégorie</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+            {[...filteredPhotos]
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               .map((photo) => {
               const isSelected = selectedPhotos.has(photo.id);
@@ -124,9 +182,17 @@ export default function VisitPhotos({
                 <div
                   key={photo.id}
                   className={`relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-[#222223] border-2 transition-all ${
-                    isSelected ? "border-teal-cpm ring-2 ring-teal-cpm/20" : "border-slate-200 dark:border-[#2e2e30]"
+                    isSelected ? "border-teal-cpm ring-2 ring-teal-cpm/20" : photo.category === "before" ? "border-amber-300 dark:border-amber-700" : photo.category === "after" ? "border-green-300 dark:border-green-700" : "border-slate-200 dark:border-[#2e2e30]"
                   }`}
                 >
+                  {/* Category badge */}
+                  {photo.category && !selectMode && (
+                    <span className={`absolute top-1 left-1 z-[5] px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                      photo.category === "before" ? "bg-amber-500 text-white" : "bg-green-500 text-white"
+                    }`}>
+                      {photo.category === "before" ? "Avant" : "Après"}
+                    </span>
+                  )}
                   {/* Selection checkbox */}
                   {selectMode && (
                     <button
@@ -174,6 +240,7 @@ export default function VisitPhotos({
               );
             })}
           </div>
+          )}
 
           {/* Floating action bar for selection - compact on left to avoid chat button */}
           {selectMode && selectedPhotos.size > 0 && (

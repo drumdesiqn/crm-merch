@@ -42,12 +42,15 @@ export interface VisitNote {
   visit?: { visitDate: string; week: { label: string } } | null;
 }
 
+export type PhotoCategory = "before" | "after" | null;
+
 export interface VisitPhoto {
   id: string;
   url: string;
   blobKey: string;
   caption: string | null;
   starred: boolean;
+  category: PhotoCategory;
   createdAt: string;
   visitId: string;
   storeId: string | null;
@@ -56,7 +59,7 @@ export interface VisitPhoto {
 }
 
 export interface ExportVisit extends Visit {
-  photos: { id: string; url: string }[];
+  photos: { id: string; url: string; category?: string | null }[];
   notes: { content: string; createdAt: string }[];
 }
 

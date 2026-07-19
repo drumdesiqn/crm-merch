@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
           ],
           userId: auth.user.userId,
         },
-        select: { id: true, url: true, visitId: true, storeId: true },
+        select: { id: true, url: true, visitId: true, storeId: true, category: true },
       }),
       prisma.visitNote.findMany({
         where: {
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
 
     // Group by visit — each photo/note is assigned to exactly one visit
     // Visit-specific items go to their visit; store-level items (no visitId match) go to the latest visit for that store
-    const photosByVisit: Record<string, { id: string; url: string }[]> = {};
+    const photosByVisit: Record<string, { id: string; url: string; category: string | null }[]> = {};
     const notesByVisit: Record<string, { content: string; createdAt: Date }[]> = {};
 
     const assignedPhotoIds = new Set<string>();
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
 
       for (const p of allPhotos) {
         if (p.visitId === v.id) {
-          photosByVisit[v.id].push({ id: p.id, url: p.url });
+          photosByVisit[v.id].push({ id: p.id, url: p.url, category: p.category });
           assignedPhotoIds.add(p.id);
         }
       }
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
       if (p.storeId) {
         const targetVisitId = latestVisitByStore.get(p.storeId);
         if (targetVisitId) {
-          photosByVisit[targetVisitId].push({ id: p.id, url: p.url });
+          photosByVisit[targetVisitId].push({ id: p.id, url: p.url, category: p.category });
         }
       }
     }

@@ -194,6 +194,24 @@ export function pdfPhotoItem(url: string, caption?: string | null): string {
 }
 
 /**
+ * Render a categorized photo item for the PDF grid.
+ */
+export function pdfCategorizedPhotoItem(url: string, category?: string | null, caption?: string | null): string {
+  const badge = category === "before"
+    ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;background:#fef3c7;color:#b45309;margin-bottom:6px;">Avant</span>`
+    : category === "after"
+    ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;background:#dcfce7;color:#15803d;margin-bottom:6px;">Après</span>`
+    : "";
+  return `
+    <div style="break-inside: avoid; margin-bottom: 20px;">
+      ${badge}
+      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+      ${caption ? `<p style="font-size: 12px; color: #666; margin-top: 5px;">${escapeHtml(caption)}</p>` : ""}
+    </div>
+  `;
+}
+
+/**
  * Render a note item for the PDF.
  */
 export function pdfNoteItem(content: string, dateStr: string): string {
@@ -234,10 +252,10 @@ export function pdfVisitPage(visit: {
   materials?: string | null;
   materialType?: string | null;
   salesRep?: string | null;
-  photos: { url: string }[];
+  photos: { url: string; category?: string | null }[];
   notes: { content: string; createdAt: string }[];
 }): string {
-  const photosHtml = visit.photos.map((p) => pdfPhotoItem(p.url)).join("");
+  const photosHtml = visit.photos.map((p) => pdfCategorizedPhotoItem(p.url, p.category)).join("");
   const notesHtml = visit.notes.length
     ? visit.notes.map((n) => pdfNoteItem(n.content, n.createdAt)).join("")
     : '<p class="no-content">Aucune note</p>';
@@ -295,7 +313,7 @@ export function pdfBatchDocument(
     materials?: string | null;
     materialType?: string | null;
     salesRep?: string | null;
-    photos: { url: string }[];
+    photos: { url: string; category?: string | null }[];
     notes: { content: string; createdAt: string }[];
   }[],
   weekLabel: string,

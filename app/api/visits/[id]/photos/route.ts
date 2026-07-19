@@ -79,6 +79,7 @@ export async function POST(
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const caption = (formData.get("caption") as string) || null;
+    const category = (formData.get("category") as string) || null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -113,6 +114,7 @@ export async function POST(
         url: blob.url,
         blobKey: blob.url,
         caption,
+        category: category === "before" || category === "after" ? category : null,
       },
     });
 

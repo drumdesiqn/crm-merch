@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, compressImage, escapeHtml, VisitStatus } from "@/lib/utils";
 import { fetchApi } from "@/lib/client-api";
-import { PDF_BASE_STYLES, pdfPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
+import { PDF_BASE_STYLES, pdfPhotoItem, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import { STATUS_CONFIG } from "@/components/StatusBadge";
 import { useVisit } from "@/lib/hooks/useVisit";
@@ -15,7 +15,7 @@ import { useVisitNotes } from "@/lib/hooks/useVisitNotes";
 import { useVisitPhotos } from "@/lib/hooks/useVisitPhotos";
 import { useStoreHistory } from "@/lib/hooks/useStoreHistory";
 import { useDeleteVisit } from "@/lib/hooks/useDeleteVisit";
-import type { VisitNote, VisitPhoto } from "@/types/visit";
+import type { VisitNote, VisitPhoto, PhotoCategory } from "@/types/visit";
 import VisitInfoCard from "@/components/visit/VisitInfoCard";
 import MaterialTypeSelector from "@/components/visit/MaterialTypeSelector";
 import VisitNotes from "@/components/visit/VisitNotes";
@@ -123,11 +123,12 @@ export default function VisitDetailPage() {
     }
   };
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = async (file: File, category: PhotoCategory) => {
     setUploadingPhoto(true);
     const compressed = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
     const formData = new FormData();
     formData.append("file", compressed);
+    if (category) formData.append("category", category);
     const data = await fetchApi<VisitPhoto>(`/api/visits/${visitId}/photos`, {
       method: "POST",
       body: formData,
@@ -242,7 +243,7 @@ export default function VisitDetailPage() {
     setExportingPdf(true);
     interface ExportVisitResponse {
       visit: {
-        photos: { url: string; caption?: string }[];
+        photos: { url: string; caption?: string; category?: string | null }[];
         notes: { content: string; createdAt: string }[];
         storeName: string;
         storeId: string;
@@ -280,7 +281,7 @@ export default function VisitDetailPage() {
       }
 
       const v = data.visit;
-      const photosHtml = v.photos.map((p) => pdfPhotoItem(p.url, p.caption)).join("");
+      const photosHtml = v.photos.map((p) => pdfCategorizedPhotoItem(p.url, (p as { category?: string | null }).category, p.caption)).join("");
       const notesHtml = v.notes.map((n) => pdfNoteItem(n.content, n.createdAt)).join("");
       
       printWindow.document.write(`

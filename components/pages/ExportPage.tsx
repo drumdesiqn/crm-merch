@@ -6,7 +6,7 @@ import { ArrowLeft, FileText, Calendar, Store, Loader2, Printer, Download, FileS
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, escapeHtml } from "@/lib/utils";
-import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfNoteItem, pdfFooter, pdfBatchDocument } from "@/lib/pdf-template";
+import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter, pdfBatchDocument } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useExportVisits } from "@/lib/hooks/useExportVisits";
@@ -51,7 +51,7 @@ export default function ExportPage() {
       setTimeout(() => iframe.remove(), 30000);
     }
 
-    const photosHtml = visit.photos.map((photo) => pdfPhotoItem(photo.url)).join("");
+    const photosHtml = visit.photos.map((photo) => pdfCategorizedPhotoItem(photo.url, photo.category)).join("");
 
     const notesHtml = visit.notes.length
       ? visit.notes.map((note) => pdfNoteItem(note.content, note.createdAt)).join("")
@@ -185,7 +185,7 @@ export default function ExportPage() {
     const html = pdfBatchDocument(
       visits.map((v) => ({
         ...v,
-        photos: v.photos.map((p) => ({ url: p.url })),
+        photos: v.photos.map((p) => ({ url: p.url, category: p.category })),
         notes: v.notes.map((n) => ({ content: n.content, createdAt: n.createdAt })),
       })),
       weekLabel,

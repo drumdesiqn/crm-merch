@@ -56,7 +56,7 @@ export async function GET(
         ],
         userId: auth.user.userId,
       },
-      select: { id: true, url: true, caption: true },
+      select: { id: true, url: true, caption: true, category: true },
       orderBy: { createdAt: "desc" },
     });
 
