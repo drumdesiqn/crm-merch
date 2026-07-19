@@ -258,7 +258,7 @@ export default function DashboardPage() {
                   {weekKm.toFixed(1)} km
                   {weekDuration > 0 && (
                     <span className="ml-2 text-slate-400 font-normal">
-                      · {Math.floor(weekDuration / 60)}h{String(Math.round(weekDuration % 60)).padStart(2, "0")}
+                      · {Math.floor(weekDuration / 3600)}h{String(Math.round((weekDuration % 3600) / 60)).padStart(2, "0")}
                     </span>
                   )}
                   <span className="ml-2 text-slate-400 font-normal">· {weekRoutes.length} jour{weekRoutes.length > 1 ? "s" : ""}</span>
