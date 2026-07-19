@@ -15,6 +15,8 @@ import { useVisits } from "@/lib/hooks/useVisits";
 import { useSummary } from "@/lib/hooks/useSummary";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useUpdateVisit } from "@/lib/hooks/useUpdateVisit";
+import { useDayRoutes } from "@/lib/hooks/useDayRoutes";
+import { Gauge } from "lucide-react";
 
 const EMPTY_VISITS: Visit[] = [];
 
@@ -104,6 +106,23 @@ export default function DashboardPage() {
 
   const nextVisit = useMemo(() => todayVisits.find((v) => v.status === "pending") ?? null, [todayVisits]);
   const todayDone = useMemo(() => todayVisits.filter((v) => v.status === "done").length, [todayVisits]);
+
+  const weekStart = useMemo(() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+  const weekEnd = useMemo(() => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 6);
+    return d;
+  }, [weekStart]);
+  const { data: weekRoutes = [] } = useDayRoutes(weekStart.toISOString(), weekEnd.toISOString());
+  const weekKm = weekRoutes.reduce((sum, r) => sum + r.distanceM, 0) / 1000;
+  const weekDuration = weekRoutes.reduce((sum, r) => sum + r.durationS, 0);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -226,6 +245,27 @@ export default function DashboardPage() {
               progress={completionPct}
             /></div>
           </div>
+
+          {/* ── Kilométrage de la semaine ── */}
+          {weekKm > 0 && (
+            <div className="animate-fade-in-up flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#222223] border border-slate-200 dark:border-[#2e2e30]">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                <Gauge className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Kilométrage de la semaine</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                  {weekKm.toFixed(1)} km
+                  {weekDuration > 0 && (
+                    <span className="ml-2 text-slate-400 font-normal">
+                      · {Math.floor(weekDuration / 60)}h{String(Math.round(weekDuration % 60)).padStart(2, "0")}
+                    </span>
+                  )}
+                  <span className="ml-2 text-slate-400 font-normal">· {weekRoutes.length} jour{weekRoutes.length > 1 ? "s" : ""}</span>
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* ── Filters ── */}
           <div className="flex flex-wrap items-center gap-2">

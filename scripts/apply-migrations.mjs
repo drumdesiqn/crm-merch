@@ -411,6 +411,36 @@ const migrations = [
     name: "20260718120000_add_end_address_to_settings",
     sql: `ALTER TABLE "Settings" ADD COLUMN IF NOT EXISTS "endAddress" TEXT;`,
   },
+  {
+    name: "20260720000000_add_day_route",
+    sql: [
+      `CREATE TABLE IF NOT EXISTS "DayRoute" (
+        "id" TEXT NOT NULL,
+        "userId" TEXT,
+        "date" TIMESTAMP(3) NOT NULL,
+        "distanceM" FLOAT8 NOT NULL DEFAULT 0,
+        "durationS" FLOAT8 NOT NULL DEFAULT 0,
+        "visitCount" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "DayRoute_pkey" PRIMARY KEY ("id")
+      )`,
+      `CREATE INDEX IF NOT EXISTS "DayRoute_userId_idx" ON "DayRoute"("userId");`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "DayRoute_userId_date_key" ON "DayRoute"("userId", "date");`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'DayRoute_userId_fkey') THEN
+          ALTER TABLE "DayRoute" ADD CONSTRAINT "DayRoute_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+    ],
+  },
+  {
+    name: "20260720010000_add_category_to_visit_photo",
+    sql: [
+      `ALTER TABLE "VisitPhoto" ADD COLUMN IF NOT EXISTS "category" TEXT;`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {

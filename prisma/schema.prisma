@@ -105,6 +105,7 @@ model VisitPhoto {
   blobKey   String
   caption   String?
   starred   Boolean  @default(false)
+  category  String?
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -195,6 +196,7 @@ model User {
   glossaryTerms GlossaryTerm[]
   contactTeams  ContactTeam[]
   contacts      Contact[]
+  dayRoutes     DayRoute[]
 }
 
 model ContactTeam {
@@ -210,6 +212,21 @@ model ContactTeam {
 
   @@index([userId])
   @@unique([userId, name])
+}
+
+model DayRoute {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  date        DateTime
+  distanceM   Float    @default(0)
+  durationS   Float    @default(0)
+  visitCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([userId, date])
 }
 
 model Contact {

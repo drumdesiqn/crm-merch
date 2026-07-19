@@ -246,6 +246,24 @@ export default function RouteMapView({
         suppressToast: true,
       });
       if (ok === null) throw new Error("API error");
+
+      // Save mileage data for the selected day
+      const fallback = !osrmRoute ? fallbackLegDistances(home, orderedVisits, destination) : [];
+      const totalDist = osrmRoute ? osrmRoute.totalDistance : fallback.reduce((s, l) => s + l.distanceM, 0);
+      const totalDur = osrmRoute ? osrmRoute.totalDuration : fallback.reduce((s, l) => s + l.durationS, 0);
+      if (totalDist > 0 && selectedDay) {
+        await fetch("/api/routes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date: selectedDay,
+            distanceM: Math.round(totalDist),
+            durationS: Math.round(totalDur),
+            visitCount: orderedVisits.length,
+          }),
+        }).catch(() => {});
+      }
+
       setSaved(true);
       showToast("success", "Ordre sauvegardé !");
       setTimeout(() => setSaved(false), 3000);
