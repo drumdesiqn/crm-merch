@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { Image as ImageIcon, Upload, X, Trash2, Share2, CheckSquare, Square, Camera, GalleryHorizontalEnd } from "lucide-react";
+import { Image as ImageIcon, X, Trash2, Share2, CheckSquare, Square, Camera, GalleryHorizontalEnd } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { VisitPhoto, PhotoCategory } from "@/types/visit";

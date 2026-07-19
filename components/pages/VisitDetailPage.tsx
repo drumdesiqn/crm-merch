@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, History, StickyNote, FileDown, Navigation, MapPin, CheckCircle, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, compressImage, escapeHtml, VisitStatus } from "@/lib/utils";
 import { fetchApi } from "@/lib/client-api";
-import { PDF_BASE_STYLES, pdfPhotoItem, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
+import { PDF_BASE_STYLES, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import { STATUS_CONFIG } from "@/components/StatusBadge";
 import { useVisit } from "@/lib/hooks/useVisit";

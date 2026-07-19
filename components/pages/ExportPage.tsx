@@ -6,7 +6,7 @@ import { ArrowLeft, FileText, Calendar, Store, Loader2, Printer, Download, FileS
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, escapeHtml } from "@/lib/utils";
-import { PDF_BASE_STYLES, pdfInfoBox, pdfPhotoItem, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter, pdfBatchDocument } from "@/lib/pdf-template";
+import { PDF_BASE_STYLES, pdfInfoBox, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter, pdfBatchDocument } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useExportVisits } from "@/lib/hooks/useExportVisits";
