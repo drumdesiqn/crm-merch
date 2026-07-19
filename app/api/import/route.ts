@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     const mode = modeValidation.data.mode;
 
     if (!file) {
+      console.log("[import] 400: no file provided", { mode: rawMode });
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
@@ -51,10 +52,12 @@ export async function POST(req: NextRequest) {
     const hasValidExtension = fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
     const hasValidMimeType = ALLOWED_EXCEL_MIME_TYPES.has(file.type);
     if (!hasValidExtension && !hasValidMimeType) {
+      console.log("[import] 400: invalid format", { fileName, fileType: file.type, fileSize: file.size });
       return NextResponse.json({ error: "Format de fichier invalide. Utilise un fichier Excel (.xlsx ou .xls)." }, { status: 400 });
     }
 
     if (file.size <= 0 || file.size > MAX_IMPORT_FILE_SIZE) {
+      console.log("[import] 400: invalid size", { fileName, fileSize: file.size, max: MAX_IMPORT_FILE_SIZE });
       return NextResponse.json({ error: `Fichier invalide: taille maximale ${MAX_IMPORT_FILE_SIZE / (1024 * 1024)}MB.` }, { status: 400 });
     }
 
@@ -62,6 +65,7 @@ export async function POST(req: NextRequest) {
     const { visits, weekNum, year, label, warnings } = parseExcelBuffer(buffer);
 
     if (visits.length === 0) {
+      console.log("[import] 400: no visits found", { fileName, weekNum, year });
       return NextResponse.json({ error: "No visits found in file" }, { status: 400 });
     }
 
