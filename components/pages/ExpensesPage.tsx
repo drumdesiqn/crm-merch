@@ -153,7 +153,7 @@ export default function ExpensesPage() {
     }
     setExporting(true);
     try {
-      pdfExpenseDocument(selectedExpenses);
+      await pdfExpenseDocument(selectedExpenses);
       showToast("success", "PDF des justificatifs généré");
     } catch {
       showToast("error", "Erreur lors de l'export PDF");

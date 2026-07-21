@@ -2,16 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { errorResponse } from "@/lib/api-utils";
 import { requireAuth } from "@/lib/auth-server";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { promises as fs } from "fs";
 import path from "path";
 
 export const dynamic = "force-dynamic";
-
-function setCell(ws: XLSX.WorkSheet, addr: string, value: string | number) {
-  const cell: XLSX.CellObject = { t: typeof value === "number" ? "n" : "s", v: value };
-  ws[addr] = cell;
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,11 +34,14 @@ export async function POST(req: NextRequest) {
       where: { userId: auth.user.userId },
     });
 
-    // Load template
+    // Load template with exceljs (preserves styles)
     const templatePath = path.join(process.cwd(), "public", "templates", "onkostennota-template.xlsx");
     const templateBuffer = await fs.readFile(templatePath);
-    const wb = XLSX.read(templateBuffer, { type: "buffer" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
+    const wb = new ExcelJS.Workbook();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await wb.xlsx.load(templateBuffer as any);
+    const ws = wb.getWorksheet(1);
+    if (!ws) throw new Error("Worksheet not found");
 
     // Fill general section
     const now = new Date();
@@ -51,10 +49,10 @@ export async function POST(req: NextRequest) {
     const userName = settings?.userName || auth.user.email || "";
     const dateStr = now.toLocaleDateString("fr-BE");
 
-    setCell(ws, "F13", userName);
-    setCell(ws, "F15", dateStr);
-    setCell(ws, "F16", monthLabel);
-    setCell(ws, "F17", userName);
+    ws.getCell("F13").value = userName;
+    ws.getCell("F15").value = dateStr;
+    ws.getCell("F16").value = monthLabel;
+    ws.getCell("F17").value = userName;
 
     // Fill expense rows (rows 22-35, 14 rows max)
     const maxRows = 14;
@@ -63,18 +61,18 @@ export async function POST(req: NextRequest) {
 
     expensesToFill.forEach((expense, i) => {
       const row = 22 + i; // 1-indexed
-      setCell(ws, `C${row}`, expense.description);
+      ws.getCell(`C${row}`).value = expense.description;
       const d = new Date(expense.expenseDate);
       d.setHours(12, 0, 0, 0);
-      setCell(ws, `G${row}`, d.toLocaleDateString("fr-BE"));
-      setCell(ws, `J${row}`, expense.amount);
+      ws.getCell(`G${row}`).value = d.toLocaleDateString("fr-BE");
+      ws.getCell(`J${row}`).value = expense.amount;
       total += expense.amount;
     });
 
-    setCell(ws, "J37", Math.round(total * 100) / 100);
+    ws.getCell("J37").value = Math.round(total * 100) / 100;
 
     // Generate xlsx buffer
-    const xlsxBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const xlsxBuffer = await wb.xlsx.writeBuffer();
 
     // Mark expenses as exported
     await prisma.expense.updateMany({

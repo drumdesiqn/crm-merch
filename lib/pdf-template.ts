@@ -1,5 +1,4 @@
 import { escapeHtml } from "./utils";
-import { showToast } from "@/components/Toast";
 
 /**
  * Shared PDF template styles used by ExportPage and VisitDetailPage.
@@ -411,10 +410,9 @@ export function pdfBatchDocument(
 }
 
 /**
- * Generate a PDF note de frais document with expense table + receipt photos.
- * Opens a print window and returns nothing.
+ * Generate a downloadable PDF with expense table + receipt photos using jsPDF.
  */
-export function pdfExpenseDocument(
+export async function pdfExpenseDocument(
   expenses: {
     id: string;
     description: string;
@@ -422,152 +420,159 @@ export function pdfExpenseDocument(
     expenseDate: string;
     receiptUrl: string | null;
   }[]
-): void {
+): Promise<void> {
+  const { jsPDF } = await import("jspdf");
   const total = expenses.reduce((s, e) => s + e.amount, 0);
   const now = new Date();
   const dateStr = now.toLocaleDateString("fr-BE");
 
-  const rows = expenses.map((e, i) => {
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const pageW = 210;
+  const pageH = 297;
+  const margin = 15;
+  const contentW = pageW - margin * 2;
+  let y = margin;
+
+  // Header bar
+  doc.setFillColor(0, 52, 120);
+  doc.rect(0, 0, pageW, 20, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("NOTE DE FRAIS — Pièces justificatives", margin, 13);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`CPM Mars · ${dateStr}`, pageW - margin, 13, { align: "right" });
+
+  y = 30;
+  doc.setTextColor(30, 41, 59);
+
+  // Info
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Date d'émission: ${dateStr}`, margin, y);
+  doc.text(`Nombre de dépenses: ${expenses.length}`, pageW - margin, y, { align: "right" });
+  y += 8;
+
+  // Table header
+  doc.setFillColor(0, 52, 120);
+  doc.rect(margin, y, contentW, 7, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("#", margin + 3, y + 5);
+  doc.text("Date", margin + 15, y + 5);
+  doc.text("Description", margin + 45, y + 5);
+  doc.text("Montant", pageW - margin - 25, y + 5);
+  doc.text("Ticket", pageW - margin - 5, y + 5, { align: "right" });
+  y += 7;
+
+  // Table rows
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(30, 41, 59);
+  expenses.forEach((e, i) => {
+    if (y > pageH - 30) {
+      doc.addPage();
+      y = margin;
+    }
+    const bg = i % 2 === 0 ? [248, 250, 252] : [255, 255, 255];
+    doc.setFillColor(bg[0], bg[1], bg[2]);
+    doc.rect(margin, y, contentW, 6, "F");
     const d = new Date(e.expenseDate).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" });
-    return `<tr>
-      <td>${i + 1}</td>
-      <td>${d}</td>
-      <td>${escapeHtml(e.description)}</td>
-      <td style="text-align: right; font-weight: 600;">${e.amount.toFixed(2)} €</td>
-      <td style="text-align: center;">${e.receiptUrl ? "Oui" : "—"}</td>
-    </tr>`;
-  }).join("");
+    doc.text(String(i + 1), margin + 3, y + 4.5);
+    doc.text(d, margin + 15, y + 4.5);
+    const desc = e.description.length > 40 ? e.description.slice(0, 38) + "…" : e.description;
+    doc.text(desc, margin + 45, y + 4.5);
+    doc.text(`${e.amount.toFixed(2)} €`, pageW - margin - 25, y + 4.5);
+    doc.text(e.receiptUrl ? "Oui" : "—", pageW - margin - 5, y + 4.5, { align: "right" });
+    y += 6;
+  });
 
-  const receiptPhotos = expenses
-    .filter((e) => e.receiptUrl)
-    .map((e) => {
+  // Total
+  y += 3;
+  doc.setFillColor(0, 52, 120);
+  doc.rect(margin, y, contentW, 9, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("TOTAL", margin + 3, y + 6);
+  doc.text(`${total.toFixed(2)} €`, pageW - margin - 5, y + 6, { align: "right" });
+  y += 18;
+
+  // Signature zones
+  doc.setTextColor(148, 163, 184);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setDrawColor(148, 163, 184);
+  const sigW = (contentW - 20) / 2;
+  doc.line(margin, y + 15, margin + sigW, y + 15);
+  doc.text("Signature du collaborateur", margin + sigW / 2, y + 19, { align: "center" });
+  doc.line(margin + sigW + 20, y + 15, margin + sigW + 20 + sigW, y + 15);
+  doc.text("Validation du manager", margin + sigW + 20 + sigW / 2, y + 19, { align: "center" });
+
+  // Receipt photos
+  const withReceipts = expenses.filter((e) => e.receiptUrl);
+  if (withReceipts.length > 0) {
+    doc.addPage();
+    y = margin;
+    doc.setTextColor(0, 52, 120);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Pièces justificatives", margin, y);
+    y += 8;
+
+    for (const e of withReceipts) {
       const num = expenses.indexOf(e) + 1;
-      return `
-        <div style="break-inside: avoid; margin-bottom: 24px; page-break-inside: avoid;">
-          <p style="font-size: 13px; font-weight: 700; color: #003478; margin: 0 0 8px;">
-            N°${num} — ${escapeHtml(e.description)} (${e.amount.toFixed(2)} €)
-          </p>
-          <img src="${escapeHtml(e.receiptUrl!)}" style="max-width: 100%; max-height: 500px; border-radius: 8px; border: 1px solid #e2e8f0;" />
-        </div>
-      `;
-    }).join("");
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      const label = `N°${num} — ${e.description} (${e.amount.toFixed(2)} €)`;
+      const truncated = label.length > 70 ? label.slice(0, 68) + "…" : label;
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Note de frais — ${dateStr}</title>
-      <style>
-        ${PDF_BASE_STYLES}
-        .expense-total {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 14px 18px;
-          background: linear-gradient(135deg, #003478 0%, #005392 100%);
-          border-radius: 8px;
-          color: #fff;
-          margin-top: 16px;
-        }
-        .expense-total .lbl { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .expense-total .val { font-size: 24px; font-weight: 800; }
-        .signature-zone {
-          margin-top: 60px;
-          display: flex;
-          justify-content: space-between;
-          gap: 40px;
-        }
-        .signature-box {
-          flex: 1;
-          text-align: center;
-        }
-        .signature-box .line {
-          border-top: 1.5px solid #94a3b8;
-          padding-top: 8px;
-          font-size: 11px;
-          color: #94a3b8;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        @media print { .receipt-page { page-break-before: always; } }
-      </style>
-    </head>
-    <body>
-      <div class="brand-bar">
-        <div>
-          <div class="brand-title">NOTE DE FRAIS</div>
-          <div class="brand-sub">CPM Mars · ${dateStr}</div>
-        </div>
-        <div style="font-size: 28px; font-weight: 800;">€</div>
-      </div>
+      if (y > pageH - 100) {
+        doc.addPage();
+        y = margin;
+      }
 
-      <div class="info-grid">
-        <div class="info-box">
-          <label>Date d'émission</label>
-          <value>${dateStr}</value>
-        </div>
-        <div class="info-box">
-          <label>Nombre de dépenses</label>
-          <value>${expenses.length}</value>
-        </div>
-      </div>
+      doc.text(truncated, margin, y);
+      y += 5;
 
-      <div class="section">
-        <h2>Détail des dépenses</h2>
-        <table class="summary-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Description</th>
-              <th style="text-align: right;">Montant</th>
-              <th style="text-align: center;">Ticket</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
-        </table>
-        <div class="expense-total">
-          <span class="lbl">Total</span>
-          <span class="val">${total.toFixed(2)} €</span>
-        </div>
-      </div>
+      try {
+        const imgRes = await fetch(e.receiptUrl!);
+        const blob = await imgRes.blob();
+        const reader = new FileReader();
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
 
-      <div class="signature-zone">
-        <div class="signature-box">
-          <div style="height: 60px;"></div>
-          <div class="line">Signature du collaborateur</div>
-        </div>
-        <div class="signature-box">
-          <div style="height: 60px;"></div>
-          <div class="line">Validation du manager</div>
-        </div>
-      </div>
-
-      ${receiptPhotos ? `
-        <div class="receipt-page"></div>
-        <div class="section">
-          <h2>Pièces justificatives</h2>
-          ${receiptPhotos}
-        </div>
-      ` : ""}
-
-      <div class="pdf-footer">
-        Généré par CPM Mars le ${dateStr}
-      </div>
-      <script>
-        window.onload = function() { setTimeout(function() { window.print(); }, 500); };
-      </script>
-    </body>
-    </html>
-  `;
-
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) {
-    showToast("error", "Popup bloquée — autorisez les popups pour l'export PDF");
-    return;
+        const fmt = dataUrl.startsWith("data:image/png") ? "PNG" : "JPEG";
+        const maxImgW = contentW;
+        const maxImgH = 120;
+        const imgW = maxImgW;
+        const imgH = maxImgH;
+        doc.addImage(dataUrl, fmt, margin, y, imgW, imgH, undefined, "FAST");
+        y += imgH + 12;
+      } catch {
+        doc.setTextColor(148, 163, 184);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8);
+        doc.text("[Image non disponible]", margin, y + 5);
+        y += 15;
+      }
+    }
   }
-  printWindow.document.write(html);
-  printWindow.document.close();
+
+  // Footer on each page
+  const pageCount = doc.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setTextColor(148, 163, 184);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Généré par CPM Mars le ${dateStr} — Page ${p}/${pageCount}`, pageW / 2, pageH - 5, { align: "center" });
+  }
+
+  doc.save(`justificatifs_${now.toISOString().slice(0, 10)}.pdf`);
 }
