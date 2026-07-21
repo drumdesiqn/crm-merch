@@ -10,6 +10,8 @@ import { showToast } from "@/components/Toast";
 import { pdfExpenseDocument } from "@/lib/pdf-template";
 import FrenchDatePicker from "@/components/FrenchDatePicker";
 
+const EXCEL_MAX_ROWS = 12;
+
 export default function ExpensesPage() {
   const { data: expenses = [], isLoading } = useExpenses();
   const createExpense = useCreateExpense();
@@ -117,6 +119,10 @@ export default function ExpensesPage() {
   const handleExportExcel = async () => {
     if (selectedExpenses.length === 0) {
       showToast("error", "Sélectionne au moins une dépense");
+      return;
+    }
+    if (selectedExpenses.length > EXCEL_MAX_ROWS) {
+      showToast("error", `Maximum ${EXCEL_MAX_ROWS} notes de frais par export Excel`);
       return;
     }
     setExporting(true);
@@ -298,8 +304,9 @@ export default function ExpensesPage() {
               </button>
               <Button
                 onClick={handleExportExcel}
-                disabled={exporting || selectedIds.size === 0}
+                disabled={exporting || selectedIds.size === 0 || selectedIds.size > EXCEL_MAX_ROWS}
                 size="sm"
+                title={selectedIds.size > EXCEL_MAX_ROWS ? `Maximum ${EXCEL_MAX_ROWS} notes de frais par export Excel` : undefined}
               >
                 {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
                 Excel{selectedIds.size > 0 && ` (${selectedTotal.toFixed(2)} €)`}
@@ -316,6 +323,15 @@ export default function ExpensesPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Excel row limit hint */}
+      {selectMode && (
+        <p className={`text-xs ${selectedIds.size > EXCEL_MAX_ROWS ? "text-red-500 font-semibold" : "text-slate-400 dark:text-zinc-500"}`}>
+          {selectedIds.size > EXCEL_MAX_ROWS
+            ? `Trop de dépenses sélectionnées pour l'Excel (${selectedIds.size}/${EXCEL_MAX_ROWS} max)`
+            : `Maximum ${EXCEL_MAX_ROWS} notes de frais par export Excel (${selectedIds.size}/${EXCEL_MAX_ROWS} sélectionnées)`}
+        </p>
       )}
 
       {/* Expense list */}

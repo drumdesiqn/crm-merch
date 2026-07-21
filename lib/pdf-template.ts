@@ -433,8 +433,8 @@ export async function pdfExpenseDocument(
   const contentW = pageW - margin * 2;
   let y = margin;
 
-  // Header bar
-  doc.setFillColor(0, 52, 120);
+  // Header bar (neutral)
+  doc.setFillColor(50, 50, 50);
   doc.rect(0, 0, pageW, 20, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(14);
@@ -442,7 +442,7 @@ export async function pdfExpenseDocument(
   doc.text("NOTE DE FRAIS — Pièces justificatives", margin, 13);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`CPM Mars · ${dateStr}`, pageW - margin, 13, { align: "right" });
+  doc.text(dateStr, pageW - margin, 13, { align: "right" });
 
   y = 30;
   doc.setTextColor(30, 41, 59);
@@ -455,7 +455,7 @@ export async function pdfExpenseDocument(
   y += 8;
 
   // Table header
-  doc.setFillColor(0, 52, 120);
+  doc.setFillColor(50, 50, 50);
   doc.rect(margin, y, contentW, 7, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
@@ -490,32 +490,20 @@ export async function pdfExpenseDocument(
 
   // Total
   y += 3;
-  doc.setFillColor(0, 52, 120);
+  doc.setFillColor(50, 50, 50);
   doc.rect(margin, y, contentW, 9, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.text("TOTAL", margin + 3, y + 6);
   doc.text(`${total.toFixed(2)} €`, pageW - margin - 5, y + 6, { align: "right" });
-  y += 18;
-
-  // Signature zones
-  doc.setTextColor(148, 163, 184);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setDrawColor(148, 163, 184);
-  const sigW = (contentW - 20) / 2;
-  doc.line(margin, y + 15, margin + sigW, y + 15);
-  doc.text("Signature du collaborateur", margin + sigW / 2, y + 19, { align: "center" });
-  doc.line(margin + sigW + 20, y + 15, margin + sigW + 20 + sigW, y + 15);
-  doc.text("Validation du manager", margin + sigW + 20 + sigW / 2, y + 19, { align: "center" });
 
   // Receipt photos
   const withReceipts = expenses.filter((e) => e.receiptUrl);
   if (withReceipts.length > 0) {
     doc.addPage();
     y = margin;
-    doc.setTextColor(0, 52, 120);
+    doc.setTextColor(30, 41, 59);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("Pièces justificatives", margin, y);
@@ -547,11 +535,26 @@ export async function pdfExpenseDocument(
           reader.readAsDataURL(blob);
         });
 
+        // Load image to get natural dimensions and preserve aspect ratio
+        const img = new Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = reject;
+          img.src = dataUrl;
+        });
+
         const fmt = dataUrl.startsWith("data:image/png") ? "PNG" : "JPEG";
         const maxImgW = contentW;
-        const maxImgH = 120;
-        const imgW = maxImgW;
-        const imgH = maxImgH;
+        const maxImgH = 160;
+        const ratio = Math.min(maxImgW / img.naturalWidth, maxImgH / img.naturalHeight);
+        const imgW = img.naturalWidth * ratio;
+        const imgH = img.naturalHeight * ratio;
+
+        if (y + imgH > pageH - 15) {
+          doc.addPage();
+          y = margin;
+        }
+
         doc.addImage(dataUrl, fmt, margin, y, imgW, imgH, undefined, "FAST");
         y += imgH + 12;
       } catch {
@@ -571,7 +574,7 @@ export async function pdfExpenseDocument(
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.text(`Généré par CPM Mars le ${dateStr} — Page ${p}/${pageCount}`, pageW / 2, pageH - 5, { align: "center" });
+    doc.text(`Page ${p}/${pageCount}`, pageW / 2, pageH - 5, { align: "center" });
   }
 
   doc.save(`justificatifs_${now.toISOString().slice(0, 10)}.pdf`);

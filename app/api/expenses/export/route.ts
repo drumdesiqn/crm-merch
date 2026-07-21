@@ -110,8 +110,8 @@ export async function POST(req: NextRequest) {
     sheetXml = setCellValue(sheetXml, "F13", userName);
     sheetXml = setCellValue(sheetXml, "F15", dateStr);
 
-    // Fill expense rows (rows 22-35, 14 rows max)
-    const maxRows = 14;
+    // Fill expense rows (rows 22-33, 12 rows max)
+    const maxRows = 12;
     const expensesToFill = expenses.slice(0, maxRows);
     let total = 0;
 
