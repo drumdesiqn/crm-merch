@@ -2,9 +2,9 @@
 
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
-import { Camera, Receipt, Trash2, FileDown, CheckSquare, Square, X, Loader2, Plus } from "lucide-react";
+import { Camera, Receipt, Trash2, FileDown, FileSpreadsheet, CheckSquare, Square, X, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useExpenses, useCreateExpense, useDeleteExpense, useUpdateExpense } from "@/lib/hooks/useExpenses";
+import { useExpenses, useCreateExpense, useDeleteExpense } from "@/lib/hooks/useExpenses";
 import { compressImage, formatDate } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
 import { pdfExpenseDocument } from "@/lib/pdf-template";
@@ -14,7 +14,6 @@ export default function ExpensesPage() {
   const { data: expenses = [], isLoading } = useExpenses();
   const createExpense = useCreateExpense();
   const deleteExpense = useDeleteExpense();
-  const updateExpense = useUpdateExpense();
 
   const [showForm, setShowForm] = useState(false);
   const [description, setDescription] = useState("");
@@ -115,7 +114,39 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleExport = async () => {
+  const handleExportExcel = async () => {
+    if (selectedExpenses.length === 0) {
+      showToast("error", "Sélectionne au moins une dépense");
+      return;
+    }
+    setExporting(true);
+    try {
+      const res = await fetch("/api/expenses/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expenseIds: Array.from(selectedIds) }),
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `onkostennota_${new Date().toISOString().slice(0, 7)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("success", "Excel généré et dépenses marquées comme exportées");
+      setSelectedIds(new Set());
+      setSelectMode(false);
+    } catch {
+      showToast("error", "Erreur lors de l'export Excel");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
     if (selectedExpenses.length === 0) {
       showToast("error", "Sélectionne au moins une dépense");
       return;
@@ -123,17 +154,9 @@ export default function ExpensesPage() {
     setExporting(true);
     try {
       pdfExpenseDocument(selectedExpenses);
-      // Mark as exported
-      await Promise.all(
-        selectedExpenses.map((e) =>
-          updateExpense.mutateAsync({ id: e.id, exported: true })
-        )
-      );
-      showToast("success", "PDF généré et dépenses marquées comme exportées");
-      setSelectedIds(new Set());
-      setSelectMode(false);
+      showToast("success", "PDF des justificatifs généré");
     } catch {
-      showToast("error", "Erreur lors de l'export");
+      showToast("error", "Erreur lors de l'export PDF");
     } finally {
       setExporting(false);
     }
@@ -274,12 +297,21 @@ export default function ExpensesPage() {
                 {selectedIds.size === expenses.length ? "Tout désélectionner" : "Tout sélectionner"}
               </button>
               <Button
-                onClick={handleExport}
+                onClick={handleExportExcel}
                 disabled={exporting || selectedIds.size === 0}
                 size="sm"
               >
-                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-                Exporter PDF{selectedIds.size > 0 && ` (${selectedTotal.toFixed(2)} €)`}
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                Excel{selectedIds.size > 0 && ` (${selectedTotal.toFixed(2)} €)`}
+              </Button>
+              <Button
+                onClick={handleExportPDF}
+                disabled={exporting || selectedIds.size === 0}
+                size="sm"
+                variant="outline"
+              >
+                <FileDown className="w-4 h-4" />
+                Justificatifs PDF
               </Button>
             </div>
           )}
