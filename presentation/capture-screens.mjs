@@ -13,10 +13,8 @@ const PASSWORD = process.env.CAPTURE_PASSWORD || "";
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({
-  viewport: { width: 390, height: 844 },
+  viewport: { width: 1280, height: 800 },
   deviceScaleFactor: 2,
-  isMobile: true,
-  hasTouch: true,
 });
 const page = await ctx.newPage();
 

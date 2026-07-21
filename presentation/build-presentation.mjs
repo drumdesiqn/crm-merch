@@ -123,43 +123,67 @@ const body = `
   <span class="pagenum">4</span>
 </div>
 
-<!-- PAGE 5 : CAPTURES 1/3 -->
+<!-- PAGE 5 : CAPTURES — Dashboard & Planning -->
 <div class="page">
   <div class="section-tag">03 — Aperçu</div>
-  <h2>Captures d'écran — 1/3</h2>
-  <p class="lead">Interface mobile réelle — capturée sur l'application en production.</p>
+  <h2>Captures d'écran — Vue desktop</h2>
+  <p class="lead">L'application en conditions réelles — version navigateur desktop.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/dashboard.png" alt="Dashboard" /><div class="caption">Dashboard</div></div>
-    <div class="shot"><img src="screenshots/planning.png" alt="Planning" /><div class="caption">Planning</div></div>
-    <div class="shot"><img src="screenshots/magasins.png" alt="Magasins" /><div class="caption">Fiches magasins</div></div>
-  </div>
-  <div class="shots" style="margin-top: 10px;">
-    <div class="shot"><img src="screenshots/notes-de-frais.png" alt="Notes de frais" /><div class="caption">Notes de frais</div></div>
-    <div class="shot"><img src="screenshots/photos.png" alt="Photos" /><div class="caption">Médiathèque</div></div>
-    <div class="shot"><img src="screenshots/analytics.png" alt="Analytics" /><div class="caption">Analytics</div></div>
+    <div class="shot"><img src="screenshots/dashboard.png" alt="Dashboard" /><div class="caption">Dashboard — prochaine visite, statistiques, kilométrage</div></div>
+    <div class="shot"><img src="screenshots/planning.png" alt="Planning" /><div class="caption">Planning — visites par jour, import Excel</div></div>
   </div>
   <span class="pagenum">5</span>
 </div>
 
-<!-- PAGE 6 : CAPTURES 2/3 -->
+<!-- PAGE 6 : CAPTURES — Magasins & Notes de frais -->
 <div class="page">
   <div class="section-tag">03 — Aperçu (suite)</div>
-  <h2>Captures d'écran — 2/3</h2>
-  <p class="lead">Contacts, exports, paramètres et assistant IA.</p>
+  <h2>Captures d'écran — Magasins &amp; Notes de frais</h2>
+  <p class="lead">Fiches magasins et gestion des dépenses.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/contacts.png" alt="Contacts" /><div class="caption">Annuaire interne</div></div>
-    <div class="shot"><img src="screenshots/export.png" alt="Export" /><div class="caption">Export PDF</div></div>
-    <div class="shot"><img src="screenshots/settings.png" alt="Paramètres" /><div class="caption">Paramètres</div></div>
-  </div>
-  <div class="shots" style="margin-top: 10px;">
-    <div class="shot"><img src="screenshots/assistant.png" alt="Assistant" /><div class="caption">Assistant IA</div></div>
-    <div class="shot" style="visibility: hidden;"></div>
-    <div class="shot" style="visibility: hidden;"></div>
+    <div class="shot"><img src="screenshots/magasins.png" alt="Magasins" /><div class="caption">Fiches magasins — recherche, tri, assortment</div></div>
+    <div class="shot"><img src="screenshots/notes-de-frais.png" alt="Notes de frais" /><div class="caption">Notes de frais — photo du ticket, export Excel/ZIP</div></div>
   </div>
   <span class="pagenum">6</span>
 </div>
 
-<!-- PAGE 7 : ARCHITECTURE -->
+<!-- PAGE 7 : CAPTURES — Photos & Analytics -->
+<div class="page">
+  <div class="section-tag">03 — Aperçu (suite)</div>
+  <h2>Captures d'écran — Photos &amp; Analytics</h2>
+  <p class="lead">Médiathèque et statistiques d'activité.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/photos.png" alt="Photos" /><div class="caption">Médiathèque — photos par magasin, favoris</div></div>
+    <div class="shot"><img src="screenshots/analytics.png" alt="Analytics" /><div class="caption">Analytics — graphiques, taux de complétion, kilomètres</div></div>
+  </div>
+  <span class="pagenum">7</span>
+</div>
+
+<!-- PAGE 8 : CAPTURES — Contacts & Export -->
+<div class="page">
+  <div class="section-tag">03 — Aperçu (suite)</div>
+  <h2>Captures d'écran — Contacts &amp; Export</h2>
+  <p class="lead">Annuaire interne et rapports PDF.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/contacts.png" alt="Contacts" /><div class="caption">Annuaire interne CPM/Mars — par équipe</div></div>
+    <div class="shot"><img src="screenshots/export.png" alt="Export" /><div class="caption">Export — rapports PDF par visite et par semaine</div></div>
+  </div>
+  <span class="pagenum">8</span>
+</div>
+
+<!-- PAGE 9 : CAPTURES — Paramètres & Assistant -->
+<div class="page">
+  <div class="section-tag">03 — Aperçu (suite)</div>
+  <h2>Captures d'écran — Paramètres &amp; Assistant IA</h2>
+  <p class="lead">Configuration et assistant intelligent.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/settings.png" alt="Paramètres" /><div class="caption">Paramètres — profil, thème, glossaire, sauvegardes</div></div>
+    <div class="shot"><img src="screenshots/assistant.png" alt="Assistant" /><div class="caption">Assistant IA — chat avec contexte Mars</div></div>
+  </div>
+  <span class="pagenum">9</span>
+</div>
+
+<!-- PAGE 10 : ARCHITECTURE -->
 <div class="page">
   <div class="section-tag">04 — Architecture</div>
   <h2>Architecture technique</h2>
@@ -205,10 +229,10 @@ const body = `
       <div class="arch-item"><span class="tech-name">Playwright</span><span class="tech-desc">Tests E2E automatisés (12 scénarios)</span></div>
     </div>
   </div>
-  <span class="pagenum">7</span>
+  <span class="pagenum">10</span>
 </div>
 
-<!-- PAGE 8 : SÉCURITÉ & CONFIGURATION -->
+<!-- PAGE 11 : SÉCURITÉ & CONFIGURATION -->
 <div class="page">
   <div class="section-tag">05 — Sécurité &amp; Configuration</div>
   <h2>Sécurité et configuration</h2>
@@ -231,10 +255,10 @@ const body = `
       <tr><td class="label">Mot de passe</td><td>Changement sécurisé</td><td>Autonomie de l'utilisateur</td></tr>
     </table>
   </div>
-  <span class="pagenum">8</span>
+  <span class="pagenum">11</span>
 </div>
 
-<!-- PAGE 9 : ROADMAP & AVENIR -->
+<!-- PAGE 12 : ROADMAP & AVENIR -->
 <div class="page">
   <div class="section-tag">06 — Avenir</div>
   <h2>Roadmap &amp; évolutions</h2>
@@ -288,10 +312,10 @@ const body = `
       <p>KPIs temps réel : taux de visite par zone, conformité merchandising, temps passé par magasin, heatmap d'activité.</p>
     </div>
   </div>
-  <span class="pagenum">9</span>
+  <span class="pagenum">12</span>
 </div>
 
-<!-- PAGE 10 : BÉNÉFICES & CONCLUSION -->
+<!-- PAGE 13 : BÉNÉFICES & CONCLUSION -->
 <div class="page">
   <div class="section-tag">07 — Conclusion</div>
   <h2>Ce que ça apporte concrètement</h2>
@@ -323,11 +347,11 @@ const body = `
   <div class="closing">
     <p>Je l'utilise tous les jours en tournée.<br><strong>Je serais ravi de vous la montrer en 15 minutes.</strong></p>
   </div>
-  <span class="pagenum">10</span>
+  <span class="pagenum">13</span>
 </div>
 `;
 
 const html = fs.readFileSync(path.join(__dirname, "presentation.html"), "utf8");
-const updated = html.replace("<body>\n</body>", `<body>\n${body}\n</body>`);
+const updated = html.replace(/<body>[\s\S]*?<\/body>/, `<body>\n${body}\n</body>`);
 fs.writeFileSync(path.join(__dirname, "presentation.html"), updated);
 console.log("Body injected. Total length:", updated.length);
