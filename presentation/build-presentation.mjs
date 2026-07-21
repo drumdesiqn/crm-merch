@@ -32,7 +32,7 @@ const body = `
       <li>Rapports de visite rédigés à la main ou dans un Word, jamais retrouvés</li>
       <li>Notes de frais saisies manuellement dans Excel à la fin du mois — erreurs, oublis</li>
       <li>Pas de vue d'ensemble : kilométrage, taux de complétion, activité par magasin</li>
-      <li>Contacts de responsables de rayon éparpillés entre téléphone, mail, papier</li>
+      <li>Contacts internes (collègues, responsables) éparpillés entre téléphone, mail, papier</li>
       <li>Aucun lien entre une visite, ses photos, ses notes et sa note de frais</li>
     </ul>
   </div>
@@ -84,7 +84,7 @@ const body = `
       <div class="feat-card"><div class="icon">\u2705</div><h3>Suivi des visites</h3><p>Statuts : effectuée, en attente, reportée, annulée. Type de matériel posé, remarques par visite.</p></div>
       <div class="feat-card"><div class="icon">\u{1F4F7}</div><h3>Photos avant / après</h3><p>Catégorisation automatique, upload compressé, sélection multiple, partage et export PDF.</p></div>
       <div class="feat-card"><div class="icon">\u{1F4DD}</div><h3>Notes de visite</h3><p>Compte-rendu par visite, ajout rapide depuis le terrain, historique consultable.</p></div>
-      <div class="feat-card"><div class="icon">\u{1F465}</div><h3>Contacts</h3><p>Répertoire des responsables de rayon — téléphone, email, organisé par équipe. Appel direct.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F465}</div><h3>Annuaire interne</h3><p>Contacts CPM/Mars organisés par équipe — téléphone, email, WhatsApp, appel direct.</p></div>
     </div>
   </div>
   <span class="pagenum">3</span>
@@ -123,38 +123,38 @@ const body = `
   <span class="pagenum">4</span>
 </div>
 
-<!-- PAGE 5 : CAPTURES 1/2 -->
+<!-- PAGE 5 : CAPTURES 1/3 -->
 <div class="page">
   <div class="section-tag">03 — Aperçu</div>
-  <h2>Captures d'écran — 1/2</h2>
+  <h2>Captures d'écran — 1/3</h2>
   <p class="lead">Interface mobile réelle — capturée sur l'application en production.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/dashboard.png" alt="Dashboard" /><div class="caption">Dashboard — prochaine visite, stats, kilométrage</div></div>
-    <div class="shot"><img src="screenshots/planning.png" alt="Planning" /><div class="caption">Planning — visites par jour, import Excel</div></div>
+    <div class="shot"><img src="screenshots/dashboard.png" alt="Dashboard" /><div class="caption">Dashboard</div></div>
+    <div class="shot"><img src="screenshots/planning.png" alt="Planning" /><div class="caption">Planning</div></div>
+    <div class="shot"><img src="screenshots/magasins.png" alt="Magasins" /><div class="caption">Fiches magasins</div></div>
   </div>
-  <div class="shots" style="margin-top: 12px;">
-    <div class="shot"><img src="screenshots/magasins.png" alt="Magasins" /><div class="caption">Fiches magasins — recherche et tri</div></div>
-    <div class="shot"><img src="screenshots/notes-de-frais.png" alt="Notes de frais" /><div class="caption">Notes de frais — photo du ticket, export</div></div>
-  </div>
-  <div class="shots" style="margin-top: 12px;">
-    <div class="shot"><img src="screenshots/export.png" alt="Export" /><div class="caption">Export — rapports PDF par visite</div></div>
-    <div class="shot"><img src="screenshots/settings.png" alt="Paramètres" /><div class="caption">Paramètres — profil, thème, glossaire</div></div>
+  <div class="shots" style="margin-top: 10px;">
+    <div class="shot"><img src="screenshots/notes-de-frais.png" alt="Notes de frais" /><div class="caption">Notes de frais</div></div>
+    <div class="shot"><img src="screenshots/photos.png" alt="Photos" /><div class="caption">Médiathèque</div></div>
+    <div class="shot"><img src="screenshots/analytics.png" alt="Analytics" /><div class="caption">Analytics</div></div>
   </div>
   <span class="pagenum">5</span>
 </div>
 
-<!-- PAGE 6 : CAPTURES 2/2 -->
+<!-- PAGE 6 : CAPTURES 2/3 -->
 <div class="page">
   <div class="section-tag">03 — Aperçu (suite)</div>
-  <h2>Captures d'écran — 2/2</h2>
-  <p class="lead">Photos, statistiques, contacts et assistant IA.</p>
+  <h2>Captures d'écran — 2/3</h2>
+  <p class="lead">Contacts, exports, paramètres et assistant IA.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/photos.png" alt="Photos" /><div class="caption">Médiathèque — photos par magasin, favoris</div></div>
-    <div class="shot"><img src="screenshots/analytics.png" alt="Analytics" /><div class="caption">Analytics — graphiques et statistiques</div></div>
+    <div class="shot"><img src="screenshots/contacts.png" alt="Contacts" /><div class="caption">Annuaire interne</div></div>
+    <div class="shot"><img src="screenshots/export.png" alt="Export" /><div class="caption">Export PDF</div></div>
+    <div class="shot"><img src="screenshots/settings.png" alt="Paramètres" /><div class="caption">Paramètres</div></div>
   </div>
-  <div class="shots" style="margin-top: 12px;">
-    <div class="shot"><img src="screenshots/contacts.png" alt="Contacts" /><div class="caption">Contacts — répertoire par équipe</div></div>
-    <div class="shot"><img src="screenshots/assistant.png" alt="Assistant" /><div class="caption">Assistant IA — chat avec contexte Mars</div></div>
+  <div class="shots" style="margin-top: 10px;">
+    <div class="shot"><img src="screenshots/assistant.png" alt="Assistant" /><div class="caption">Assistant IA</div></div>
+    <div class="shot" style="visibility: hidden;"></div>
+    <div class="shot" style="visibility: hidden;"></div>
   </div>
   <span class="pagenum">6</span>
 </div>
