@@ -1,84 +1,10 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>MERCH — Présentation</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', -apple-system, sans-serif; color: #1e293b; background: #fff; }
-  .page { width: 210mm; height: 296mm; padding: 18mm 16mm; page-break-after: always; position: relative; overflow: hidden; }
-  .page:last-child { page-break-after: avoid; }
-  .cover { display: flex; flex-direction: column; justify-content: center; background: linear-gradient(155deg, #0f766e 0%, #134e4a 60%, #0c3b38 100%); color: #fff; }
-  .cover .badge { display: inline-block; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 6px 16px; font-size: 11px; letter-spacing: 1.5px; margin-bottom: 20px; width: fit-content; }
-  .cover h1 { font-size: 60px; font-weight: 800; line-height: 1; margin-bottom: 14px; letter-spacing: -1.5px; }
-  .cover .subtitle { font-size: 18px; font-weight: 300; opacity: .88; max-width: 140mm; line-height: 1.5; margin-bottom: 32px; }
-  .cover .meta { font-size: 13px; opacity: .7; line-height: 1.8; }
-  .cover .foot { position: absolute; bottom: 18mm; left: 16mm; font-size: 11px; opacity: .5; }
-  .cover .stats { display: flex; gap: 32px; margin-top: 28px; }
-  .cover .stat-item .val { font-size: 28px; font-weight: 800; opacity: .95; }
-  .cover .stat-item .lbl { font-size: 11px; opacity: .6; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
-  h2 { font-size: 22px; font-weight: 800; color: #134e4a; margin-bottom: 3px; }
-  .lead { font-size: 12.5px; color: #64748b; margin-bottom: 16px; line-height: 1.6; }
-  .section-tag { font-size: 10px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
-  .problem-box { background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
-  .problem-box h3 { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 6px; }
-  .problem-box ul { list-style: none; padding: 0; }
-  .problem-box li { font-size: 12px; color: #7f1d1d; line-height: 1.7; padding-left: 14px; position: relative; }
-  .problem-box li::before { content: "\2717"; position: absolute; left: 0; font-weight: 700; }
-  .solution-box { background: #f0fdfa; border-left: 4px solid #0f766e; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
-  .solution-box h3 { font-size: 13px; font-weight: 700; color: #134e4a; margin-bottom: 6px; }
-  .solution-box ul { list-style: none; padding: 0; }
-  .solution-box li { font-size: 12px; color: #334155; line-height: 1.7; padding-left: 14px; position: relative; }
-  .solution-box li::before { content: "\2713"; position: absolute; left: 0; font-weight: 700; color: #0f766e; }
-  .flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 8px 0 12px; }
-  .flow-step { background: #0f766e; color: #fff; padding: 5px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 600; }
-  .flow-arrow { color: #94a3b8; font-size: 13px; }
-  .feat-section { margin-bottom: 14px; }
-  .feat-title { font-size: 11px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding-bottom: 3px; border-bottom: 1.5px solid #e2e8f0; }
-  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .feat-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; background: #fafafa; }
-  .feat-card .icon { font-size: 15px; margin-bottom: 2px; }
-  .feat-card h3 { font-size: 11.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-  .feat-card p { font-size: 10.5px; color: #64748b; line-height: 1.4; }
-  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
-  .shot { text-align: center; }
-  .shot img { width: 100%; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.06); }
-  .shot .caption { font-size: 10px; color: #64748b; margin-top: 4px; font-weight: 600; }
-  .arch-layer { margin-bottom: 10px; }
-  .arch-layer-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
-  .arch-items { display: flex; gap: 6px; flex-wrap: wrap; }
-  .arch-item { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 600; color: #334155; }
-  .arch-item .tech-name { color: #0f766e; font-weight: 700; }
-  .arch-item .tech-desc { color: #94a3b8; font-weight: 400; font-size: 10px; display: block; margin-top: 1px; }
-  .sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .sec-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; background: #f8fafc; }
-  .sec-card .icon { font-size: 15px; margin-bottom: 3px; }
-  .sec-card h3 { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-  .sec-card p { font-size: 10.5px; color: #64748b; line-height: 1.45; }
-  .config-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
-  .config-table th { text-align: left; padding: 6px 10px; background: #0f766e; color: #fff; font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
-  .config-table td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; color: #334155; }
-  .config-table tr:nth-child(even) td { background: #f8fafc; }
-  .config-table .label { font-weight: 600; color: #0f172a; }
-  .roadmap-item { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
-  .roadmap-phase { min-width: 70px; text-align: center; flex-shrink: 0; }
-  .roadmap-phase .phase-tag { background: #0f766e; color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
-  .roadmap-phase .phase-tag.future { background: #6366f1; }
-  .roadmap-phase .phase-tag.idea { background: #d97706; }
-  .roadmap-content h3 { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-  .roadmap-content p { font-size: 11px; color: #64748b; line-height: 1.5; }
-  .benefit { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
-  .benefit .num { background: #0f766e; color: #fff; min-width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
-  .benefit h3 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-  .benefit p { font-size: 11.5px; color: #64748b; line-height: 1.5; }
-  .closing { margin-top: 16px; text-align: center; padding: 20px; background: linear-gradient(155deg, #0f766e 0%, #134e4a 100%); border-radius: 12px; color: #fff; }
-  .closing p { font-size: 13px; line-height: 1.6; font-weight: 300; }
-  .closing strong { font-weight: 700; }
-  .pagenum { position: absolute; bottom: 7mm; right: 16mm; font-size: 9px; color: #94a3b8; }
-</style>
-</head>
-<body>
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const body = `
 <!-- PAGE 1 : COVER -->
 <div class="page cover">
   <span class="badge">PROPOSITION INTERNE — CPM</span>
@@ -123,13 +49,13 @@
   <div class="feat-section" style="margin-top: 14px;">
     <div class="feat-title">Le flux de travail couvert</div>
     <div class="flow">
-      <span class="flow-step">Import Excel</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Organisation tournée</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Navigation Waze</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Visite &amp; statut</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Photos avant/après</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Notes &amp; rapport</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Note de frais</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Import Excel</span><span class="flow-arrow">\u2192</span>
+      <span class="flow-step">Organisation tournée</span><span class="flow-arrow">\u2192</span>
+      <span class="flow-step">Navigation Waze</span><span class="flow-arrow">\u2192</span>
+      <span class="flow-step">Visite &amp; statut</span><span class="flow-arrow">\u2192</span>
+      <span class="flow-step">Photos avant/après</span><span class="flow-arrow">\u2192</span>
+      <span class="flow-step">Notes &amp; rapport</span><span class="flow-arrow">\u2192</span>
+      <span class="flow-step">Note de frais</span><span class="flow-arrow">\u2192</span>
       <span class="flow-step">Export</span>
     </div>
   </div>
@@ -144,21 +70,21 @@
   <div class="feat-section">
     <div class="feat-title">Planning &amp; Tournées</div>
     <div class="feat-grid">
-      <div class="feat-card"><div class="icon">📅</div><h3>Planning hebdomadaire</h3><p>Import direct du fichier Excel CPM. Visites organisées par jour, réordonnancées par drag &amp; drop.</p></div>
-      <div class="feat-card"><div class="icon">🗺</div><h3>Carte &amp; itinéraires</h3><p>Carte interactive Leaflet, calcul de trajet via OSRM, kilométrage et durée estimés, ordre optimisé.</p></div>
-      <div class="feat-card"><div class="icon">🧭</div><h3>Navigation Waze</h3><p>Bouton direct vers Waze pour chaque visite. Départ configurable : magasin précédent ou domicile.</p></div>
-      <div class="feat-card"><div class="icon">📶</div><h3>Mode hors-ligne</h3><p>Changement de statut sans connexion. File d'attente locale, synchronisation auto au retour.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4C5}</div><h3>Planning hebdomadaire</h3><p>Import direct du fichier Excel CPM. Visites organisées par jour, réordonnancées par drag &amp; drop.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F5FA}</div><h3>Carte &amp; itinéraires</h3><p>Carte interactive Leaflet, calcul de trajet via OSRM, kilométrage et durée estimés, ordre optimisé.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F9ED}</div><h3>Navigation Waze</h3><p>Bouton direct vers Waze pour chaque visite. Départ configurable : magasin précédent ou domicile.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4F6}</div><h3>Mode hors-ligne</h3><p>Changement de statut sans connexion. File d'attente locale, synchronisation auto au retour.</p></div>
     </div>
   </div>
   <div class="feat-section">
     <div class="feat-title">Magasins &amp; Visites</div>
     <div class="feat-grid">
-      <div class="feat-card"><div class="icon">🏪</div><h3>Fiches magasins</h3><p>Coordonnées, assortment, type de visite, fréquence, responsable commercial. Recherche et tri.</p></div>
-      <div class="feat-card"><div class="icon">📜</div><h3>Historique par magasin</h3><p>Toutes les visites passées d'un point de vente : photos, notes, statuts — en un coup d'œil.</p></div>
-      <div class="feat-card"><div class="icon">✅</div><h3>Suivi des visites</h3><p>Statuts : effectuée, en attente, reportée, annulée. Type de matériel posé, remarques par visite.</p></div>
-      <div class="feat-card"><div class="icon">📷</div><h3>Photos avant / après</h3><p>Catégorisation automatique, upload compressé, sélection multiple, partage et export PDF.</p></div>
-      <div class="feat-card"><div class="icon">📝</div><h3>Notes de visite</h3><p>Compte-rendu par visite, ajout rapide depuis le terrain, historique consultable.</p></div>
-      <div class="feat-card"><div class="icon">👥</div><h3>Contacts</h3><p>Répertoire des responsables de rayon — téléphone, email, organisé par équipe. Appel direct.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F3EA}</div><h3>Fiches magasins</h3><p>Coordonnées, assortment, type de visite, fréquence, responsable commercial. Recherche et tri.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4DC}</div><h3>Historique par magasin</h3><p>Toutes les visites passées d'un point de vente : photos, notes, statuts — en un coup d'œil.</p></div>
+      <div class="feat-card"><div class="icon">\u2705</div><h3>Suivi des visites</h3><p>Statuts : effectuée, en attente, reportée, annulée. Type de matériel posé, remarques par visite.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4F7}</div><h3>Photos avant / après</h3><p>Catégorisation automatique, upload compressé, sélection multiple, partage et export PDF.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4DD}</div><h3>Notes de visite</h3><p>Compte-rendu par visite, ajout rapide depuis le terrain, historique consultable.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F465}</div><h3>Contacts</h3><p>Répertoire des responsables de rayon — téléphone, email, organisé par équipe. Appel direct.</p></div>
     </div>
   </div>
   <span class="pagenum">3</span>
@@ -172,26 +98,26 @@
   <div class="feat-section">
     <div class="feat-title">Notes de frais</div>
     <div class="feat-grid">
-      <div class="feat-card"><div class="icon">🧾</div><h3>Saisie en tournée</h3><p>Photo du ticket, montant, date et description — enregistré en quelques secondes sur le terrain.</p></div>
-      <div class="feat-card"><div class="icon">📊</div><h3>Export Excel officiel</h3><p>Génération automatique dans le template Excel CPM (max. 12 notes par export), sans ressaisie.</p></div>
-      <div class="feat-card"><div class="icon">📦</div><h3>Export ZIP complet</h3><p>Excel + PDF + photos justificatives individuelles dans un seul fichier, prêt à envoyer.</p></div>
-      <div class="feat-card"><div class="icon">✓</div><h3>Suivi des exports</h3><p>Marquage automatique des notes déjà exportées pour éviter les doublons.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F9FE}</div><h3>Saisie en tournée</h3><p>Photo du ticket, montant, date et description — enregistré en quelques secondes sur le terrain.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4CA}</div><h3>Export Excel officiel</h3><p>Génération automatique dans le template Excel CPM (max. 12 notes par export), sans ressaisie.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4E6}</div><h3>Export ZIP complet</h3><p>Excel + PDF + photos justificatives individuelles dans un seul fichier, prêt à envoyer.</p></div>
+      <div class="feat-card"><div class="icon">\u2713</div><h3>Suivi des exports</h3><p>Marquage automatique des notes déjà exportées pour éviter les doublons.</p></div>
     </div>
   </div>
   <div class="feat-section">
     <div class="feat-title">Rapports &amp; Exports</div>
     <div class="feat-grid">
-      <div class="feat-card"><div class="icon">📄</div><h3>Rapport de visite PDF</h3><p>Photos catégorisées + notes + infos magasin, généré en un clic, format A4 imprimable.</p></div>
-      <div class="feat-card"><div class="icon">📚</div><h3>Export groupé par semaine</h3><p>Tous les rapports de visite d'une semaine en un seul document PDF.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4C4}</div><h3>Rapport de visite PDF</h3><p>Photos catégorisées + notes + infos magasin, généré en un clic, format A4 imprimable.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4DA}</div><h3>Export groupé par semaine</h3><p>Tous les rapports de visite d'une semaine en un seul document PDF.</p></div>
     </div>
   </div>
   <div class="feat-section">
     <div class="feat-title">Analytics &amp; Assistant IA</div>
     <div class="feat-grid">
-      <div class="feat-card"><div class="icon">📈</div><h3>Statistiques</h3><p>Taux de complétion, visites par semaine, kilomètres, photos avant/après, activité par jour.</p></div>
-      <div class="feat-card"><div class="icon">🤖</div><h3>Assistant IA</h3><p>Chat avec GPT-4o, contexte Mars injecté : questions sur les visites, contacts, matériel.</p></div>
-      <div class="feat-card"><div class="icon">🖼</div><h3>Médiathèque</h3><p>Toutes les photos regroupées par magasin, favoris, recherche et filtrage.</p></div>
-      <div class="feat-card"><div class="icon">📖</div><h3>Guide matériel</h3><p>Référence visuelle des types de matériel merchandising Mars.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4C8}</div><h3>Statistiques</h3><p>Taux de complétion, visites par semaine, kilomètres, photos avant/après, activité par jour.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F916}</div><h3>Assistant IA</h3><p>Chat avec GPT-4o, contexte Mars injecté : questions sur les visites, contacts, matériel.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F5BC}</div><h3>Médiathèque</h3><p>Toutes les photos regroupées par magasin, favoris, recherche et filtrage.</p></div>
+      <div class="feat-card"><div class="icon">\u{1F4D6}</div><h3>Guide matériel</h3><p>Référence visuelle des types de matériel merchandising Mars.</p></div>
     </div>
   </div>
   <span class="pagenum">4</span>
@@ -288,10 +214,10 @@
   <h2>Sécurité et configuration</h2>
   <p class="lead">Données protégées, accès contrôlé, paramétrable par utilisateur.</p>
   <div class="sec-grid" style="margin-bottom: 14px;">
-    <div class="sec-card"><div class="icon">🔐</div><h3>Authentification JWT</h3><p>Connexion par compte et mot de passe. Tokens JWT signés, expiration automatique. Chaque utilisateur ne voit que ses propres données.</p></div>
-    <div class="sec-card"><div class="icon">🛡</div><h3>Isolation des données</h3><p>Toutes les requêtes API vérifient l'identité de l'utilisateur. Aucun accès cross-user possible. Mots de passe hachés (bcrypt).</p></div>
-    <div class="sec-card"><div class="icon">💾</div><h3>Sauvegardes</h3><p>Sauvegarde manuelle exportable (JSON). Base de données Neon avec réplication. Photos stockées sur Vercel Blob (CDN, redondance).</p></div>
-    <div class="sec-card"><div class="icon">🌐</div><h3>Hébergement cloud</h3><p>Vercel : CDN global, HTTPS automatique, déploiement continu depuis GitHub. Pas de serveur à maintenir.</p></div>
+    <div class="sec-card"><div class="icon">\u{1F510}</div><h3>Authentification JWT</h3><p>Connexion par compte et mot de passe. Tokens JWT signés, expiration automatique. Chaque utilisateur ne voit que ses propres données.</p></div>
+    <div class="sec-card"><div class="icon">\u{1F6E1}</div><h3>Isolation des données</h3><p>Toutes les requêtes API vérifient l'identité de l'utilisateur. Aucun accès cross-user possible. Mots de passe hachés (bcrypt).</p></div>
+    <div class="sec-card"><div class="icon">\u{1F4BE}</div><h3>Sauvegardes</h3><p>Sauvegarde manuelle exportable (JSON). Base de données Neon avec réplication. Photos stockées sur Vercel Blob (CDN, redondance).</p></div>
+    <div class="sec-card"><div class="icon">\u{1F310}</div><h3>Hébergement cloud</h3><p>Vercel : CDN global, HTTPS automatique, déploiement continu depuis GitHub. Pas de serveur à maintenir.</p></div>
   </div>
   <div class="feat-section">
     <div class="feat-title">Configuration par utilisateur</div>
@@ -399,6 +325,9 @@
   </div>
   <span class="pagenum">10</span>
 </div>
+`;
 
-</body>
-</html>
+const html = fs.readFileSync(path.join(__dirname, "presentation.html"), "utf8");
+const updated = html.replace("<body>\n</body>", `<body>\n${body}\n</body>`);
+fs.writeFileSync(path.join(__dirname, "presentation.html"), updated);
+console.log("Body injected. Total length:", updated.length);
