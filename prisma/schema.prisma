@@ -197,6 +197,7 @@ model User {
   contactTeams  ContactTeam[]
   contacts      Contact[]
   dayRoutes     DayRoute[]
+  expenses      Expense[]
 }
 
 model ContactTeam {
@@ -243,4 +244,21 @@ model Contact {
   updatedAt DateTime    @updatedAt
 
   @@index([teamId])
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  description String
+  amount      Float
+  expenseDate DateTime
+  receiptUrl  String?
+  receiptKey  String?
+  exportedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([expenseDate])
 }

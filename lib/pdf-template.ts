@@ -1,4 +1,5 @@
 import { escapeHtml } from "./utils";
+import { showToast } from "@/components/Toast";
 
 /**
  * Shared PDF template styles used by ExportPage and VisitDetailPage.
@@ -407,4 +408,166 @@ export function pdfBatchDocument(
     </body>
     </html>
   `;
+}
+
+/**
+ * Generate a PDF note de frais document with expense table + receipt photos.
+ * Opens a print window and returns nothing.
+ */
+export function pdfExpenseDocument(
+  expenses: {
+    id: string;
+    description: string;
+    amount: number;
+    expenseDate: string;
+    receiptUrl: string | null;
+  }[]
+): void {
+  const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("fr-BE");
+
+  const rows = expenses.map((e, i) => {
+    const d = new Date(e.expenseDate).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return `<tr>
+      <td>${i + 1}</td>
+      <td>${d}</td>
+      <td>${escapeHtml(e.description)}</td>
+      <td style="text-align: right; font-weight: 600;">${e.amount.toFixed(2)} €</td>
+      <td style="text-align: center;">${e.receiptUrl ? "Oui" : "—"}</td>
+    </tr>`;
+  }).join("");
+
+  const receiptPhotos = expenses
+    .filter((e) => e.receiptUrl)
+    .map((e, i) => {
+      const num = expenses.indexOf(e) + 1;
+      return `
+        <div style="break-inside: avoid; margin-bottom: 24px; page-break-inside: avoid;">
+          <p style="font-size: 13px; font-weight: 700; color: #003478; margin: 0 0 8px;">
+            N°${num} — ${escapeHtml(e.description)} (${e.amount.toFixed(2)} €)
+          </p>
+          <img src="${escapeHtml(e.receiptUrl!)}" style="max-width: 100%; max-height: 500px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+        </div>
+      `;
+    }).join("");
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Note de frais — ${dateStr}</title>
+      <style>
+        ${PDF_BASE_STYLES}
+        .expense-total {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 14px 18px;
+          background: linear-gradient(135deg, #003478 0%, #005392 100%);
+          border-radius: 8px;
+          color: #fff;
+          margin-top: 16px;
+        }
+        .expense-total .lbl { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .expense-total .val { font-size: 24px; font-weight: 800; }
+        .signature-zone {
+          margin-top: 60px;
+          display: flex;
+          justify-content: space-between;
+          gap: 40px;
+        }
+        .signature-box {
+          flex: 1;
+          text-align: center;
+        }
+        .signature-box .line {
+          border-top: 1.5px solid #94a3b8;
+          padding-top: 8px;
+          font-size: 11px;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        @media print { .receipt-page { page-break-before: always; } }
+      </style>
+    </head>
+    <body>
+      <div class="brand-bar">
+        <div>
+          <div class="brand-title">NOTE DE FRAIS</div>
+          <div class="brand-sub">CPM Mars · ${dateStr}</div>
+        </div>
+        <div style="font-size: 28px; font-weight: 800;">€</div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <label>Date d'émission</label>
+          <value>${dateStr}</value>
+        </div>
+        <div class="info-box">
+          <label>Nombre de dépenses</label>
+          <value>${expenses.length}</value>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Détail des dépenses</h2>
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Description</th>
+              <th style="text-align: right;">Montant</th>
+              <th style="text-align: center;">Ticket</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        <div class="expense-total">
+          <span class="lbl">Total</span>
+          <span class="val">${total.toFixed(2)} €</span>
+        </div>
+      </div>
+
+      <div class="signature-zone">
+        <div class="signature-box">
+          <div style="height: 60px;"></div>
+          <div class="line">Signature du collaborateur</div>
+        </div>
+        <div class="signature-box">
+          <div style="height: 60px;"></div>
+          <div class="line">Validation du manager</div>
+        </div>
+      </div>
+
+      ${receiptPhotos ? `
+        <div class="receipt-page"></div>
+        <div class="section">
+          <h2>Pièces justificatives</h2>
+          ${receiptPhotos}
+        </div>
+      ` : ""}
+
+      <div class="pdf-footer">
+        Généré par CPM Mars le ${dateStr}
+      </div>
+      <script>
+        window.onload = function() { setTimeout(function() { window.print(); }, 500); };
+      </script>
+    </body>
+    </html>
+  `;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showToast("error", "Popup bloquée — autorisez les popups pour l'export PDF");
+    return;
+  }
+  printWindow.document.write(html);
+  printWindow.document.close();
 }

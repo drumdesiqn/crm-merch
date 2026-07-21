@@ -441,6 +441,32 @@ const migrations = [
       `ALTER TABLE "VisitPhoto" ADD COLUMN IF NOT EXISTS "category" TEXT;`,
     ],
   },
+  {
+    name: "20260721000000_add_expense",
+    sql: [
+      `CREATE TABLE IF NOT EXISTS "Expense" (
+        "id" TEXT NOT NULL,
+        "userId" TEXT,
+        "description" TEXT NOT NULL,
+        "amount" FLOAT8 NOT NULL,
+        "expenseDate" TIMESTAMP(3) NOT NULL,
+        "receiptUrl" TEXT,
+        "receiptKey" TEXT,
+        "exportedAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "Expense_pkey" PRIMARY KEY ("id")
+      )`,
+      `CREATE INDEX IF NOT EXISTS "Expense_userId_idx" ON "Expense"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "Expense_expenseDate_idx" ON "Expense"("expenseDate");`,
+      `DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Expense_userId_fkey') THEN
+          ALTER TABLE "Expense" ADD CONSTRAINT "Expense_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$`,
+    ],
+  },
 ];
 
 for (const migration of migrations) {
