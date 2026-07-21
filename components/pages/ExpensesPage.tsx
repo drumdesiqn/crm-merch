@@ -2,7 +2,8 @@
 
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
-import { ArrowLeft, Camera, Receipt, Trash2, FileDown, CheckSquare, Square, X, Loader2, Euro } from "lucide-react";
+import { ArrowLeft, Camera, Receipt, Trash2, FileDown, CheckSquare, Square, X, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useExpenses, useCreateExpense, useDeleteExpense, useUpdateExpense } from "@/lib/hooks/useExpenses";
 import { compressImage, formatDate } from "@/lib/utils";
@@ -143,9 +144,9 @@ export default function ExpensesPage() {
     <div className="max-w-2xl mx-auto px-4 pb-28 md:pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 pt-2">
-        <a href="/" className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+        <Link href="/" className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
           <ArrowLeft className="w-5 h-5" />
-        </a>
+        </Link>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Notes de frais</h1>
           <p className="text-sm text-slate-500">{expenses.length} dépense{expenses.length > 1 ? "s" : ""} · {totalAmount.toFixed(2)} €</p>

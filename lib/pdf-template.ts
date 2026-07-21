@@ -440,7 +440,7 @@ export function pdfExpenseDocument(
 
   const receiptPhotos = expenses
     .filter((e) => e.receiptUrl)
-    .map((e, i) => {
+    .map((e) => {
       const num = expenses.indexOf(e) + 1;
       return `
         <div style="break-inside: avoid; margin-bottom: 24px; page-break-inside: avoid;">
