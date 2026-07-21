@@ -8,6 +8,7 @@ import { useExpenses, useCreateExpense, useDeleteExpense, useUpdateExpense } fro
 import { compressImage, formatDate } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
 import { pdfExpenseDocument } from "@/lib/pdf-template";
+import FrenchDatePicker from "@/components/FrenchDatePicker";
 
 export default function ExpensesPage() {
   const { data: expenses = [], isLoading } = useExpenses();
@@ -210,13 +211,9 @@ export default function ExpensesPage() {
         <div className="flex items-end gap-3">
           <div className="flex-1">
             <label className={labelCls}>Date</label>
-            <input
-              type="date"
-              value={expenseDate}
-              onChange={(e) => setExpenseDate(e.target.value)}
-              required
-              className={inputCls}
-            />
+            <div className="border border-slate-200 dark:border-[#2e2e30] rounded-lg p-3 bg-white dark:bg-[#222223]">
+              <FrenchDatePicker value={expenseDate} onChange={setExpenseDate} />
+            </div>
           </div>
           <div>
             <input
