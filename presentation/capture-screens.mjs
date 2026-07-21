@@ -29,11 +29,16 @@ await page.waitForURL((url) => !url.pathname.includes("login"), { timeout: 15000
 console.log("Logged in");
 
 const targets = [
-  { url: "/", name: "dashboard", wait: 2500 },
-  { url: "/planning", name: "planning", wait: 2500 },
+  { url: "/", name: "dashboard", wait: 3000 },
+  { url: "/planning", name: "planning", wait: 3000 },
   { url: "/stores", name: "magasins", wait: 2500 },
   { url: "/expenses", name: "notes-de-frais", wait: 2500 },
   { url: "/photos", name: "photos", wait: 3000 },
+  { url: "/analytics", name: "analytics", wait: 3000 },
+  { url: "/contacts", name: "contacts", wait: 2500 },
+  { url: "/assistant", name: "assistant", wait: 2500 },
+  { url: "/settings", name: "settings", wait: 2500 },
+  { url: "/export", name: "export", wait: 2500 },
 ];
 
 for (const t of targets) {

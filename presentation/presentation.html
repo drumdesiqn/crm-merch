@@ -5,128 +5,72 @@
 <title>MERCH — Présentation</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Segoe UI', -apple-system, sans-serif;
-    color: #1e293b;
-    background: #fff;
-  }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; color: #1e293b; background: #fff; }
   .page {
-    width: 210mm;
-    height: 296mm;
-    padding: 22mm 20mm;
-    page-break-after: always;
-    position: relative;
-    overflow: hidden;
+    width: 210mm; height: 296mm; padding: 20mm 18mm;
+    page-break-after: always; position: relative; overflow: hidden;
   }
   .page:last-child { page-break-after: avoid; }
 
-  /* ---------- COVER ---------- */
-  .cover {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: linear-gradient(160deg, #0f766e 0%, #134e4a 100%);
-    color: #fff;
-  }
-  .cover .badge {
-    display: inline-block;
-    background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.3);
-    border-radius: 999px;
-    padding: 6px 18px;
-    font-size: 13px;
-    letter-spacing: 1px;
-    margin-bottom: 28px;
-    width: fit-content;
-  }
-  .cover h1 { font-size: 52px; font-weight: 800; line-height: 1.1; margin-bottom: 18px; }
-  .cover .subtitle { font-size: 20px; font-weight: 300; opacity: .9; max-width: 130mm; line-height: 1.5; margin-bottom: 40px; }
+  /* COVER */
+  .cover { display: flex; flex-direction: column; justify-content: center;
+    background: linear-gradient(160deg, #0f766e 0%, #134e4a 100%); color: #fff; }
+  .cover .badge { display: inline-block; background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3); border-radius: 999px;
+    padding: 6px 18px; font-size: 12px; letter-spacing: 1.5px; margin-bottom: 24px; width: fit-content; }
+  .cover h1 { font-size: 56px; font-weight: 800; line-height: 1.05; margin-bottom: 16px; letter-spacing: -1px; }
+  .cover .subtitle { font-size: 19px; font-weight: 300; opacity: .9; max-width: 135mm; line-height: 1.5; margin-bottom: 36px; }
   .cover .meta { font-size: 14px; opacity: .75; line-height: 1.8; }
-  .cover .foot { position: absolute; bottom: 22mm; left: 20mm; font-size: 12px; opacity: .6; }
+  .cover .foot { position: absolute; bottom: 20mm; left: 18mm; font-size: 11px; opacity: .55; }
 
-  /* ---------- COMMON ---------- */
-  h2 { font-size: 26px; font-weight: 800; color: #134e4a; margin-bottom: 6px; }
-  .lead { font-size: 14px; color: #64748b; margin-bottom: 26px; line-height: 1.6; }
-  .accent { color: #0f766e; }
+  /* COMMON */
+  h2 { font-size: 24px; font-weight: 800; color: #134e4a; margin-bottom: 4px; }
+  .lead { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
 
-  /* ---------- CONSTAT ---------- */
-  .constat {
-    background: #f0fdfa;
-    border-left: 4px solid #0f766e;
-    border-radius: 0 10px 10px 0;
-    padding: 16px 20px;
-    margin-bottom: 30px;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #334155;
-  }
+  /* CONSTAT */
+  .constat { background: #f0fdfa; border-left: 4px solid #0f766e; border-radius: 0 10px 10px 0;
+    padding: 14px 18px; margin-bottom: 22px; font-size: 13px; line-height: 1.65; color: #334155; }
 
-  /* ---------- FEATURES GRID ---------- */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .card {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 14px 16px;
-    background: #fafafa;
-  }
-  .card .icon { font-size: 20px; margin-bottom: 6px; }
-  .card h3 { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
-  .card p { font-size: 12px; color: #64748b; line-height: 1.5; }
+  /* FLOW */
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }
+  .flow-step { background: #0f766e; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .flow-arrow { color: #94a3b8; font-size: 14px; }
 
-  /* ---------- BENEFITS ---------- */
-  .benefit { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
-  .benefit .num {
-    background: #0f766e;
-    color: #fff;
-    min-width: 30px; height: 30px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px;
-  }
-  .benefit h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
-  .benefit p { font-size: 13px; color: #64748b; line-height: 1.55; }
+  /* FEATURE SECTIONS */
+  .feat-section { margin-bottom: 16px; }
+  .feat-title { font-size: 12px; font-weight: 700; color: #0f766e; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1.5px solid #e2e8f0; }
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .feat-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: #fafafa; }
+  .feat-card .icon { font-size: 16px; margin-bottom: 3px; }
+  .feat-card h3 { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+  .feat-card p { font-size: 11px; color: #64748b; line-height: 1.45; }
 
-  .tech {
-    margin-top: 28px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px 20px;
-  }
-  .tech h3 { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
-  .tech p { font-size: 12.5px; color: #64748b; line-height: 1.7; }
+  /* SCREENSHOTS */
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .shot { text-align: center; }
+  .shot img { width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 3px 10px rgba(0,0,0,.07); }
+  .shot .caption { font-size: 10.5px; color: #64748b; margin-top: 5px; font-weight: 600; }
 
-  .closing {
-    margin-top: 30px;
-    text-align: center;
-    padding: 24px;
-    background: linear-gradient(160deg, #0f766e 0%, #134e4a 100%);
-    border-radius: 14px;
-    color: #fff;
-  }
-  .closing p { font-size: 15px; line-height: 1.6; font-weight: 300; }
+  /* BENEFITS */
+  .benefit { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+  .benefit .num { background: #0f766e; color: #fff; min-width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .benefit h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .benefit p { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+
+  /* TECH */
+  .tech { margin-top: 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; }
+  .tech h3 { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .tech p { font-size: 12px; color: #64748b; line-height: 1.65; }
+
+  /* CLOSING */
+  .closing { margin-top: 22px; text-align: center; padding: 22px;
+    background: linear-gradient(160deg, #0f766e 0%, #134e4a 100%); border-radius: 14px; color: #fff; }
+  .closing p { font-size: 14px; line-height: 1.6; font-weight: 300; }
   .closing strong { font-weight: 700; }
 
-  .pagenum { position: absolute; bottom: 10mm; right: 20mm; font-size: 10px; color: #94a3b8; }
-
-  /* ---------- SCREENSHOTS ---------- */
-  .shots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 10px; }
-  .shot { text-align: center; }
-  .shot img {
-    width: 100%;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 12px rgba(0,0,0,.08);
-  }
-  .shot .caption {
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 6px;
-    font-weight: 600;
-  }
-  .shot-large { grid-column: 1 / -1; display: flex; gap: 16px; align-items: flex-start; }
-  .shot-large img { width: 48%; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
-  .shot-large .caption { font-size: 11px; color: #64748b; margin-top: 6px; font-weight: 600; text-align: center; }
+  .pagenum { position: absolute; bottom: 8mm; right: 18mm; font-size: 9px; color: #94a3b8; }
 </style>
 </head>
 <body>
@@ -143,7 +87,7 @@
   <p class="foot">Document de présentation — usage interne</p>
 </div>
 
-<!-- PAGE 2 : CONSTAT + FONCTIONNALITÉS -->
+<!-- PAGE 2 : CONSTAT + PLANNING/MAGASINS -->
 <div class="page">
   <h2>Le point de départ</h2>
   <p class="lead">Un outil né du terrain, utilisé au quotidien depuis plusieurs mois.</p>
@@ -151,130 +95,193 @@
   <div class="constat">
     Sur le terrain, on perd du temps sur l'administratif : rapports de visite, photos à trier,
     notes de frais à remplir à la main, tournées à organiser. J'ai développé cette application
-    pour mon propre usage, afin de tout centraliser au même endroit — sur mobile comme sur ordinateur.
+    pour centraliser tout le flux de travail d'un merchandiser — sur mobile comme sur ordinateur.
   </div>
 
-  <h2>Ce que fait l'application</h2>
-  <p class="lead">Tout le flux de travail d'un merchandiser, du planning au rapport final.</p>
+  <h2>Le flux de travail couvert</h2>
+  <div class="flow">
+    <span class="flow-step">Planning</span><span class="flow-arrow">→</span>
+    <span class="flow-step">Tournée</span><span class="flow-arrow">→</span>
+    <span class="flow-step">Visite</span><span class="flow-arrow">→</span>
+    <span class="flow-step">Photos &amp; Notes</span><span class="flow-arrow">→</span>
+    <span class="flow-step">Rapport</span><span class="flow-arrow">→</span>
+    <span class="flow-step">Notes de frais</span>
+  </div>
 
-  <div class="grid">
-    <div class="card">
-      <div class="icon">📅</div>
-      <h3>Planning des tournées</h3>
-      <p>Organisation des semaines et des visites par magasin, avec itinéraires et adresses.</p>
+  <div class="feat-section" style="margin-top: 18px;">
+    <div class="feat-title">Planning &amp; Tournées</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">📅</div><h3>Planning hebdomadaire</h3>
+        <p>Import du fichier Excel CPM, organisation des visites par jour avec drag &amp; drop.</p></div>
+      <div class="feat-card"><div class="icon">🗺️</div><h3>Itinéraires optimisés</h3>
+        <p>Carte interactive, calcul de trajet via OSRM, kilométrage et durée, ordre optimisé.</p></div>
+      <div class="feat-card"><div class="icon">🧭</div><h3>Navigation Waze</h3>
+        <p>Bouton direct vers Waze pour chaque visite — départ magasin ou domicile.</p></div>
+      <div class="feat-card"><div class="icon">📶</div><h3>Mode hors-ligne</h3>
+        <p>Changement de statut sans connexion, synchronisation automatique au retour.</p></div>
     </div>
-    <div class="card">
-      <div class="icon">🏪</div>
-      <h3>Fiches magasins</h3>
-      <p>Coordonnées, historique des visites et informations pratiques pour chaque point de vente.</p>
-    </div>
-    <div class="card">
-      <div class="icon">📷</div>
-      <h3>Photos de visite</h3>
-      <p>Prise de photos avant/après directement liée à la visite, médiathèque centralisée.</p>
-    </div>
-    <div class="card">
-      <div class="icon">📝</div>
-      <h3>Rapports de visite</h3>
-      <p>Notes et compte-rendus par visite, exportables en un clic.</p>
-    </div>
-    <div class="card">
-      <div class="icon">🧾</div>
-      <h3>Notes de frais</h3>
-      <p>Photo du ticket, montant, date — export automatique dans le template Excel officiel + photos justificatives.</p>
-    </div>
-    <div class="card">
-      <div class="icon">📊</div>
-      <h3>Statistiques</h3>
-      <p>Vue d'ensemble des visites effectuées, kilomètres et activité par période.</p>
-    </div>
-    <div class="card">
-      <div class="icon">👥</div>
-      <h3>Contacts</h3>
-      <p>Répertoire des responsables de rayon et interlocuteurs par magasin.</p>
-    </div>
-    <div class="card">
-      <div class="icon">📤</div>
-      <h3>Exports simples</h3>
-      <p>Excel, PDF ou ZIP complet — des fichiers prêts à envoyer, sans ressaisie.</p>
+  </div>
+
+  <div class="feat-section">
+    <div class="feat-title">Magasins &amp; Visites</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">🏪</div><h3>Fiches magasins</h3>
+        <p>Coordonnées, assortment, type de visite, fréquence, responsable commercial.</p></div>
+      <div class="feat-card"><div class="icon">📜</div><h3>Historique par magasin</h3>
+        <p>Toutes les visites passées, photos et notes d'un point de vente en un coup d'œil.</p></div>
+      <div class="feat-card"><div class="icon">✅</div><h3>Suivi des visites</h3>
+        <p>Statuts (effectuée, en attente, reportée, annulée), type de matériel posé, remarques.</p></div>
+      <div class="feat-card"><div class="icon">📷</div><h3>Photos avant / après</h3>
+        <p>Catégorisation automatique, upload compressé, sélection multiple, partage et export PDF.</p></div>
+      <div class="feat-card"><div class="icon">📝</div><h3>Notes de visite</h3>
+        <p>Compte-rendu par visite, ajout rapide, historique consultable.</p></div>
+      <div class="feat-card"><div class="icon">👥</div><h3>Contacts</h3>
+        <p>Répertoire des responsables de rayon, téléphone et email, organisé par équipe.</p></div>
     </div>
   </div>
 
   <span class="pagenum">2</span>
 </div>
 
-<!-- PAGE 3 : CAPTURES D'ÉCRAN -->
+<!-- PAGE 3 : FONCTIONNALITÉS SUITE -->
 <div class="page">
-  <h2>Aperçu de l'application</h2>
-  <p class="lead">Interface mobile — pensée pour une utilisation en magasin.</p>
+  <h2>Administratif &amp; Exports</h2>
+  <p class="lead">La paperasse automatisée — ce qui prend du temps devient un clic.</p>
 
-  <div class="shots">
-    <div class="shot">
-      <img src="screenshots/dashboard.png" alt="Dashboard" />
-      <div class="caption">Dashboard</div>
-    </div>
-    <div class="shot">
-      <img src="screenshots/planning.png" alt="Planning" />
-      <div class="caption">Planning des tournées</div>
-    </div>
-    <div class="shot">
-      <img src="screenshots/magasins.png" alt="Magasins" />
-      <div class="caption">Fiches magasins</div>
+  <div class="feat-section">
+    <div class="feat-title">Notes de frais</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">🧾</div><h3>Saisie en tournée</h3>
+        <p>Photo du ticket, montant, date et description — enregistré en quelques secondes sur le terrain.</p></div>
+      <div class="feat-card"><div class="icon">📊</div><h3>Export Excel officiel</h3>
+        <p>Génération automatique dans le template Excel CPM (max. 12 notes par export), sans ressaisie.</p></div>
+      <div class="feat-card"><div class="icon">📦</div><h3>Export ZIP complet</h3>
+        <p>Excel + PDF + photos justificatives individuelles dans un seul fichier, prêt à envoyer.</p></div>
+      <div class="feat-card"><div class="icon">✓</div><h3>Suivi des exports</h3>
+        <p>Marquage automatique des notes déjà exportées pour éviter les doublons.</p></div>
     </div>
   </div>
 
-  <div class="shots" style="margin-top: 18px;">
-    <div class="shot">
-      <img src="screenshots/notes-de-frais.png" alt="Notes de frais" />
-      <div class="caption">Notes de frais</div>
+  <div class="feat-section">
+    <div class="feat-title">Rapports &amp; Exports</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">📄</div><h3>Rapport de visite PDF</h3>
+        <p>Photos catégorisées + notes + infos magasin, généré en un clic, format A4 imprimable.</p></div>
+      <div class="feat-card"><div class="icon">📚</div><h3>Export groupé par semaine</h3>
+        <p>Tous les rapports de visite d'une semaine en un seul document PDF.</p></div>
     </div>
-    <div class="shot">
-      <img src="screenshots/photos.png" alt="Photos" />
-      <div class="caption">Médiathèque</div>
+  </div>
+
+  <div class="feat-section">
+    <div class="feat-title">Analytics &amp; Assistant IA</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">📈</div><h3>Statistiques</h3>
+        <p>Taux de complétion, visites par semaine, kilomètres, photos avant/après, activité par jour.</p></div>
+      <div class="feat-card"><div class="icon">🤖</div><h3>Assistant IA</h3>
+        <p>Chat avec GPT-4o, contexte Mars injecté : questions sur les visites, contacts, matériel.</p></div>
+      <div class="feat-card"><div class="icon">🖼️</div><h3>Médiathèque</h3>
+        <p>Toutes les photos regroupées par magasin, favoris, recherche et filtrage.</p></div>
+      <div class="feat-card"><div class="icon">📖</div><h3>Guide matériel</h3>
+        <p>Référence visuelle des types de matériel merchandising Mars.</p></div>
     </div>
-    <div class="shot" style="visibility: hidden;"></div>
+  </div>
+
+  <div class="feat-section">
+    <div class="feat-title">Paramètres &amp; Technique</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">⚙️</div><h3>Personnalisation</h3>
+        <p>Profil utilisateur, zone, adresses domicile/travail pour le calcul d'itinéraire, thème sombre/clair.</p></div>
+      <div class="feat-card"><div class="icon">🔐</div><h3>Sécurité &amp; Sauvegardes</h3>
+        <p>Connexion par compte, sauvegarde manuelle, changement de mot de passe, glossaire personnalisable.</p></div>
+    </div>
   </div>
 
   <span class="pagenum">3</span>
 </div>
 
-<!-- PAGE 4 : BÉNÉFICES + CONCLUSION -->
+<!-- PAGE 4 : CAPTURES D'ÉCRAN (1/2) -->
+<div class="page">
+  <h2>Aperçu de l'application — 1/2</h2>
+  <p class="lead">Interface mobile — pensée pour une utilisation en magasin.</p>
+
+  <div class="shots">
+    <div class="shot"><img src="screenshots/dashboard.png" alt="Dashboard" />
+      <div class="caption">Dashboard — prochaine visite, stats, kilométrage</div></div>
+    <div class="shot"><img src="screenshots/planning.png" alt="Planning" />
+      <div class="caption">Planning — visites par jour, import Excel</div></div>
+  </div>
+  <div class="shots" style="margin-top: 14px;">
+    <div class="shot"><img src="screenshots/magasins.png" alt="Magasins" />
+      <div class="caption">Fiches magasins — recherche et tri</div></div>
+    <div class="shot"><img src="screenshots/notes-de-frais.png" alt="Notes de frais" />
+      <div class="caption">Notes de frais — photo du ticket, export</div></div>
+  </div>
+  <div class="shots" style="margin-top: 14px;">
+    <div class="shot"><img src="screenshots/export.png" alt="Export" />
+      <div class="caption">Export — rapports PDF par visite</div></div>
+    <div class="shot"><img src="screenshots/settings.png" alt="Paramètres" />
+      <div class="caption">Paramètres — profil, thème, glossaire</div></div>
+  </div>
+
+  <span class="pagenum">4</span>
+</div>
+
+<!-- PAGE 5 : CAPTURES D'ÉCRAN (2/2) -->
+<div class="page">
+  <h2>Aperçu de l'application — 2/2</h2>
+  <p class="lead">Photos, statistiques, contacts et assistant IA.</p>
+
+  <div class="shots">
+    <div class="shot"><img src="screenshots/photos.png" alt="Photos" />
+      <div class="caption">Médiathèque — photos par magasin, favoris</div></div>
+    <div class="shot"><img src="screenshots/analytics.png" alt="Analytics" />
+      <div class="caption">Analytics — graphiques et stats</div></div>
+  </div>
+  <div class="shots" style="margin-top: 14px;">
+    <div class="shot"><img src="screenshots/contacts.png" alt="Contacts" />
+      <div class="caption">Contacts — répertoire par équipe</div></div>
+    <div class="shot"><img src="screenshots/assistant.png" alt="Assistant" />
+      <div class="caption">Assistant IA — chat avec contexte Mars</div></div>
+  </div>
+
+  <span class="pagenum">5</span>
+</div>
+
+<!-- PAGE 6 : BÉNÉFICES + CONCLUSION -->
 <div class="page">
   <h2>Ce que ça apporte concrètement</h2>
   <p class="lead">Des gains simples et mesurables au quotidien.</p>
 
-  <div class="benefit">
-    <div class="num">1</div>
-    <div>
-      <h3>Moins de temps administratif</h3>
-      <p>La note de frais mensuelle passe de la saisie manuelle dans Excel à quelques clics :
-      les dépenses saisies au fil du mois génèrent automatiquement le document officiel rempli.</p>
-    </div>
-  </div>
-  <div class="benefit">
-    <div class="num">2</div>
-    <div>
-      <h3>Tout au même endroit</h3>
-      <p>Photos, rapports, contacts et planning liés entre eux — plus de photos perdues dans
-      la galerie du téléphone ni de notes éparpillées.</p>
-    </div>
-  </div>
-  <div class="benefit">
-    <div class="num">3</div>
-    <div>
-      <h3>Utilisable partout</h3>
-      <p>Application web accessible sur téléphone, tablette et ordinateur, sans installation.
-      Interface pensée mobile d'abord, pour une utilisation en magasin.</p>
-    </div>
-  </div>
-  <div class="benefit">
-    <div class="num">4</div>
-    <div>
-      <h3>Des exports prêts à l'emploi</h3>
-      <p>Les destinataires reçoivent des fichiers standards (Excel, PDF, photos) — aucun outil
-      spécifique requis de leur côté.</p>
-    </div>
-  </div>
+  <div class="benefit"><div class="num">1</div><div>
+    <h3>Moins de temps administratif</h3>
+    <p>La note de frais mensuelle passe de la saisie manuelle dans Excel à quelques clics :
+    les dépenses saisies au fil du mois génèrent automatiquement le document officiel rempli
+    avec les photos justificatives.</p>
+  </div></div>
+
+  <div class="benefit"><div class="num">2</div><div>
+    <h3>Tout au même endroit</h3>
+    <p>Photos, rapports, contacts, planning et notes de frais liés entre eux — plus de photos
+    perdues dans la galerie du téléphone ni de notes éparpillées entre Excel, papier et mail.</p>
+  </div></div>
+
+  <div class="benefit"><div class="num">3</div><div>
+    <h3>Utilisable partout, sans installation</h3>
+    <p>Application web accessible sur téléphone, tablette et ordinateur. Interface pensée mobile
+    d'abord, pour une utilisation en magasin. Fonctionne même hors connexion.</p>
+  </div></div>
+
+  <div class="benefit"><div class="num">4</div><div>
+    <h3>Des exports prêts à l'emploi</h3>
+    <p>Les destinataires reçoivent des fichiers standards (Excel, PDF, ZIP avec photos) — aucun outil
+    spécifique requis de leur côté. Le format Excel officiel CPM est respecté.</p>
+  </div></div>
+
+  <div class="benefit"><div class="num">5</div><div>
+    <h3>Un assistant IA intégré</h3>
+    <p>Questions rapides sur la journée, les contacts ou le matériel — l'assistant connaît le contexte
+    Mars et répond instantanément, sans chercher dans un manuel.</p>
+  </div></div>
 
   <div class="tech">
     <h3>En pratique</h3>
@@ -290,7 +297,7 @@
     <strong>Je serais ravi de vous la montrer en 15 minutes.</strong></p>
   </div>
 
-  <span class="pagenum">4</span>
+  <span class="pagenum">6</span>
 </div>
 
 </body>
