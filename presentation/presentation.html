@@ -108,6 +108,25 @@
   .closing strong { font-weight: 700; }
 
   .pagenum { position: absolute; bottom: 10mm; right: 20mm; font-size: 10px; color: #94a3b8; }
+
+  /* ---------- SCREENSHOTS ---------- */
+  .shots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 10px; }
+  .shot { text-align: center; }
+  .shot img {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  }
+  .shot .caption {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .shot-large { grid-column: 1 / -1; display: flex; gap: 16px; align-items: flex-start; }
+  .shot-large img { width: 48%; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .shot-large .caption { font-size: 11px; color: #64748b; margin-top: 6px; font-weight: 600; text-align: center; }
 </style>
 </head>
 <body>
@@ -184,7 +203,42 @@
   <span class="pagenum">2</span>
 </div>
 
-<!-- PAGE 3 : BÉNÉFICES + CONCLUSION -->
+<!-- PAGE 3 : CAPTURES D'ÉCRAN -->
+<div class="page">
+  <h2>Aperçu de l'application</h2>
+  <p class="lead">Interface mobile — pensée pour une utilisation en magasin.</p>
+
+  <div class="shots">
+    <div class="shot">
+      <img src="screenshots/dashboard.png" alt="Dashboard" />
+      <div class="caption">Dashboard</div>
+    </div>
+    <div class="shot">
+      <img src="screenshots/planning.png" alt="Planning" />
+      <div class="caption">Planning des tournées</div>
+    </div>
+    <div class="shot">
+      <img src="screenshots/magasins.png" alt="Magasins" />
+      <div class="caption">Fiches magasins</div>
+    </div>
+  </div>
+
+  <div class="shots" style="margin-top: 18px;">
+    <div class="shot">
+      <img src="screenshots/notes-de-frais.png" alt="Notes de frais" />
+      <div class="caption">Notes de frais</div>
+    </div>
+    <div class="shot">
+      <img src="screenshots/photos.png" alt="Photos" />
+      <div class="caption">Médiathèque</div>
+    </div>
+    <div class="shot" style="visibility: hidden;"></div>
+  </div>
+
+  <span class="pagenum">3</span>
+</div>
+
+<!-- PAGE 4 : BÉNÉFICES + CONCLUSION -->
 <div class="page">
   <h2>Ce que ça apporte concrètement</h2>
   <p class="lead">Des gains simples et mesurables au quotidien.</p>
@@ -236,7 +290,7 @@
     <strong>Je serais ravi de vous la montrer en 15 minutes.</strong></p>
   </div>
 
-  <span class="pagenum">3</span>
+  <span class="pagenum">4</span>
 </div>
 
 </body>
