@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { useExpenses, useCreateExpense, useDeleteExpense } from "@/lib/hooks/useExpenses";
 import { compressImage, formatDate } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
-import { pdfExpenseDocument } from "@/lib/pdf-template";
 import FrenchDatePicker from "@/components/FrenchDatePicker";
 
 const EXCEL_MAX_ROWS = 12;
@@ -159,7 +158,21 @@ export default function ExpensesPage() {
     }
     setExporting(true);
     try {
-      await pdfExpenseDocument(selectedExpenses);
+      const res = await fetch("/api/expenses/export-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expenseIds: Array.from(selectedIds) }),
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `justificatifs_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       showToast("success", "PDF des justificatifs généré");
     } catch {
       showToast("error", "Erreur lors de l'export PDF");
