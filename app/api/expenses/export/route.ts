@@ -8,30 +8,59 @@ import path from "path";
 
 export const dynamic = "force-dynamic";
 
+function colLetterToNum(letters: string): number {
+  let n = 0;
+  for (const ch of letters) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n;
+}
+
 function setCellValue(sheetXml: string, cellRef: string, value: string | number): string {
   const isNumber = typeof value === "number";
-  const escaped = String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const type = isNumber ? "" : ` t="inlineStr"`;
-  const valueXml = isNumber
-    ? `<v>${escaped}</v>`
-    : `<is><t>${escaped}</t></is>`;
+  const escaped = String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const typeAttr = isNumber ? "" : ` t="inlineStr"`;
+  const valueXml = isNumber ? `<v>${escaped}</v>` : `<is><t xml:space="preserve">${escaped}</t></is>`;
 
-  const cellRegex = new RegExp(`(<c r="${cellRef}"[^>]*>)(?:<v>|<is>).*?(?:</v>|</is>)?(</c>)`, "s");
-  const existingMatch = sheetXml.match(cellRegex);
-
-  if (existingMatch) {
-    const styleMatch = existingMatch[1].match(/s="(\d+)"/);
+  // 1) Existing cell with content: <c r="F13" s="5" t="s"><v>12</v></c>
+  const fullCellRegex = new RegExp(`<c r="${cellRef}"((?:\\s+[a-zA-Z:]+="[^"]*")*)\\s*>[\\s\\S]*?</c>`);
+  const fullMatch = sheetXml.match(fullCellRegex);
+  if (fullMatch) {
+    const styleMatch = fullMatch[1].match(/s="(\d+)"/);
     const styleAttr = styleMatch ? ` s="${styleMatch[1]}"` : "";
-    return sheetXml.replace(cellRegex, `<c r="${cellRef}"${type}${styleAttr}>${valueXml}</c>`);
+    return sheetXml.replace(fullCellRegex, `<c r="${cellRef}"${styleAttr}${typeAttr}>${valueXml}</c>`);
   }
 
-  const rowMatch = sheetXml.match(new RegExp(`(<row r="${parseInt(cellRef.match(/\d+/)![0])}"[^>]*>)`));
-  if (rowMatch) {
-    const newCell = `<c r="${cellRef}"${type}>${valueXml}</c>`;
-    return sheetXml.replace(rowMatch[0], rowMatch[0] + newCell);
+  // 2) Self-closing empty cell: <c r="F13" s="5"/>
+  const selfClosingRegex = new RegExp(`<c r="${cellRef}"((?:\\s+[a-zA-Z:]+="[^"]*")*)\\s*/>`);
+  const selfMatch = sheetXml.match(selfClosingRegex);
+  if (selfMatch) {
+    const styleMatch = selfMatch[1].match(/s="(\d+)"/);
+    const styleAttr = styleMatch ? ` s="${styleMatch[1]}"` : "";
+    return sheetXml.replace(selfClosingRegex, `<c r="${cellRef}"${styleAttr}${typeAttr}>${valueXml}</c>`);
   }
 
-  return sheetXml;
+  // 3) Cell doesn't exist: insert into the row at the correct column position
+  const rowNum = cellRef.match(/\d+/)![0];
+  const targetCol = colLetterToNum(cellRef.match(/[A-Z]+/)![0]);
+  const rowRegex = new RegExp(`(<row r="${rowNum}"(?:\\s+[a-zA-Z:]+="[^"]*")*\\s*>)([\\s\\S]*?)(</row>)`);
+  const rowMatch = sheetXml.match(rowRegex);
+  if (!rowMatch) return sheetXml;
+
+  const newCell = `<c r="${cellRef}"${typeAttr}>${valueXml}</c>`;
+  const rowContent = rowMatch[2];
+
+  // Find insertion point: before the first cell whose column > targetCol
+  const cellRefsRegex = /<c r="([A-Z]+)(\d+)"/g;
+  let insertOffset = rowContent.length;
+  let m: RegExpExecArray | null;
+  while ((m = cellRefsRegex.exec(rowContent)) !== null) {
+    if (colLetterToNum(m[1]) > targetCol) {
+      insertOffset = m.index;
+      break;
+    }
+  }
+
+  const newRowContent = rowContent.slice(0, insertOffset) + newCell + rowContent.slice(insertOffset);
+  return sheetXml.replace(rowRegex, `$1${newRowContent}$3`);
 }
 
 export async function POST(req: NextRequest) {
@@ -72,14 +101,14 @@ export async function POST(req: NextRequest) {
 
     // Fill general section
     const now = new Date();
-    const monthLabel = now.toLocaleDateString("fr-BE", { month: "long", year: "numeric" });
+    const monthLabel = now.toLocaleDateString("fr-BE", { month: "long" });
     const userName = settings?.userName || auth.user.email || "";
     const dateStr = now.toLocaleDateString("fr-BE");
 
+    sheetXml = setCellValue(sheetXml, "D6", monthLabel);
+    sheetXml = setCellValue(sheetXml, "D7", now.getFullYear());
     sheetXml = setCellValue(sheetXml, "F13", userName);
     sheetXml = setCellValue(sheetXml, "F15", dateStr);
-    sheetXml = setCellValue(sheetXml, "F16", monthLabel);
-    sheetXml = setCellValue(sheetXml, "F17", userName);
 
     // Fill expense rows (rows 22-35, 14 rows max)
     const maxRows = 14;
