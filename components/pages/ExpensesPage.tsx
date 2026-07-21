@@ -2,9 +2,9 @@
 
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
-import { Camera, Receipt, Trash2, FileDown, FileSpreadsheet, CheckSquare, Square, X, Loader2, Plus } from "lucide-react";
+import { Camera, Receipt, Trash2, FileDown, FileSpreadsheet, CheckSquare, Square, X, Loader2, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useExpenses, useCreateExpense, useDeleteExpense } from "@/lib/hooks/useExpenses";
+import { useExpenses, useCreateExpense, useDeleteExpense, useUpdateExpense } from "@/lib/hooks/useExpenses";
 import { compressImage, formatDate } from "@/lib/utils";
 import { showToast } from "@/components/Toast";
 import FrenchDatePicker from "@/components/FrenchDatePicker";
@@ -27,6 +27,8 @@ export default function ExpensesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [editExpense, setEditExpense] = useState<{ id: string; description: string; amount: string; expenseDate: string } | null>(null);
+  const updateExpense = useUpdateExpense();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const totalAmount = useMemo(
@@ -419,17 +421,87 @@ export default function ExpensesPage() {
               </p>
             </div>
             {!selectMode && (
-              <button
-                onClick={() => setConfirmDeleteId(expense.id)}
-                className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors opacity-0 group-hover:opacity-100"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="shrink-0 flex items-center gap-1">
+                <button
+                  onClick={() => setEditExpense({ id: expense.id, description: expense.description, amount: String(expense.amount), expenseDate: expense.expenseDate.split("T")[0] })}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-teal-cpm hover:bg-teal-50 dark:hover:bg-teal-950/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+                  aria-label="Modifier"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteId(expense.id)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+                  aria-label="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </div>
           ))
         )}
       </div>
+
+      {/* Edit modal */}
+      {editExpense && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setEditExpense(null)}>
+          <div className="bg-white dark:bg-[#1a1a1b] rounded-xl shadow-xl p-6 max-w-sm w-full space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Modifier la dépense</h3>
+            <div>
+              <label className={labelCls}>Description</label>
+              <input
+                type="text"
+                value={editExpense.description}
+                onChange={(e) => setEditExpense({ ...editExpense, description: e.target.value })}
+                className={inputCls}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Montant (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editExpense.amount}
+                  onChange={(e) => setEditExpense({ ...editExpense, amount: e.target.value })}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Date</label>
+                <div className="border border-slate-200 dark:border-[#2e2e30] rounded-lg p-3 bg-white dark:bg-[#222223]">
+                  <FrenchDatePicker value={editExpense.expenseDate} onChange={(d) => setEditExpense({ ...editExpense, expenseDate: d })} />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setEditExpense(null)} className="flex-1">Annuler</Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await updateExpense.mutateAsync({
+                      id: editExpense.id,
+                      description: editExpense.description.trim(),
+                      amount: parseFloat(editExpense.amount),
+                      expenseDate: editExpense.expenseDate,
+                    });
+                    showToast("success", "Dépense modifiée");
+                    setEditExpense(null);
+                  } catch {
+                    showToast("error", "Erreur lors de la modification");
+                  }
+                }}
+                disabled={updateExpense.isPending || !editExpense.description.trim() || !editExpense.amount}
+                className="flex-1"
+              >
+                {updateExpense.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation */}
       {confirmDeleteId && (
