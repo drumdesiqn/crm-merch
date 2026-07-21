@@ -298,7 +298,7 @@ export default function ExpensesPage() {
               <Receipt className="w-5 h-5 text-slate-400" />
             </div>
             <p className="font-semibold text-slate-700 dark:text-zinc-300">Aucune dépense pour le moment</p>
-            <p className="text-sm text-slate-400 dark:text-zinc-500 mt-1">Clique sur "Ajouter" pour créer ta première dépense</p>
+            <p className="text-sm text-slate-400 dark:text-zinc-500 mt-1">Clique sur &ldquo;Ajouter&rdquo; pour créer ta première dépense</p>
           </div>
         ) : (
           expenses.map((expense) => (
