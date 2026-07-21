@@ -42,11 +42,12 @@ test("export page loads", async ({ page }) => {
 });
 
 test("create and plan a store", async ({ page }) => {
+  const storeId = `E2E-${Date.now()}`;
   await page.goto("/stores");
   await page.waitForURL(/\/stores/, { timeout: 10000 });
   await expect(page.getByRole("button", { name: /Ajouter/i })).toBeVisible({ timeout: 15000 });
   await page.getByRole("button", { name: /Ajouter/i }).click();
-  await page.getByPlaceholder("Ex: BRU001").fill("E2E-TEST-001");
+  await page.getByPlaceholder("Ex: BRU001").fill(storeId);
   await page.getByPlaceholder("Ex: Carrefour Express Bruxelles").fill("Magasin E2E");
   await page.getByPlaceholder("Ex: Rue de la Loi 1").fill("Rue de Test 1");
   await page.getByPlaceholder("1000").fill("1000");

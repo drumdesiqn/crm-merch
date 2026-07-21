@@ -114,7 +114,8 @@ export async function POST(req: NextRequest) {
       settings = await writeSettings(allowed, true);
     } catch (error) {
       if (!isMissingEndAddressColumn(error)) throw error;
-      const { endAddress: _ignored, ...legacyAllowed } = allowed;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { endAddress: _endAddress, ...legacyAllowed } = allowed;
       settings = await writeSettings(legacyAllowed, false);
     }
 

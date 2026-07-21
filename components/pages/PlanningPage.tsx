@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Upload, Calendar, MapPin, User, AlertCircle, ChevronRight, X, CheckCircle, List, Navigation, FileDown, Wrench, Route, Plus, CalendarDays, Trash2, Search, Check, Ban } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VISIT_TYPE_COLORS, ASSORTMENT_COLORS, VisitStatus } from "@/lib/utils";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -595,7 +594,7 @@ function VisitCard({ visit, totalVisits, completedVisits, onUpdateDate, onDelete
       setSwipeOffset(0);
       setSwiped(false);
     }
-  }, [swipeOffset]);
+  }, [swipeOffset, ACTIONS_WIDTH]);
 
   const closeSwipe = useCallback(() => {
     setSwipeOffset(0);

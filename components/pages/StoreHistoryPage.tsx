@@ -5,9 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, MapPin, Calendar, Download, Filter, ChevronRight, Image as ImageIcon, FileText, BarChart3, Pencil, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { fetchApi } from "@/lib/client-api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,7 +21,6 @@ export default function StoreHistoryPage() {
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterType, setFilterType] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
   const [showEditStore, setShowEditStore] = useState(false);
   const [editForm, setEditForm] = useState({ storeName: "", storeAddress: "", storeZipcode: "", storeCity: "", visitType: "", assortment: "", visitFrequence: "", salesRep: "" });
   const [savingStore, setSavingStore] = useState(false);

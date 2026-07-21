@@ -3,10 +3,8 @@
 import { useState } from "react";
 import { useSessionState } from "@/lib/hooks/useSessionState";
 import Link from "next/link";
-import { ArrowLeft, Store, MapPin, Calendar, TrendingUp, Search, ChevronRight, Loader2, Plus, CalendarPlus, Pencil, User } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Store, MapPin, Calendar, Search, ChevronRight, Loader2, Plus, CalendarPlus, Pencil, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { useStores } from "@/lib/hooks/useStores";
 import { useCreateStore } from "@/lib/hooks/useCreateStore";
