@@ -151,14 +151,18 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleExportZip = async () => {
     if (selectedExpenses.length === 0) {
       showToast("error", "Sélectionne au moins une dépense");
       return;
     }
+    if (selectedExpenses.length > EXCEL_MAX_ROWS) {
+      showToast("error", `Maximum ${EXCEL_MAX_ROWS} notes de frais par export`);
+      return;
+    }
     setExporting(true);
     try {
-      const res = await fetch("/api/expenses/export-pdf", {
+      const res = await fetch("/api/expenses/export-zip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ expenseIds: Array.from(selectedIds) }),
@@ -168,14 +172,16 @@ export default function ExpensesPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `justificatifs_${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.download = `note-de-frais_${new Date().toISOString().slice(0, 7)}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("success", "PDF des justificatifs généré");
+      showToast("success", "ZIP généré : Excel + PDF + photos");
+      setSelectedIds(new Set());
+      setSelectMode(false);
     } catch {
-      showToast("error", "Erreur lors de l'export PDF");
+      showToast("error", "Erreur lors de l'export ZIP");
     } finally {
       setExporting(false);
     }
@@ -325,13 +331,14 @@ export default function ExpensesPage() {
                 Excel{selectedIds.size > 0 && ` (${selectedTotal.toFixed(2)} €)`}
               </Button>
               <Button
-                onClick={handleExportPDF}
-                disabled={exporting || selectedIds.size === 0}
+                onClick={handleExportZip}
+                disabled={exporting || selectedIds.size === 0 || selectedIds.size > EXCEL_MAX_ROWS}
                 size="sm"
                 variant="outline"
+                title={selectedIds.size > EXCEL_MAX_ROWS ? `Maximum ${EXCEL_MAX_ROWS} notes de frais par export` : undefined}
               >
                 <FileDown className="w-4 h-4" />
-                Justificatifs PDF
+                Export complet (ZIP)
               </Button>
             </div>
           )}
