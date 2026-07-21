@@ -17,13 +17,19 @@ export default function RouteRestorer() {
   const router = useRouter();
   const hasRestored = useRef(false);
 
-  // On mount (fresh page load), restore the last known route if applicable
+  // On mount (fresh page load / browser resume), restore the last known route if applicable
   useEffect(() => {
     if (hasRestored.current) return;
     hasRestored.current = true;
 
     // Only restore if we landed on the root (which is what iOS does on resume)
     if (pathname !== "/") return;
+
+    // Only restore on an actual page reload (type 1) or back/forward (type 2),
+    // NOT on client-side navigations to "/" (which would make the dashboard unreachable)
+    const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const isReload = navEntry?.type === "reload" || navEntry?.type === "back_forward";
+    if (!isReload) return;
 
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
