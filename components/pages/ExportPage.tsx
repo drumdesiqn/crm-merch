@@ -6,7 +6,7 @@ import { ArrowLeft, FileText, Calendar, Store, Loader2, Printer, Download, FileS
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, escapeHtml } from "@/lib/utils";
-import { PDF_BASE_STYLES, pdfInfoBox, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter, pdfBatchDocument } from "@/lib/pdf-template";
+import { PDF_BASE_STYLES, pdfInfoBox, pdfCategorizedPhotoItem, pdfNoteItem, pdfFooter } from "@/lib/pdf-template";
 import { showToast } from "@/components/Toast";
 import { useWeeks } from "@/lib/hooks/useWeeks";
 import { useExportVisits } from "@/lib/hooks/useExportVisits";
@@ -189,30 +189,39 @@ export default function ExportPage() {
     document.body.removeChild(link);
   };
 
-  const generateBatchPDF = () => {
+  const generateBatchPDF = async () => {
     if (filteredVisits.length === 0) return;
     setGeneratingBatch(true);
 
-    const weekLabel = weeks.find((w) => w.id === selectedWeek)?.label || "Semaine";
-    const label = salesRepFilter ? `${weekLabel} - ${salesRepFilter}` : weekLabel;
-    const html = pdfBatchDocument(
-      filteredVisits.map((v) => ({
-        ...v,
-        photos: v.photos.map((p) => ({ url: p.url, category: p.category })),
-        notes: v.notes.map((n) => ({ content: n.content, createdAt: n.createdAt })),
-      })),
-      label,
-    );
+    try {
+      const res = await fetch("/api/export/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekId: selectedWeek, salesRep: salesRepFilter || undefined }),
+      });
 
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      showToast("error", "Popup bloquée — autorisez les popups");
-      setGeneratingBatch(false);
-      return;
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        showToast("error", err?.error || "Erreur lors de la génération du PDF");
+        setGeneratingBatch(false);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const weekLabel = weeks.find((w) => w.id === selectedWeek)?.label || "semaine";
+      const safeLabel = (salesRepFilter ? `${weekLabel}-${salesRepFilter}` : weekLabel).replace(/[^a-zA-Z0-9_-]/g, "_");
+      link.download = `rapport_${safeLabel}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast("success", `PDF ${filteredVisits.length} visites téléchargé`);
+    } catch {
+      showToast("error", "Erreur lors du téléchargement");
     }
-    printWindow.document.write(html);
-    printWindow.document.close();
-    showToast("success", `PDF ${filteredVisits.length} visites ouvert`);
     setGeneratingBatch(false);
   };
 
@@ -412,7 +421,7 @@ export default function ExportPage() {
                 </>
               ) : (
                 <>
-                  <Printer className="w-4 h-4 mr-2" />
+                  <Download className="w-4 h-4 mr-2" />
                   PDF Semaine complète ({filteredVisits.length} visites{salesRepFilter ? ` · ${salesRepFilter}` : ""})
                 </>
               )}
@@ -423,7 +432,7 @@ export default function ExportPage() {
 
       {/* Info */}
       <p className="text-xs text-slate-400 text-center">
-        Le PDF s&apos;ouvre dans une nouvelle fenêtre. Utilisez &quot;Imprimer&quot; puis &quot;Enregistrer au format PDF&quot; pour sauvegarder.
+        Le PDF de la semaine est téléchargé directement. La visite individuelle s&apos;ouvre dans une fenêtre pour impression.
       </p>
     </div>
   );

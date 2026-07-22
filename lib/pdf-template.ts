@@ -236,9 +236,6 @@ export function pdfNoteItem(content: string, dateStr: string): string {
  */
 export function pdfFooter(): string {
   return `
-    <div class="pdf-footer">
-      Généré par CPM Mars le ${new Date().toLocaleDateString("fr-BE")}
-    </div>
     <script>
       window.onload = function() { setTimeout(function() { window.print(); }, 500); };
     </script>
@@ -365,7 +362,6 @@ export function pdfBatchDocument(
     <body>
       <!-- Cover page -->
       <div class="cover-page">
-        <div class="cover-logo">M</div>
         <h1 class="cover-title">Rapport Hebdomadaire</h1>
         <p class="cover-subtitle">${escapeHtml(weekLabel)}</p>
 
@@ -412,9 +408,6 @@ export function pdfBatchDocument(
       <!-- Visit pages -->
       ${pages}
 
-      <div class="pdf-footer">
-        Généré par CPM Mars le ${new Date().toLocaleDateString("fr-BE")}
-      </div>
       <script>
         window.onload = function() { setTimeout(function() { window.print(); }, 500); };
       </script>
