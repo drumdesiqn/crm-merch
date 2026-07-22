@@ -214,10 +214,10 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
 
       for (const note of visit.notes) {
         if (y > pageH - 15) { doc.addPage(); y = margin; }
-        const noteLines = doc.splitTextToSize(note.content, contentW - 4);
-        noteLines.forEach((line: string) => {
+        const noteLines = doc.splitTextToSize(note.content, contentW - 8);
+        noteLines.forEach((line: string, li: number) => {
           if (y > pageH - 12) { doc.addPage(); y = margin; }
-          doc.text(line, margin + 2, y);
+          doc.text(li === 0 ? `- ${line}` : `  ${line}`, margin + 2, y);
           y += 3.5;
         });
         y += 2;
