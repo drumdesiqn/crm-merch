@@ -72,6 +72,7 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
   doc.text("Magasin", margin + 45, y + 5);
   doc.text("Ville", margin + 110, y + 5);
   doc.text("Type", margin + 145, y + 5);
+  doc.text("Page", margin + 175, y + 5);
   y += 7;
 
   doc.setFont("helvetica", "normal");
@@ -92,6 +93,7 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
     const city = (v.storeCity || "").length > 20 ? (v.storeCity || "").slice(0, 18) + "…" : v.storeCity || "";
     doc.text(city, margin + 110, y + 4.5);
     doc.text(v.visitType || "", margin + 145, y + 4.5);
+    doc.text(String(i + 2), margin + 175, y + 4.5);
     y += 6;
   });
 
