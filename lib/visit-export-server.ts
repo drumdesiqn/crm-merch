@@ -103,9 +103,7 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
     y += 6;
   });
 
-  // ── Visit details — continuous flow ──
-  doc.addPage();
-  y = margin;
+  // ── Visit details — one page per visit ──
 
   for (let vi = 0; vi < visits.length; vi++) {
     const visit = visits[vi];
