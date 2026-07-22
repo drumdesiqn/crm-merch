@@ -125,7 +125,7 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
     const date = new Date(visit.visitDate).toLocaleDateString("fr-BE", {
       weekday: "short", day: "numeric", month: "short",
     });
-    const infoParts = [date, visit.visitType, visit.storeCity, visit.materialType].filter(Boolean);
+    const infoParts = [date, visit.visitType, visit.storeCity].filter(Boolean);
     doc.text(infoParts.join(" · "), margin + 3, y + 14);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
@@ -134,6 +134,26 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
 
     doc.setTextColor(30, 41, 59);
     doc.setFontSize(8);
+
+    // Matériel installé — dedicated section
+    const hasMaterialType = visit.materialType && visit.materialType.trim();
+    if (hasMaterialType) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(0, 83, 146);
+      doc.text("MATÉRIEL INSTALLÉ", margin, y);
+      doc.setTextColor(30, 41, 59);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      y += 4;
+      const mtLines = doc.splitTextToSize(visit.materialType!, contentW);
+      mtLines.forEach((line: string) => {
+        if (y > pageH - 15) { doc.addPage(); y = margin; }
+        doc.text(line, margin, y);
+        y += 4;
+      });
+      y += 3;
+    }
 
     // Remarks + Materials side by side if both exist
     const hasRemarks = visit.remarks && visit.remarks.trim();
