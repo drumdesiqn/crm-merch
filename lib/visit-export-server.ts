@@ -110,11 +110,9 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
   for (let vi = 0; vi < visits.length; vi++) {
     const visit = visits[vi];
 
-    // Check if we need space for at least a header + some content
-    if (y > pageH - 30) {
-      doc.addPage();
-      y = margin;
-    }
+    // Each visit starts on a new page
+    doc.addPage();
+    y = margin;
 
     // Compact visit header — colored bar with name + date + status
     doc.setFillColor(0, 52, 120);
@@ -316,15 +314,6 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
         y = rowStartY + maxImgH + 6;
       }
       y += 4;
-    }
-
-    // Separator line between visits
-    if (vi < visits.length - 1) {
-      if (y > pageH - 15) { doc.addPage(); y = margin; }
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(0.3);
-      doc.line(margin, y, margin + contentW, y);
-      y += 6;
     }
   }
 
