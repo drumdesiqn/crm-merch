@@ -46,8 +46,6 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
   doc.setTextColor(30, 41, 59);
 
   // Stats
-  const doneCount = visits.filter((v) => v.status === "done").length;
-  const pendingCount = visits.filter((v) => v.status === "pending").length;
   const totalPhotos = visits.reduce((s, v) => s + v.photos.length, 0);
   const totalNotes = visits.reduce((s, v) => s + v.notes.length, 0);
 
@@ -55,17 +53,13 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
   doc.setFont("helvetica", "normal");
   const stats = [
     `Visites: ${visits.length}`,
-    `Effectuées: ${doneCount}`,
-    `En attente: ${pendingCount}`,
     `Photos: ${totalPhotos}`,
     `Notes: ${totalNotes}`,
   ];
   stats.forEach((s, i) => {
-    const col = i % 3;
-    const row = Math.floor(i / 3);
-    doc.text(s, margin + col * 60, y + row * 6);
+    doc.text(s, margin + i * 60, y);
   });
-  y += 16;
+  y += 10;
 
   // Summary table
   doc.setFillColor(0, 52, 120);
@@ -78,7 +72,6 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
   doc.text("Magasin", margin + 45, y + 5);
   doc.text("Ville", margin + 110, y + 5);
   doc.text("Type", margin + 145, y + 5);
-  doc.text("Statut", margin + 175, y + 5);
   y += 7;
 
   doc.setFont("helvetica", "normal");
@@ -99,7 +92,6 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
     const city = (v.storeCity || "").length > 20 ? (v.storeCity || "").slice(0, 18) + "…" : v.storeCity || "";
     doc.text(city, margin + 110, y + 4.5);
     doc.text(v.visitType || "", margin + 145, y + 4.5);
-    doc.text(statusLabel(v.status), margin + 175, y + 4.5);
     y += 6;
   });
 
@@ -127,9 +119,6 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
     });
     const infoParts = [date, visit.visitType, visit.storeCity].filter(Boolean);
     doc.text(infoParts.join(" · "), margin + 3, y + 14);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text(statusLabel(visit.status), margin + contentW - 3, y + 7, { align: "right" });
     y += 18;
 
     doc.setTextColor(30, 41, 59);
