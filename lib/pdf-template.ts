@@ -68,7 +68,7 @@ export const PDF_BASE_STYLES = `
   .status-postponed { background: #e0e7ff; color: #4f46e5; }
 
   /* ── Photos ── */
-  .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
   /* ── Notes ── */
   .note-item {
@@ -82,6 +82,14 @@ export const PDF_BASE_STYLES = `
   .note-date { margin: 4px 0 0; color: #94a3b8; font-size: 11px; }
 
   .no-content { color: #9ca3af; font-style: italic; font-size: 13px; }
+
+  /* ── Compact sections (shorter PDF) ── */
+  .compact-section { margin-bottom: 14px; }
+  .compact-section p { margin: 4px 0 0; color: #334155; font-size: 13px; }
+  .compact-label { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #005392; }
+  .compact-section .note-item { padding: 8px 10px; margin-bottom: 6px; }
+  .compact-section .note-content { font-size: 13px; }
+  .compact-section .note-date { font-size: 10px; }
 
   /* ── Cover page ── */
   .cover-page {
@@ -144,12 +152,12 @@ export const PDF_BASE_STYLES = `
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
     border-bottom: 2px solid #003478;
   }
-  .visit-header h1 { color: #003478; margin: 0; font-size: 22px; font-weight: 800; }
-  .visit-header .visit-date { color: #64748b; font-size: 13px; margin: 4px 0 0; }
+  .visit-header h1 { color: #003478; margin: 0; font-size: 18px; font-weight: 800; }
+  .visit-header .visit-date { color: #64748b; font-size: 12px; margin: 2px 0 0; }
 
   /* ── Footer ── */
   .pdf-footer {
@@ -186,9 +194,9 @@ function statusLabel(status: string): string {
  */
 export function pdfPhotoItem(url: string, caption?: string | null): string {
   return `
-    <div style="break-inside: avoid; margin-bottom: 20px;">
-      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #e2e8f0;" />
-      ${caption ? `<p style="font-size: 12px; color: #666; margin-top: 5px;">${escapeHtml(caption)}</p>` : ""}
+    <div style="break-inside: avoid; margin-bottom: 12px;">
+      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+      ${caption ? `<p style="font-size: 11px; color: #666; margin-top: 4px;">${escapeHtml(caption)}</p>` : ""}
     </div>
   `;
 }
@@ -203,10 +211,10 @@ export function pdfCategorizedPhotoItem(url: string, category?: string | null, c
     ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;background:#dcfce7;color:#15803d;margin-bottom:6px;">Après</span>`
     : "";
   return `
-    <div style="break-inside: avoid; margin-bottom: 20px;">
+    <div style="break-inside: avoid; margin-bottom: 12px;">
       ${badge}
-      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #e2e8f0;" />
-      ${caption ? `<p style="font-size: 12px; color: #666; margin-top: 5px;">${escapeHtml(caption)}</p>` : ""}
+      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+      ${caption ? `<p style="font-size: 11px; color: #666; margin-top: 4px;">${escapeHtml(caption)}</p>` : ""}
     </div>
   `;
 }
@@ -258,41 +266,47 @@ export function pdfVisitPage(visit: {
   const photosHtml = visit.photos.map((p) => pdfCategorizedPhotoItem(p.url, p.category)).join("");
   const notesHtml = visit.notes.length
     ? visit.notes.map((n) => pdfNoteItem(n.content, n.createdAt)).join("")
-    : '<p class="no-content">Aucune note</p>';
+    : '';
 
   const date = new Date(visit.visitDate).toLocaleDateString("fr-BE", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
+    weekday: "short", day: "numeric", month: "short",
   });
+
+  const compactInfo = [
+    visit.visitType ? visit.visitType : null,
+    visit.storeCity ? visit.storeCity : null,
+    visit.materialType ? visit.materialType : null,
+  ].filter((v): v is string => v !== null).map(escapeHtml).join(" · ");
+
+  const remarksHtml = visit.remarks
+    ? `<div class="compact-section"><span class="compact-label">Remarques</span><p>${escapeHtml(visit.remarks).replace(/\n/g, "<br>")}</p></div>`
+    : "";
+  const materialsHtml = visit.materials
+    ? `<div class="compact-section"><span class="compact-label">Matériel</span><p>${escapeHtml(visit.materials).replace(/\n/g, "<br>")}</p></div>`
+    : "";
+  const notesSection = visit.notes.length > 0
+    ? `<div class="compact-section"><span class="compact-label">Notes (${visit.notes.length})</span>${notesHtml}</div>`
+    : "";
 
   return `
     <div class="visit-page">
       <div class="visit-header">
         <div>
           <h1>${escapeHtml(visit.storeName)}</h1>
-          <p class="visit-date">${date}</p>
+          <p class="visit-date">${date}${compactInfo ? ` · ${compactInfo}` : ""}</p>
         </div>
         <span class="status-badge status-${visit.status}">${statusLabel(visit.status)}</span>
       </div>
 
-      <div class="info-grid">
-        ${pdfInfoBox("Type", visit.visitType)}
-        ${pdfInfoBox("Adresse", `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`)}
-        ${visit.materialType ? pdfInfoBox("Matériel", visit.materialType) : ""}
-        ${visit.salesRep ? pdfInfoBox("Sales Rep", visit.salesRep) : ""}
-      </div>
+      ${remarksHtml}
+      ${materialsHtml}
+      ${notesSection}
 
-      ${visit.remarks ? `<div class="section"><h2>Remarques</h2><p>${escapeHtml(visit.remarks).replace(/\n/g, "<br>")}</p></div>` : ""}
-      ${visit.materials ? `<div class="section"><h2>Matériel nécessaire</h2><p>${escapeHtml(visit.materials).replace(/\n/g, "<br>")}</p></div>` : ""}
-
-      <div class="section">
-        <h2>Notes (${visit.notes.length})</h2>
-        ${notesHtml}
-      </div>
-
+      ${visit.photos.length > 0 ? `
       <div class="section">
         <h2>Photos (${visit.photos.length})</h2>
-        ${visit.photos.length > 0 ? `<div class="photos-grid">${photosHtml}</div>` : '<p class="no-content">Aucune photo</p>'}
-      </div>
+        <div class="photos-grid">${photosHtml}</div>
+      </div>` : ""}
     </div>
   `;
 }
