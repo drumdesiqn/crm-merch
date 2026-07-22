@@ -68,7 +68,7 @@ export const PDF_BASE_STYLES = `
   .status-postponed { background: #e0e7ff; color: #4f46e5; }
 
   /* ── Photos ── */
-  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
   /* ── Notes ── */
   .note-item {
@@ -194,8 +194,8 @@ function statusLabel(status: string): string {
  */
 export function pdfPhotoItem(url: string, caption?: string | null): string {
   return `
-    <div style="break-inside: avoid; margin-bottom: 12px;">
-      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+    <div style="break-inside: avoid; margin-bottom: 14px;">
+      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid #e2e8f0;" />
       ${caption ? `<p style="font-size: 11px; color: #666; margin-top: 4px;">${escapeHtml(caption)}</p>` : ""}
     </div>
   `;
@@ -211,9 +211,9 @@ export function pdfCategorizedPhotoItem(url: string, category?: string | null, c
     ? `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;background:#dcfce7;color:#15803d;margin-bottom:6px;">Après</span>`
     : "";
   return `
-    <div style="break-inside: avoid; margin-bottom: 12px;">
+    <div style="break-inside: avoid; margin-bottom: 14px;">
       ${badge}
-      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #e2e8f0;" />
+      <img src="${escapeHtml(url)}" style="max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid #e2e8f0;" />
       ${caption ? `<p style="font-size: 11px; color: #666; margin-top: 4px;">${escapeHtml(caption)}</p>` : ""}
     </div>
   `;

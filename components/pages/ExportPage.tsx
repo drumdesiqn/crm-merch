@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Calendar, Store, Loader2, Printer, Download, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, FileText, Calendar, Store, Loader2, Printer, Download, FileSpreadsheet, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, escapeHtml } from "@/lib/utils";
@@ -16,13 +16,25 @@ export default function ExportPage() {
   const [selectedVisit, setSelectedVisit] = useState<string>("");
   const [generating, setGenerating] = useState(false);
   const [generatingBatch, setGeneratingBatch] = useState(false);
+  const [salesRepFilter, setSalesRepFilter] = useState<string>("");
 
   const { data: weeks = [] } = useWeeks();
   const { data: visits = [], isLoading: loading } = useExportVisits(selectedWeek);
 
+  const salesReps = useMemo(
+    () => [...new Set(visits.map((v) => v.salesRep).filter(Boolean))] as string[],
+    [visits]
+  );
+
+  const filteredVisits = useMemo(
+    () => salesRepFilter ? visits.filter((v) => v.salesRep === salesRepFilter) : visits,
+    [visits, salesRepFilter]
+  );
+
   const selectWeek = (weekId: string) => {
     setSelectedWeek(weekId);
     setSelectedVisit("");
+    setSalesRepFilter("");
   };
 
   const generatePDF = async () => {
@@ -118,11 +130,11 @@ export default function ExportPage() {
   };
 
   const exportToExcel = async () => {
-    if (visits.length === 0) return;
+    if (filteredVisits.length === 0) return;
 
     const XLSX = await import("xlsx");
 
-    const exportData = visits.map((visit) => ({
+    const exportData = filteredVisits.map((visit) => ({
       Date: formatDate(visit.visitDate),
       Magasin: visit.storeName,
       Adresse: `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`,
@@ -144,11 +156,11 @@ export default function ExportPage() {
   };
 
   const exportToCSV = async () => {
-    if (visits.length === 0) return;
+    if (filteredVisits.length === 0) return;
 
     const XLSX = await import("xlsx");
 
-    const exportData = visits.map((visit) => ({
+    const exportData = filteredVisits.map((visit) => ({
       Date: formatDate(visit.visitDate),
       Magasin: visit.storeName,
       Adresse: `${visit.storeAddress}, ${visit.storeZipcode} ${visit.storeCity}`,
@@ -178,17 +190,18 @@ export default function ExportPage() {
   };
 
   const generateBatchPDF = () => {
-    if (visits.length === 0) return;
+    if (filteredVisits.length === 0) return;
     setGeneratingBatch(true);
 
     const weekLabel = weeks.find((w) => w.id === selectedWeek)?.label || "Semaine";
+    const label = salesRepFilter ? `${weekLabel} - ${salesRepFilter}` : weekLabel;
     const html = pdfBatchDocument(
-      visits.map((v) => ({
+      filteredVisits.map((v) => ({
         ...v,
         photos: v.photos.map((p) => ({ url: p.url, category: p.category })),
         notes: v.notes.map((n) => ({ content: n.content, createdAt: n.createdAt })),
       })),
-      weekLabel,
+      label,
     );
 
     const printWindow = window.open("", "_blank");
@@ -199,7 +212,7 @@ export default function ExportPage() {
     }
     printWindow.document.write(html);
     printWindow.document.close();
-    showToast("success", `PDF ${visits.length} visites ouvert`);
+    showToast("success", `PDF ${filteredVisits.length} visites ouvert`);
     setGeneratingBatch(false);
   };
 
@@ -250,36 +263,57 @@ export default function ExportPage() {
         </CardContent>
       </Card>
 
-      {/* Visit selector */}
+      {/* Sales rep filter + Visit selector */}
       {selectedWeek && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Store className="w-4 h-4 text-teal-cpm" />
               2. Choisir une visite
+              {salesRepFilter && (
+                <span className="text-xs font-normal text-teal-cpm bg-teal-cpm/10 px-2 py-0.5 rounded-full">
+                  {salesRepFilter} · {filteredVisits.length} visite{filteredVisits.length !== 1 ? "s" : ""}
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {salesReps.length > 0 && (
+              <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+                <select
+                  value={salesRepFilter}
+                  onChange={(e) => { setSalesRepFilter(e.target.value); setSelectedVisit(""); }}
+                  className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-cpm"
+                >
+                  <option value="">Tous les sales reps</option>
+                  {salesReps.map((rep) => (
+                    <option key={rep} value={rep}>{rep}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             {loading && (
               <div className="flex justify-center py-4">
                 <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
               </div>
             )}
             <div className="grid gap-2 max-h-60 overflow-y-auto">
-              {visits.map((visit) => (
+              {filteredVisits.map((visit) => {
+                const isSelected = selectedVisit === visit.id;
+                return (
                 <button
                   key={visit.id}
                   onClick={() => setSelectedVisit(visit.id)}
-                  className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
-                    selectedVisit === visit.id
-                      ? "border-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15"
-                      : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  }`}
+                  className={isSelected
+                    ? "flex items-start gap-3 p-3 rounded-lg border text-left transition-colors border-teal-cpm bg-teal-cpm/10 dark:bg-teal-cpm/15"
+                    : "flex items-start gap-3 p-3 rounded-lg border text-left transition-colors border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  }
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-slate-900 dark:text-slate-100 truncate">{visit.storeName}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {formatDate(visit.visitDate)} · {visit.visitType}
+                      {formatDate(visit.visitDate)} · {visit.visitType}{visit.salesRep ? ` · ${visit.salesRep}` : ""}
                     </p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                       {visit.photos.length} photo{visit.photos.length !== 1 ? "s" : ""} · {visit.notes.length} note{visit.notes.length !== 1 ? "s" : ""}
@@ -291,7 +325,11 @@ export default function ExportPage() {
                     </div>
                   )}
                 </button>
-              ))}
+                );
+              })}
+              {filteredVisits.length === 0 && !loading && (
+                <p className="text-sm text-slate-400 text-center py-4">Aucune visite pour ce sales rep</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -332,7 +370,7 @@ export default function ExportPage() {
       )}
 
       {/* Export Excel/CSV */}
-      {selectedWeek && visits.length > 0 && (
+      {selectedWeek && filteredVisits.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -375,7 +413,7 @@ export default function ExportPage() {
               ) : (
                 <>
                   <Printer className="w-4 h-4 mr-2" />
-                  PDF Semaine complète ({visits.length} visites)
+                  PDF Semaine complète ({filteredVisits.length} visites{salesRepFilter ? ` · ${salesRepFilter}` : ""})
                 </>
               )}
             </Button>
