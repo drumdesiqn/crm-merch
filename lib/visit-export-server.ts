@@ -220,12 +220,7 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
           doc.text(line, margin + 2, y);
           y += 3.5;
         });
-        doc.setFontSize(6);
-        doc.setTextColor(148, 163, 184);
-        doc.text(new Date(note.createdAt).toLocaleDateString("fr-BE"), margin + 2, y);
-        doc.setTextColor(30, 41, 59);
-        doc.setFontSize(8);
-        y += 4;
+        y += 2;
       }
       y += 2;
     }
