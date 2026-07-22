@@ -125,7 +125,7 @@ export async function generateWeekPdf(visits: ExportVisitData[], weekLabel: stri
     const date = new Date(visit.visitDate).toLocaleDateString("fr-BE", {
       weekday: "short", day: "numeric", month: "short",
     });
-    const infoParts = [date, visit.visitType, visit.storeCity].filter(Boolean);
+    const infoParts = [date, visit.visitType, visit.storeCity, visit.materialType].filter(Boolean);
     doc.text(infoParts.join(" · "), margin + 3, y + 14);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
