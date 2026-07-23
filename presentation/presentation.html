@@ -44,6 +44,12 @@
   .shot { text-align: center; }
   .shot img { width: 100%; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.06); }
   .shot .caption { font-size: 10px; color: #64748b; margin-top: 4px; font-weight: 600; }
+  .shots-mobile { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .shot-mobile { text-align: center; }
+  .shot-mobile img { width: 100%; max-width: 80mm; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.08); }
+  .shot-mobile .caption { font-size: 9px; color: #64748b; margin-top: 3px; font-weight: 600; }
+  .shot-single img { max-width: 140mm; margin: 0 auto; }
+  .device-label { font-size: 10px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
   .arch-layer { margin-bottom: 10px; }
   .arch-layer-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
   .arch-items { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -75,6 +81,8 @@
   .closing p { font-size: 13px; line-height: 1.6; font-weight: 300; }
   .closing strong { font-weight: 700; }
   .pagenum { position: absolute; bottom: 7mm; right: 16mm; font-size: 9px; color: #94a3b8; }
+  .pdf-preview { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; background: #f8fafc; margin-top: 6px; }
+  .pdf-preview img { width: 100%; border-radius: 4px; border: 1px solid #e2e8f0; }
 </style>
 </head>
 <body>
@@ -85,7 +93,7 @@
   <h1>MERCH</h1>
   <p class="subtitle">Une application de terrain pour merchandisers.<br>Du planning à la note de frais — tout au même endroit.</p>
   <div class="stats">
-    <div class="stat-item"><div class="val">10+</div><div class="lbl">Fonctionnalités</div></div>
+    <div class="stat-item"><div class="val">15+</div><div class="lbl">Fonctionnalités</div></div>
     <div class="stat-item"><div class="val">100%</div><div class="lbl">Mobile first</div></div>
     <div class="stat-item"><div class="val">0</div><div class="lbl">Installation requise</div></div>
   </div>
@@ -197,67 +205,118 @@
   <span class="pagenum">4</span>
 </div>
 
-<!-- PAGE 5 : CAPTURES — Dashboard & Planning -->
+<!-- PAGE 5 : CAPTURES — Login & Dashboard -->
 <div class="page">
   <div class="section-tag">03 — Aperçu</div>
-  <h2>Captures d'écran — Vue desktop</h2>
-  <p class="lead">L'application en conditions réelles — version navigateur desktop.</p>
+  <h2>Captures d'écran — Connexion &amp; Dashboard</h2>
+  <p class="lead">Page de connexion sécurisée et tableau de bord principal.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/dashboard.png" alt="Dashboard" /><div class="caption">Dashboard — prochaine visite, statistiques, kilométrage</div></div>
-    <div class="shot"><img src="screenshots/planning.png" alt="Planning" /><div class="caption">Planning — visites par jour, import Excel</div></div>
+    <div class="shot"><img src="screenshots/desktop-login.png" alt="Login" /><div class="caption">Connexion — authentification JWT</div></div>
+    <div class="shot"><img src="screenshots/desktop-dashboard.png" alt="Dashboard" /><div class="caption">Dashboard — prochaine visite, statistiques, kilométrage</div></div>
+  </div>
+  <div class="device-label">Mode sombre</div>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-dashboard-dark.png" alt="Dashboard Dark" /><div class="caption">Dashboard en mode sombre — confort visuel en magasin</div></div>
+    <div class="shot" style="display:flex;align-items:center;justify-content:center;"><div style="text-align:center;color:#94a3b8;font-size:11px;">Le thème sombre/clair est disponible<br>sur toutes les pages de l'application</div></div>
   </div>
   <span class="pagenum">5</span>
 </div>
 
-<!-- PAGE 6 : CAPTURES — Magasins & Notes de frais -->
+<!-- PAGE 6 : CAPTURES — Planning & Routing -->
+<div class="page">
+  <div class="section-tag">03 — Aperçu (suite)</div>
+  <h2>Captures d'écran — Planning &amp; Routing</h2>
+  <p class="lead">Organisation des tournées et optimisation d'itinéraires.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-planning.png" alt="Planning" /><div class="caption">Planning — visites par jour, import Excel, filtres</div></div>
+    <div class="shot"><img src="screenshots/desktop-routing.png" alt="Routing" /><div class="caption">Routing — carte interactive, ordre optimisé, kilométrage</div></div>
+  </div>
+  <span class="pagenum">6</span>
+</div>
+
+<!-- PAGE 7 : CAPTURES — Magasins & Notes de frais -->
 <div class="page">
   <div class="section-tag">03 — Aperçu (suite)</div>
   <h2>Captures d'écran — Magasins &amp; Notes de frais</h2>
   <p class="lead">Fiches magasins et gestion des dépenses.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/magasins.png" alt="Magasins" /><div class="caption">Fiches magasins — recherche, tri, assortment</div></div>
-    <div class="shot"><img src="screenshots/notes-de-frais.png" alt="Notes de frais" /><div class="caption">Notes de frais — photo du ticket, export Excel/ZIP</div></div>
-  </div>
-  <span class="pagenum">6</span>
-</div>
-
-<!-- PAGE 7 : CAPTURES — Photos & Analytics -->
-<div class="page">
-  <div class="section-tag">03 — Aperçu (suite)</div>
-  <h2>Captures d'écran — Photos &amp; Analytics</h2>
-  <p class="lead">Médiathèque et statistiques d'activité.</p>
-  <div class="shots">
-    <div class="shot"><img src="screenshots/photos.png" alt="Photos" /><div class="caption">Médiathèque — photos par magasin, favoris</div></div>
-    <div class="shot"><img src="screenshots/analytics.png" alt="Analytics" /><div class="caption">Analytics — graphiques, taux de complétion, kilomètres</div></div>
+    <div class="shot"><img src="screenshots/desktop-stores.png" alt="Magasins" /><div class="caption">Fiches magasins — recherche, tri, assortment</div></div>
+    <div class="shot"><img src="screenshots/desktop-expenses.png" alt="Notes de frais" /><div class="caption">Notes de frais — photo du ticket, export Excel/ZIP</div></div>
   </div>
   <span class="pagenum">7</span>
 </div>
 
-<!-- PAGE 8 : CAPTURES — Contacts & Export -->
+<!-- PAGE 8 : CAPTURES — Photos & Analytics -->
 <div class="page">
   <div class="section-tag">03 — Aperçu (suite)</div>
-  <h2>Captures d'écran — Contacts &amp; Export</h2>
-  <p class="lead">Annuaire interne et rapports PDF.</p>
+  <h2>Captures d'écran — Médiathèque &amp; Analytics</h2>
+  <p class="lead">Toutes les photos regroupées et statistiques d'activité.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/contacts.png" alt="Contacts" /><div class="caption">Annuaire interne CPM/Mars — par équipe</div></div>
-    <div class="shot"><img src="screenshots/export.png" alt="Export" /><div class="caption">Export — rapports PDF par visite et par semaine</div></div>
+    <div class="shot"><img src="screenshots/desktop-photos.png" alt="Photos" /><div class="caption">Médiathèque — photos par magasin, favoris</div></div>
+    <div class="shot"><img src="screenshots/desktop-analytics.png" alt="Analytics" /><div class="caption">Analytics — graphiques, taux de complétion, kilomètres</div></div>
   </div>
   <span class="pagenum">8</span>
 </div>
 
-<!-- PAGE 9 : CAPTURES — Paramètres & Assistant -->
+<!-- PAGE 9 : CAPTURES — Contacts, Export & Guide -->
 <div class="page">
   <div class="section-tag">03 — Aperçu (suite)</div>
-  <h2>Captures d'écran — Paramètres &amp; Assistant IA</h2>
-  <p class="lead">Configuration et assistant intelligent.</p>
+  <h2>Captures d'écran — Contacts, Export &amp; Guide</h2>
+  <p class="lead">Annuaire interne, rapports PDF et guide matériel.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/settings.png" alt="Paramètres" /><div class="caption">Paramètres — profil, thème, glossaire, sauvegardes</div></div>
-    <div class="shot"><img src="screenshots/assistant.png" alt="Assistant" /><div class="caption">Assistant IA — chat avec contexte Mars</div></div>
+    <div class="shot"><img src="screenshots/desktop-contacts.png" alt="Contacts" /><div class="caption">Annuaire interne CPM/Mars — par équipe</div></div>
+    <div class="shot"><img src="screenshots/desktop-export.png" alt="Export" /><div class="caption">Export — rapports PDF par visite et par semaine</div></div>
+  </div>
+  <div class="shots" style="margin-top:8px;">
+    <div class="shot"><img src="screenshots/desktop-guide.png" alt="Guide" /><div class="caption">Guide matériel — référence visuelle Mars</div></div>
+    <div class="shot"><img src="screenshots/desktop-settings.png" alt="Paramètres" /><div class="caption">Paramètres — profil, thème, glossaire, sauvegardes</div></div>
   </div>
   <span class="pagenum">9</span>
 </div>
 
-<!-- PAGE 10 : ARCHITECTURE -->
+<!-- PAGE 10 : CAPTURES — Vue Mobile -->
+<div class="page">
+  <div class="section-tag">03 — Aperçu (suite)</div>
+  <h2>Captures d'écran — Vue mobile</h2>
+  <p class="lead">L'application est pensée mobile d'abord — utilisable en magasin, sur le terrain.</p>
+  <div class="shots-mobile">
+    <div class="shot-mobile"><img src="screenshots/mobile-dashboard.png" alt="Mobile Dashboard" /><div class="caption">Dashboard mobile</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-planning.png" alt="Mobile Planning" /><div class="caption">Planning mobile</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-stores.png" alt="Mobile Stores" /><div class="caption">Magasins mobile</div></div>
+  </div>
+  <div class="shots-mobile" style="margin-top:8px;">
+    <div class="shot-mobile"><img src="screenshots/mobile-visit-detail.png" alt="Mobile Visit Detail" /><div class="caption">Détail de visite — photos, notes, statut</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-expenses.png" alt="Mobile Expenses" /><div class="caption">Notes de frais mobile</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-export.png" alt="Mobile Export" /><div class="caption">Export PDF mobile</div></div>
+  </div>
+  <span class="pagenum">10</span>
+</div>
+
+<!-- PAGE 11 : EXPORT PDF -->
+<div class="page">
+  <div class="section-tag">03 — Aperçu (suite)</div>
+  <h2>Export PDF — Rapport hebdomadaire</h2>
+  <p class="lead">Génération serveur d'un PDF A4 professionnel pour chaque semaine de visites.</p>
+  <div class="feat-section">
+    <div class="feat-title">Structure du rapport PDF</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">1</div><h3>Page de couverture</h3><p>Titre, semaine, statistiques (visites, photos, notes) et tableau récapitulatif avec numéro de page par magasin.</p></div>
+      <div class="feat-card"><div class="icon">2</div><h3>Une page par magasin</h3><p>Header coloré avec nom, date, type. Sections dédiées : matériel installé, remarques, matériel, notes, photos.</p></div>
+      <div class="feat-card"><div class="icon">3</div><h3>Photos en grille 2 colonnes</h3><p>Badges AVANT/APRÈS, taille optimisée (max 70mm), grille 2 colonnes pour réduire le nombre de pages.</p></div>
+      <div class="feat-card"><div class="icon">4</div><h3>Numérotation des pages</h3><p>Chaque page est numérotée. Le tableau récap indique la page de chaque visite pour navigation rapide.</p></div>
+    </div>
+  </div>
+  <div class="feat-section">
+    <div class="feat-title">Optimisations récentes</div>
+    <div class="feat-grid">
+      <div class="feat-card"><h3>Flow continu</h3><p>Chaque magasin commence en haut d'une page, sans page blanche.</p></div>
+      <div class="feat-card"><h3>Layout compact</h3><p>Remarques et matériel côte à côte. Notes avec tirets pour lisibilité.</p></div>
+    </div>
+  </div>
+  <span class="pagenum">11</span>
+</div>
+
+<!-- PAGE 12 : ARCHITECTURE -->
 <div class="page">
   <div class="section-tag">04 — Architecture</div>
   <h2>Architecture technique</h2>
@@ -303,10 +362,10 @@
       <div class="arch-item"><span class="tech-name">Playwright</span><span class="tech-desc">Tests E2E automatisés (12 scénarios)</span></div>
     </div>
   </div>
-  <span class="pagenum">10</span>
+  <span class="pagenum">12</span>
 </div>
 
-<!-- PAGE 11 : SÉCURITÉ & CONFIGURATION -->
+<!-- PAGE 13 : SÉCURITÉ & CONFIGURATION -->
 <div class="page">
   <div class="section-tag">05 — Sécurité &amp; Configuration</div>
   <h2>Sécurité et configuration</h2>
@@ -329,10 +388,10 @@
       <tr><td class="label">Mot de passe</td><td>Changement sécurisé</td><td>Autonomie de l'utilisateur</td></tr>
     </table>
   </div>
-  <span class="pagenum">11</span>
+  <span class="pagenum">13</span>
 </div>
 
-<!-- PAGE 12 : ROADMAP & AVENIR -->
+<!-- PAGE 14 : ROADMAP & AVENIR -->
 <div class="page">
   <div class="section-tag">06 — Avenir</div>
   <h2>Roadmap &amp; évolutions</h2>
@@ -386,10 +445,10 @@
       <p>KPIs temps réel : taux de visite par zone, conformité merchandising, temps passé par magasin, heatmap d'activité.</p>
     </div>
   </div>
-  <span class="pagenum">12</span>
+  <span class="pagenum">14</span>
 </div>
 
-<!-- PAGE 13 : BÉNÉFICES & CONCLUSION -->
+<!-- PAGE 15 : BÉNÉFICES & CONCLUSION -->
 <div class="page">
   <div class="section-tag">07 — Conclusion</div>
   <h2>Ce que ça apporte concrètement</h2>
@@ -421,7 +480,7 @@
   <div class="closing">
     <p>Je l'utilise tous les jours en tournée.<br><strong>Je serais ravi de vous la montrer en 15 minutes.</strong></p>
   </div>
-  <span class="pagenum">13</span>
+  <span class="pagenum">15</span>
 </div>
 
 </body>

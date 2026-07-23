@@ -15,10 +15,6 @@ export type ExportVisitData = {
   notes: { content: string; createdAt: string }[];
 };
 
-function statusLabel(status: string): string {
-  return status === "done" ? "Effectué" : status === "cancelled" ? "Annulé" : status === "postponed" ? "Reporté" : "En attente";
-}
-
 /**
  * Generate a downloadable PDF report for a week's visits (server-side, jsPDF).
  * Optimized: continuous flow, 2-column photo grid, compact layout.
