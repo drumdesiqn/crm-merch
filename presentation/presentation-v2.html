@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>MERCH — Présentation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; color: #1e293b; background: #fff; }
+  .page { width: 210mm; height: 296mm; padding: 18mm 16mm; page-break-after: always; position: relative; overflow: hidden; }
+  .page:last-child { page-break-after: avoid; }
+  .cover { display: flex; flex-direction: column; justify-content: center; background: linear-gradient(155deg, #0f766e 0%, #134e4a 60%, #0c3b38 100%); color: #fff; }
+  .cover .badge { display: inline-block; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 6px 16px; font-size: 11px; letter-spacing: 1.5px; margin-bottom: 20px; width: fit-content; }
+  .cover h1 { font-size: 60px; font-weight: 800; line-height: 1; margin-bottom: 14px; letter-spacing: -1.5px; }
+  .cover .subtitle { font-size: 18px; font-weight: 300; opacity: .88; max-width: 140mm; line-height: 1.5; margin-bottom: 32px; }
+  .cover .meta { font-size: 13px; opacity: .7; line-height: 1.8; }
+  .cover .foot { position: absolute; bottom: 18mm; left: 16mm; font-size: 11px; opacity: .5; }
+  .cover .stats { display: flex; gap: 32px; margin-top: 28px; }
+  .cover .stat-item .val { font-size: 28px; font-weight: 800; opacity: .95; }
+  .cover .stat-item .lbl { font-size: 11px; opacity: .6; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  h2 { font-size: 22px; font-weight: 800; color: #134e4a; margin-bottom: 3px; }
+  .lead { font-size: 12.5px; color: #64748b; margin-bottom: 16px; line-height: 1.6; }
+  .section-tag { font-size: 10px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+  .problem-box { background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
+  .problem-box h3 { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 6px; }
+  .problem-box ul { list-style: none; padding: 0; }
+  .problem-box li { font-size: 12px; color: #7f1d1d; line-height: 1.7; padding-left: 14px; position: relative; }
+  .problem-box li::before { content: "\2717"; position: absolute; left: 0; font-weight: 700; }
+  .solution-box { background: #f0fdfa; border-left: 4px solid #0f766e; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
+  .solution-box h3 { font-size: 13px; font-weight: 700; color: #134e4a; margin-bottom: 6px; }
+  .solution-box ul { list-style: none; padding: 0; }
+  .solution-box li { font-size: 12px; color: #334155; line-height: 1.7; padding-left: 14px; position: relative; }
+  .solution-box li::before { content: "\2713"; position: absolute; left: 0; font-weight: 700; color: #0f766e; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+  .compare-col { border-radius: 10px; padding: 12px 14px; }
+  .compare-col.before { background: #fef2f2; border: 1px solid #fecaca; }
+  .compare-col.after { background: #f0fdfa; border: 1px solid #ccfbf1; }
+  .compare-col h3 { font-size: 12px; font-weight: 700; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid; }
+  .compare-col.before h3 { color: #991b1b; border-color: #fecaca; }
+  .compare-col.after h3 { color: #134e4a; border-color: #ccfbf1; }
+  .compare-col ul { list-style: none; padding: 0; }
+  .compare-col li { font-size: 11px; line-height: 1.6; padding-left: 14px; position: relative; margin-bottom: 4px; }
+  .compare-col.before li { color: #7f1d1d; }
+  .compare-col.after li { color: #334155; }
+  .compare-col.before li::before { content: "\2717"; position: absolute; left: 0; font-weight: 700; }
+  .compare-col.after li::before { content: "\2713"; position: absolute; left: 0; font-weight: 700; color: #0f766e; }
+  .flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 8px 0 12px; }
+  .flow-step { background: #0f766e; color: #fff; padding: 5px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 600; }
+  .flow-arrow { color: #94a3b8; font-size: 13px; }
+  .feat-section { margin-bottom: 14px; }
+  .feat-title { font-size: 11px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding-bottom: 3px; border-bottom: 1.5px solid #e2e8f0; }
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .feat-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; background: #fafafa; }
+  .feat-card .icon { font-size: 15px; margin-bottom: 2px; }
+  .feat-card h3 { font-size: 11.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+  .feat-card p { font-size: 10.5px; color: #64748b; line-height: 1.4; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .shot { text-align: center; }
+  .shot img { width: 100%; max-height: 105mm; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.06); }
+  .shot .caption { font-size: 10px; color: #64748b; margin-top: 4px; font-weight: 600; }
+  .shots-mobile { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .shot-mobile { text-align: center; }
+  .shot-mobile img { width: 100%; max-height: 75mm; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.08); }
+  .shot-mobile .caption { font-size: 9px; color: #64748b; margin-top: 3px; font-weight: 600; }
+  .device-label { font-size: 10px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
+  .arch-layer { margin-bottom: 10px; }
+  .arch-layer-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .arch-items { display: flex; gap: 6px; flex-wrap: wrap; }
+  .arch-item { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 600; color: #334155; }
+  .arch-item .tech-name { color: #0f766e; font-weight: 700; }
+  .arch-item .tech-desc { color: #94a3b8; font-weight: 400; font-size: 10px; display: block; margin-top: 1px; }
+  .sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sec-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; background: #f8fafc; }
+  .sec-card .icon { font-size: 15px; margin-bottom: 3px; }
+  .sec-card h3 { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+  .sec-card p { font-size: 10.5px; color: #64748b; line-height: 1.45; }
+  .config-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+  .config-table th { text-align: left; padding: 6px 10px; background: #0f766e; color: #fff; font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
+  .config-table td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+  .config-table tr:nth-child(even) td { background: #f8fafc; }
+  .config-table .label { font-weight: 600; color: #0f172a; }
+  .roadmap-item { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+  .roadmap-phase { min-width: 70px; text-align: center; flex-shrink: 0; }
+  .roadmap-phase .phase-tag { background: #0f766e; color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+  .roadmap-phase .phase-tag.future { background: #6366f1; }
+  .roadmap-phase .phase-tag.idea { background: #d97706; }
+  .roadmap-content h3 { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .roadmap-content p { font-size: 11px; color: #64748b; line-height: 1.5; }
+  .benefit { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+  .benefit .num { background: #0f766e; color: #fff; min-width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .benefit h3 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .benefit p { font-size: 11.5px; color: #64748b; line-height: 1.5; }
+  .closing { margin-top: 16px; text-align: center; padding: 20px; background: linear-gradient(155deg, #0f766e 0%, #134e4a 100%); border-radius: 12px; color: #fff; }
+  .closing p { font-size: 13px; line-height: 1.6; font-weight: 300; }
+  .closing strong { font-weight: 700; }
+  .pagenum { position: absolute; bottom: 7mm; right: 16mm; font-size: 9px; color: #94a3b8; }
+  .story-text { font-size: 12px; color: #475569; line-height: 1.7; margin-bottom: 12px; }
+  .story-text strong { color: #0f172a; }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 : COVER -->
+<div class="page cover">
+  <span class="badge">PROPOSITION INTERNE — CPM</span>
+  <h1>MERCH</h1>
+  <p class="subtitle">Une application de terrain pour merchandisers.<br>Du planning à la note de frais — tout au même endroit.</p>
+  <div class="stats">
+    <div class="stat-item"><div class="val">15+</div><div class="lbl">Fonctionnalités</div></div>
+    <div class="stat-item"><div class="val">100%</div><div class="lbl">Mobile first</div></div>
+    <div class="stat-item"><div class="val">0</div><div class="lbl">Installation requise</div></div>
+  </div>
+  <p class="meta" style="margin-top: 32px;">Guillaume Dewez — Merchandiser CPM<br>Juillet 2026</p>
+  <p class="foot">Document de présentation — usage interne</p>
+</div>
+
+<!-- PAGE 2 : MON QUOTIDIEN -->
+<div class="page">
+  <div class="section-tag">01 — Mon quotidien</div>
+  <h2>Une journée de merchandiser</h2>
+  <p class="lead">Voici ce que vit un merchandiser sur le terrain, tous les jours.</p>
+  <p class="story-text">
+    <strong>6h45</strong> — Je reçois mon planning de la semaine par email, en fichier Excel. Je dois l'ouvrir sur mon téléphone, regarder quel magasin je dois visiter aujourd'hui, et comprendre ce qui est attendu.<br><br>
+    <strong>7h30</strong> — Je tape les adresses une par une dans Google Maps pour calculer mon itinéraire. Pas d'ordre optimisé, pas de kilométrage total, pas d'estimation de durée. Je fais ça à la main, chaque matin.<br><br>
+    <strong>8h15</strong> — Arrivée au premier magasin. Je commence ma visite mais je n'ai <strong>aucun souvenir de ce que j'ai fait lors de ma dernière visite ici</strong>. Pas de photos, pas de notes, pas d'historique. Je repars de zéro à chaque fois.<br><br>
+    <strong>10h00</strong> — Je prends des photos avant/après avec mon téléphone. Elles se mélangent dans ma galerie avec les photos personnelles. Je dois me souvenir plus tard quel magasin, quelle date.<br><br>
+    <strong>12h30</strong> — Pause déjeuner. Je note mes frais (parking, essence) sur un papier ou dans ma tête. Je devrai tout ressaisir dans Excel à la fin du mois.<br><br>
+    <strong>17h00</strong> — Fin de tournée. Je dois rédiger un rapport de visite. Pas de template, pas d'endrait centralisé. C'est du bricolage.
+  </p>
+  <span class="pagenum">2</span>
+</div>
+
+<!-- PAGE 3 : LE PROBLÈME DU CRM ACTUEL -->
+<div class="page">
+  <div class="section-tag">02 — Le problème</div>
+  <h2>L'outil interne actuel — ce qui manque</h2>
+  <p class="lead">Nous avons déjà un CRM en interne. Mais sur le terrain, il est incomplet et inefficace.</p>
+  <div class="problem-box">
+    <h3>Ce qui ne fonctionne pas aujourd'hui</h3>
+    <ul>
+      <li><strong>Aucun suivi de magasins</strong> — pas d'historique des visites par point de vente, pas de photos archivées, pas de notes consultables</li>
+      <li><strong>Aucune mémoire entre visites</strong> — quand je commence une visite, je ne vois pas ce que j'ai fait lors des visites précédentes dans ce magasin</li>
+      <li><strong>Planning en Excel</strong> — reçu par email, pas d'accès mobile pratique, routes à faire manuellement avec Google Maps</li>
+      <li><strong>Notes de frais manuelles</strong> — tout est ressaisi à la main dans Excel à la fin du mois, avec les erreurs et oublis que ça implique</li>
+      <li><strong>Pas optimisé pour le mobile</strong> — un merchandiser n'est pas au bureau, il est sur le terrain. L'outil actuel n'est pas pensé pour ça</li>
+      <li><strong>Trop de choses manquantes</strong> — l'outil est incomplet, il manque des fonctionnalités essentielles au quotidien</li>
+    </ul>
+  </div>
+  <div class="solution-box">
+    <h3>Ce que j'ai construit pour résoudre tout ça</h3>
+    <ul>
+      <li>Une application pensée <strong>mobile d'abord</strong> — utilisable en magasin, sur le terrain, sans installation</li>
+      <li>Historique complet par magasin — photos, notes, matériel posé, le tout consultable en un clic</li>
+      <li>Import Excel direct + routing optimisé + navigation Waze intégrée</li>
+      <li>Notes de frais saisies au fil du mois, export Excel officiel automatique</li>
+      <li>Exports PDF professionnels pour la direction — un clic, c'est fait</li>
+    </ul>
+  </div>
+  <span class="pagenum">3</span>
+</div>
+
+<!-- PAGE 4 : AVANT / APRÈS -->
+<div class="page">
+  <div class="section-tag">02 — Le problème (suite)</div>
+  <h2>Avant / Après — concrètement</h2>
+  <p class="lead">Le même travail, mais sans la paperasse et sans les oublis.</p>
+  <div class="compare-grid">
+    <div class="compare-col before">
+      <h3>Avec l'outil actuel</h3>
+      <ul>
+        <li>Planning Excel reçu par email, lu sur téléphone</li>
+        <li>Routes calculées manuellement dans Google Maps</li>
+        <li>Aucun historique de visite par magasin</li>
+        <li>Photos dans la galerie du téléphone, perdues</li>
+        <li>Notes de frais ressaisies dans Excel en fin de mois</li>
+        <li>Rapports rédigés à la main, non centralisés</li>
+        <li>Pas de vue d'ensemble (km, taux, activité)</li>
+        <li>Contacts internes éparpillés (téléphone, mail, papier)</li>
+        <li>Interface non optimisée pour le mobile</li>
+      </ul>
+    </div>
+    <div class="compare-col after">
+      <h3>Avec MERCH</h3>
+      <ul>
+        <li>Import Excel en un clic, planning organisé par jour</li>
+        <li>Routing optimisé automatiquement, navigation Waze intégrée</li>
+        <li>Historique complet par magasin : photos, notes, matériel</li>
+        <li>Photos catégorisées avant/après, liées à la visite</li>
+        <li>Frais saisis au fil du mois, export Excel officiel auto</li>
+        <li>Rapports PDF générés automatiquement, format A4</li>
+        <li>Analytics : kilométrage, taux de complétion, activité</li>
+        <li>Annuaire interne centralisé, appel direct</li>
+        <li>100% mobile first, mode hors-ligne, PWA installable</li>
+      </ul>
+    </div>
+  </div>
+  <div class="feat-section" style="margin-top: 14px;">
+    <div class="feat-title">Le flux de travail couvert</div>
+    <div class="flow">
+      <span class="flow-step">Import Excel</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Routing optimisé</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Navigation Waze</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Visite &amp; historique</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Photos avant/après</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Notes &amp; matériel</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Note de frais</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Export PDF/Excel</span>
+    </div>
+  </div>
+  <span class="pagenum">4</span>
+</div>
+
+<!-- PAGE 5 : FONCTIONNALITÉS TERRAIN -->
+<div class="page">
+  <div class="section-tag">03 — La solution</div>
+  <h2>Fonctionnalités — Sur le terrain</h2>
+  <p class="lead">Tout ce dont un merchandiser a besoin en tournée, optimisé pour le mobile.</p>
+  <div class="feat-section">
+    <div class="feat-title">Planning &amp; Tournées</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">&#128197;</div><h3>Planning hebdomadaire</h3><p>Import direct du fichier Excel CPM. Visites organisées par jour, réordonnancées par drag &amp; drop.</p></div>
+      <div class="feat-card"><div class="icon">&#128506;</div><h3>Carte &amp; itinéraires</h3><p>Carte interactive Leaflet, calcul de trajet via OSRM, kilométrage et durée estimés, ordre optimisé.</p></div>
+      <div class="feat-card"><div class="icon">&#129517;</div><h3>Navigation Waze</h3><p>Bouton direct vers Waze pour chaque visite. Départ configurable : magasin précédent ou domicile.</p></div>
+      <div class="feat-card"><div class="icon">&#128246;</div><h3>Mode hors-ligne &amp; PWA</h3><p>Changement de statut sans connexion. Application installable sur l'écran d'accueil, comme une app native.</p></div>
+    </div>
+  </div>
+  <div class="feat-section">
+    <div class="feat-title">Magasins &amp; Visites</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">&#127978;</div><h3>Fiches magasins</h3><p>Coordonnées, assortment, type de visite, fréquence, responsable commercial. Recherche et tri.</p></div>
+      <div class="feat-card"><div class="icon">&#128220;</div><h3>Historique par magasin</h3><p>Toutes les visites passées d'un point de vente : photos, notes, matériel posé &mdash; en un coup d'œil. Je vois ce que j'ai fait la dernière fois avant de commencer.</p></div>
+      <div class="feat-card"><div class="icon">&#9989;</div><h3>Suivi des visites</h3><p>Statuts : effectuée, en attente, reportée, annulée. Type de matériel posé, remarques par visite.</p></div>
+      <div class="feat-card"><div class="icon">&#128247;</div><h3>Photos avant / après</h3><p>Catégorisation automatique, upload compressé, sélection multiple, partage et export PDF.</p></div>
+      <div class="feat-card"><div class="icon">&#128221;</div><h3>Notes de visite</h3><p>Compte-rendu par visite, ajout rapide depuis le terrain, historique consultable.</p></div>
+      <div class="feat-card"><div class="icon">&#128101;</div><h3>Annuaire interne</h3><p>Contacts CPM/Mars organisés par équipe &mdash; téléphone, email, WhatsApp, appel direct.</p></div>
+    </div>
+  </div>
+  <span class="pagenum">5</span>
+</div>
+
+<!-- PAGE 6 : FONCTIONNALITÉS ADMIN -->
+<div class="page">
+  <div class="section-tag">03 — La solution (suite)</div>
+  <h2>Fonctionnalités — Administratif &amp; Intelligence</h2>
+  <p class="lead">La paperasse automatisée et un assistant IA &mdash; ce qui prend du temps devient un clic.</p>
+  <div class="feat-section">
+    <div class="feat-title">Notes de frais</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">&#129534;</div><h3>Saisie en tournée</h3><p>Photo du ticket, montant, date et description &mdash; enregistré en quelques secondes sur le terrain.</p></div>
+      <div class="feat-card"><div class="icon">&#128202;</div><h3>Export Excel officiel</h3><p>Génération automatique dans le template Excel CPM (max. 12 notes par export), sans ressaisie.</p></div>
+      <div class="feat-card"><div class="icon">&#128230;</div><h3>Export ZIP complet</h3><p>Excel + PDF + photos justificatives individuelles dans un seul fichier, prêt à envoyer.</p></div>
+      <div class="feat-card"><div class="icon">&#10003;</div><h3>Suivi des exports</h3><p>Marquage automatique des notes déjà exportées pour éviter les doublons.</p></div>
+    </div>
+  </div>
+  <div class="feat-section">
+    <div class="feat-title">Rapports &amp; Exports</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">&#128196;</div><h3>Rapport de visite PDF</h3><p>Photos catégorisées + notes + infos magasin, généré en un clic, format A4 imprimable.</p></div>
+      <div class="feat-card"><div class="icon">&#128218;</div><h3>Export groupé par semaine</h3><p>Tous les rapports de visite d'une semaine en un seul document PDF, avec page de couverture et tableau récapitulatif.</p></div>
+    </div>
+  </div>
+  <div class="feat-section">
+    <div class="feat-title">Analytics &amp; Assistant IA</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">&#128200;</div><h3>Statistiques</h3><p>Taux de complétion, visites par semaine, kilomètres, photos avant/après, activité par jour.</p></div>
+      <div class="feat-card"><div class="icon">&#129302;</div><h3>Assistant IA</h3><p>Chat avec GPT-4o, contexte Mars injecté : questions sur les visites, contacts, matériel.</p></div>
+      <div class="feat-card"><div class="icon">&#128444;</div><h3>Médiathèque</h3><p>Toutes les photos regroupées par magasin, favoris, recherche et filtrage.</p></div>
+      <div class="feat-card"><div class="icon">&#128214;</div><h3>Guide matériel</h3><p>Référence visuelle des types de matériel merchandising Mars.</p></div>
+    </div>
+  </div>
+  <span class="pagenum">6</span>
+</div>
+
+<!-- PAGE 7 : CAPTURES — Connexion & Dashboard -->
+<div class="page">
+  <div class="section-tag">04 — Démo</div>
+  <h2>Captures &mdash; Connexion &amp; Dashboard</h2>
+  <p class="lead">L'application en conditions réelles &mdash; version desktop.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-login.png" alt="Login" /><div class="caption">Connexion &mdash; authentification JWT sécurisée</div></div>
+    <div class="shot"><img src="screenshots/desktop-dashboard.png" alt="Dashboard" /><div class="caption">Dashboard &mdash; prochaine visite, statistiques, kilométrage</div></div>
+  </div>
+  <div class="device-label">Mode sombre</div>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-dashboard-dark.png" alt="Dashboard Dark" /><div class="caption">Dashboard en mode sombre &mdash; confort visuel en magasin</div></div>
+    <div class="shot" style="display:flex;align-items:center;justify-content:center;"><div style="text-align:center;color:#94a3b8;font-size:11px;">Le thème sombre/clair est disponible<br>sur toutes les pages de l'application</div></div>
+  </div>
+  <span class="pagenum">7</span>
+</div>
+
+<!-- PAGE 8 : CAPTURES — Planning & Routing -->
+<div class="page">
+  <div class="section-tag">04 — Démo (suite)</div>
+  <h2>Captures &mdash; Planning &amp; Routing</h2>
+  <p class="lead">Organisation des tournées et optimisation d'itinéraires &mdash; fini le Google Maps manuel.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-planning.png" alt="Planning" /><div class="caption">Planning &mdash; visites par jour, import Excel, filtres, statuts</div></div>
+    <div class="shot"><img src="screenshots/desktop-routing.png" alt="Routing" /><div class="caption">Routing &mdash; carte interactive, ordre optimisé, kilométrage total</div></div>
+  </div>
+  <span class="pagenum">8</span>
+</div>
+
+<!-- PAGE 9 : CAPTURES — Magasins & Notes de frais -->
+<div class="page">
+  <div class="section-tag">04 — Démo (suite)</div>
+  <h2>Captures &mdash; Magasins &amp; Notes de frais</h2>
+  <p class="lead">Fiches magasins avec historique et gestion des dépenses.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-stores.png" alt="Magasins" /><div class="caption">Fiches magasins &mdash; recherche, tri, assortment, historique</div></div>
+    <div class="shot"><img src="screenshots/desktop-expenses.png" alt="Notes de frais" /><div class="caption">Notes de frais &mdash; photo du ticket, export Excel/ZIP</div></div>
+  </div>
+  <span class="pagenum">9</span>
+</div>
+
+<!-- PAGE 10 : CAPTURES — Médiathèque & Analytics -->
+<div class="page">
+  <div class="section-tag">04 — Démo (suite)</div>
+  <h2>Captures &mdash; Médiathèque &amp; Analytics</h2>
+  <p class="lead">Toutes les photos regroupées et statistiques d'activité.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-photos.png" alt="Photos" /><div class="caption">Médiathèque &mdash; photos par magasin, favoris, filtrage</div></div>
+    <div class="shot"><img src="screenshots/desktop-analytics.png" alt="Analytics" /><div class="caption">Analytics &mdash; graphiques, taux de complétion, kilomètres</div></div>
+  </div>
+  <span class="pagenum">10</span>
+</div>
+
+<!-- PAGE 11 : CAPTURES — Contacts, Export & Guide -->
+<div class="page">
+  <div class="section-tag">04 — Démo (suite)</div>
+  <h2>Captures &mdash; Contacts, Export &amp; Guide</h2>
+  <p class="lead">Annuaire interne, rapports PDF et guide matériel.</p>
+  <div class="shots">
+    <div class="shot"><img src="screenshots/desktop-contacts.png" alt="Contacts" /><div class="caption">Annuaire interne CPM/Mars &mdash; par équipe</div></div>
+    <div class="shot"><img src="screenshots/desktop-export.png" alt="Export" /><div class="caption">Export &mdash; rapports PDF par visite et par semaine</div></div>
+  </div>
+  <div class="shots" style="margin-top:8px;">
+    <div class="shot"><img src="screenshots/desktop-guide.png" alt="Guide" /><div class="caption">Guide matériel &mdash; référence visuelle Mars</div></div>
+    <div class="shot"><img src="screenshots/desktop-settings.png" alt="Paramètres" /><div class="caption">Paramètres &mdash; profil, thème, glossaire, sauvegardes</div></div>
+  </div>
+  <span class="pagenum">11</span>
+</div>
+
+<!-- PAGE 12 : CAPTURES — Vue Mobile -->
+<div class="page">
+  <div class="section-tag">04 — Démo (suite)</div>
+  <h2>Captures &mdash; Vue mobile</h2>
+  <p class="lead">L'application est pensée mobile d'abord &mdash; c'est ce que j'utilise sur le terrain, tous les jours.</p>
+  <div class="shots-mobile">
+    <div class="shot-mobile"><img src="screenshots/mobile-dashboard.png" alt="Mobile Dashboard" /><div class="caption">Dashboard mobile</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-planning.png" alt="Mobile Planning" /><div class="caption">Planning mobile</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-stores.png" alt="Mobile Stores" /><div class="caption">Magasins mobile</div></div>
+  </div>
+  <div class="shots-mobile" style="margin-top:8px;">
+    <div class="shot-mobile"><img src="screenshots/mobile-visit-detail.png" alt="Mobile Visit Detail" /><div class="caption">Détail de visite &mdash; photos, notes, statut</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-expenses.png" alt="Mobile Expenses" /><div class="caption">Notes de frais mobile</div></div>
+    <div class="shot-mobile"><img src="screenshots/mobile-export.png" alt="Mobile Export" /><div class="caption">Export PDF mobile</div></div>
+  </div>
+  <span class="pagenum">12</span>
+</div>
+
+<!-- PAGE 13 : EXPORT PDF -->
+<div class="page">
+  <div class="section-tag">04 — Démo (suite)</div>
+  <h2>Export PDF &mdash; Rapport hebdomadaire</h2>
+  <p class="lead">Génération serveur d'un PDF A4 professionnel pour chaque semaine de visites &mdash; un clic, c'est fait.</p>
+  <div class="feat-section">
+    <div class="feat-title">Structure du rapport PDF</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">1</div><h3>Page de couverture</h3><p>Titre, semaine, statistiques (visites, photos, notes) et tableau récapitulatif avec numéro de page par magasin.</p></div>
+      <div class="feat-card"><div class="icon">2</div><h3>Une page par magasin</h3><p>Header coloré avec nom, date, type. Sections dédiées : matériel installé, remarques, matériel, notes, photos.</p></div>
+      <div class="feat-card"><div class="icon">3</div><h3>Photos en grille 2 colonnes</h3><p>Badges AVANT/APRÈS, taille optimisée, grille 2 colonnes pour réduire le nombre de pages.</p></div>
+      <div class="feat-card"><div class="icon">4</div><h3>Numérotation des pages</h3><p>Chaque page est numérotée. Le tableau récap indique la page de chaque visite pour navigation rapide.</p></div>
+    </div>
+  </div>
+  <div class="feat-section">
+    <div class="feat-title">Optimisations</div>
+    <div class="feat-grid">
+      <div class="feat-card"><h3>Une page par magasin</h3><p>Chaque magasin commence en haut d'une page, sans page blanche. Layout compact, remarques et matériel côte à côte.</p></div>
+      <div class="feat-card"><h3>Notes lisibles</h3><p>Notes avec tirets pour la lisibilité. Matériel installé dans une section dédiée bien visible.</p></div>
+    </div>
+  </div>
+  <span class="pagenum">13</span>
+</div>
+
+<!-- PAGE 14 : ARCHITECTURE -->
+<div class="page">
+  <div class="section-tag">05 — Architecture</div>
+  <h2>Architecture technique</h2>
+  <p class="lead">Stack moderne, hébergée dans le cloud, pensée pour évoluer.</p>
+  <div class="arch-layer">
+    <div class="arch-layer-title">Frontend</div>
+    <div class="arch-items">
+      <div class="arch-item"><span class="tech-name">Next.js 16</span><span class="tech-desc">Framework React &mdash; SSR &amp; API routes</span></div>
+      <div class="arch-item"><span class="tech-name">TypeScript</span><span class="tech-desc">Typage strict, sécurité du code</span></div>
+      <div class="arch-item"><span class="tech-name">Tailwind CSS</span><span class="tech-desc">Design responsive, thème sombre/clair</span></div>
+      <div class="arch-item"><span class="tech-name">React Query</span><span class="tech-desc">Cache, synchronisation, optimistic updates</span></div>
+    </div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-layer-title">Backend &amp; API</div>
+    <div class="arch-items">
+      <div class="arch-item"><span class="tech-name">API Routes Next.js</span><span class="tech-desc">32 endpoints REST sécurisés</span></div>
+      <div class="arch-item"><span class="tech-name">JWT</span><span class="tech-desc">Authentification par token</span></div>
+      <div class="arch-item"><span class="tech-name">Prisma ORM 7</span><span class="tech-desc">Type-safe database access</span></div>
+    </div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-layer-title">Base de données &amp; Stockage</div>
+    <div class="arch-items">
+      <div class="arch-item"><span class="tech-name">Neon Postgres</span><span class="tech-desc">PostgreSQL serverless, scalable</span></div>
+      <div class="arch-item"><span class="tech-name">Vercel Blob</span><span class="tech-desc">Stockage des photos et justificatifs</span></div>
+    </div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-layer-title">Services intégrés</div>
+    <div class="arch-items">
+      <div class="arch-item"><span class="tech-name">OpenAI GPT-4o</span><span class="tech-desc">Assistant IA avec contexte Mars</span></div>
+      <div class="arch-item"><span class="tech-name">OSRM</span><span class="tech-desc">Calcul d'itinéraires et optimisation</span></div>
+      <div class="arch-item"><span class="tech-name">Leaflet</span><span class="tech-desc">Cartes interactives</span></div>
+      <div class="arch-item"><span class="tech-name">Waze</span><span class="tech-desc">Navigation en temps réel</span></div>
+    </div>
+  </div>
+  <div class="arch-layer">
+    <div class="arch-layer-title">Infrastructure &amp; Déploiement</div>
+    <div class="arch-items">
+      <div class="arch-item"><span class="tech-name">Vercel</span><span class="tech-desc">Hébergement, déploiement automatique, CDN global</span></div>
+      <div class="arch-item"><span class="tech-name">GitHub</span><span class="tech-desc">Versioning, CI/CD</span></div>
+      <div class="arch-item"><span class="tech-name">Playwright</span><span class="tech-desc">Tests E2E automatisés</span></div>
+    </div>
+  </div>
+  <span class="pagenum">14</span>
+</div>
+
+<!-- PAGE 15 : SÉCURITÉ & CONFIGURATION -->
+<div class="page">
+  <div class="section-tag">06 — Sécurité &amp; Configuration</div>
+  <h2>Sécurité et configuration</h2>
+  <p class="lead">Données protégées, accès contrôlé, paramétrable par utilisateur.</p>
+  <div class="sec-grid" style="margin-bottom: 14px;">
+    <div class="sec-card"><div class="icon">&#128274;</div><h3>Authentification JWT</h3><p>Connexion par compte et mot de passe. Tokens JWT signés, expiration automatique. Chaque utilisateur ne voit que ses propres données.</p></div>
+    <div class="sec-card"><div class="icon">&#128737;</div><h3>Isolation des données</h3><p>Toutes les requêtes API vérifient l'identité de l'utilisateur. Aucun accès cross-user possible. Mots de passe hachés (bcrypt).</p></div>
+    <div class="sec-card"><div class="icon">&#128190;</div><h3>Sauvegardes</h3><p>Sauvegarde manuelle exportable (JSON). Base de données Neon avec réplication. Photos stockées sur Vercel Blob (CDN, redondance).</p></div>
+    <div class="sec-card"><div class="icon">&#127760;</div><h3>Hébergement cloud</h3><p>Vercel : CDN global, HTTPS automatique, déploiement continu depuis GitHub. Pas de serveur à maintenir.</p></div>
+  </div>
+  <div class="feat-section">
+    <div class="feat-title">Configuration par utilisateur</div>
+    <table class="config-table">
+      <tr><th>Paramètre</th><th>Description</th><th>Utilité</th></tr>
+      <tr><td class="label">Profil</td><td>Nom, email, zone d'intervention</td><td>Personnalisation du dashboard</td></tr>
+      <tr><td class="label">Adresse domicile</td><td>Point de départ des tournées</td><td>Calcul d'itinéraire optimisé</td></tr>
+      <tr><td class="label">Adresse retour</td><td>Point d'arrivée optionnel</td><td>Distance totale de la journée</td></tr>
+      <tr><td class="label">Thème</td><td>Sombre / clair</td><td>Confort visuel en magasin</td></tr>
+      <tr><td class="label">Glossaire</td><td>Termes personnalisés (halfmoon, rack...)</td><td>Vocabulaire Mars pour l'assistant IA</td></tr>
+      <tr><td class="label">Mot de passe</td><td>Changement sécurisé</td><td>Autonomie de l'utilisateur</td></tr>
+    </table>
+  </div>
+  <span class="pagenum">15</span>
+</div>
+
+<!-- PAGE 16 : ROADMAP & AVENIR -->
+<div class="page">
+  <div class="section-tag">07 — Avenir</div>
+  <h2>Roadmap &amp; évolutions</h2>
+  <p class="lead">Ce qui existe déjà, ce qui est en cours et ce qui est envisagé.</p>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag">En place</span></div>
+    <div class="roadmap-content">
+      <h3>Application fully functional</h3>
+      <p>Planning, magasins, visites, photos, notes de frais, exports Excel/PDF/ZIP, analytics, assistant IA, contacts, hors-ligne. Utilisée au quotidien depuis plusieurs mois.</p>
+    </div>
+  </div>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag">En place</span></div>
+    <div class="roadmap-content">
+      <h3>Multi-utilisateurs</h3>
+      <p>Chaque merchandiser a son compte, ses données sont isolées. Prêt pour déploiement à l'équipe.</p>
+    </div>
+  </div>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag">En place</span></div>
+    <div class="roadmap-content">
+      <h3>PWA &mdash; Application installable</h3>
+      <p>L'application est déjà installable sur l'écran d'accueil du téléphone. Fonctionne comme une app native, mode hors-ligne inclus.</p>
+    </div>
+  </div>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag future">Court terme</span></div>
+    <div class="roadmap-content">
+      <h3>Vue manager / team lead</h3>
+      <p>Vue agrégée pour un responsable d'équipe : suivi des visites de plusieurs merchandisers, statistiques groupées, exports consolidés.</p>
+    </div>
+  </div>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag idea">Moyen terme</span></div>
+    <div class="roadmap-content">
+      <h3>Intégration CRM interne</h3>
+      <p>Synchronisation avec l'outil interne existant : import automatique du planning, remontée des rapports de visite. Compléter le CRM actuel plutôt que le remplacer.</p>
+    </div>
+  </div>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag idea">Moyen terme</span></div>
+    <div class="roadmap-content">
+      <h3>Reconnaissance photo IA</h3>
+      <p>Détection automatique du type de matériel en photo, comparaison avant/après, alertes si mise en place incomplète.</p>
+    </div>
+  </div>
+  <div class="roadmap-item">
+    <div class="roadmap-phase"><span class="phase-tag idea">Long terme</span></div>
+    <div class="roadmap-content">
+      <h3>Tableau de bord management</h3>
+      <p>KPIs temps réel : taux de visite par zone, conformité merchandising, temps passé par magasin, heatmap d'activité.</p>
+    </div>
+  </div>
+  <span class="pagenum">16</span>
+</div>
+
+<!-- PAGE 17 : BÉNÉFICES & CONCLUSION -->
+<div class="page">
+  <div class="section-tag">08 — Conclusion</div>
+  <h2>Ce que ça apporte concrètement</h2>
+  <p class="lead">Des gains simples et mesurables au quotidien.</p>
+  <div class="benefit"><div class="num">1</div><div>
+    <h3>Je vois ce que j'ai fait avant</h3>
+    <p>Avant chaque visite, j'ai l'historique complet du magasin : photos, notes, matériel posé. Je ne repars plus de zéro. C'est le plus gros manque de l'outil actuel.</p>
+  </div></div>
+  <div class="benefit"><div class="num">2</div><div>
+    <h3>Moins de temps administratif</h3>
+    <p>La note de frais mensuelle passe de la saisie manuelle dans Excel à quelques clics. Les dépenses saisies au fil du mois génèrent automatiquement le document officiel rempli avec les photos justificatives.</p>
+  </div></div>
+  <div class="benefit"><div class="num">3</div><div>
+    <h3>Fini les routes à la main</h3>
+    <p>Le planning Excel est importé en un clic. Le routing est optimisé automatiquement. Waze s'ouvre directement vers le prochain magasin. Plus besoin de Google Maps manuel chaque matin.</p>
+  </div></div>
+  <div class="benefit"><div class="num">4</div><div>
+    <h3>Tout au même endroit</h3>
+    <p>Photos, rapports, contacts, planning et notes de frais liés entre eux. Plus de photos perdues dans la galerie du téléphone ni de notes éparpillées entre Excel, papier et mail.</p>
+  </div></div>
+  <div class="benefit"><div class="num">5</div><div>
+    <h3>Pensé pour le terrain</h3>
+    <p>Application web mobile first, installable comme une app native (PWA). Fonctionne hors-ligne. Utilisable en magasin, sur le terrain &mdash; pas besoin d'être au bureau.</p>
+  </div></div>
+  <div class="benefit"><div class="num">6</div><div>
+    <h3>Des exports prêts à l'emploi</h3>
+    <p>Les destinataires reçoivent des fichiers standards (Excel CPM, PDF, ZIP avec photos). Aucun outil spécifique requis. Le format officiel est respecté.</p>
+  </div></div>
+  <div class="closing">
+    <p>Je l'utilise tous les jours en tournée.<br><strong>Je serais ravi de vous la montrer en 15 minutes.</strong></p>
+  </div>
+  <span class="pagenum">17</span>
+</div>
+
+</body>
+</html>
