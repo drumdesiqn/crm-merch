@@ -20,16 +20,6 @@
   h2 { font-size: 22px; font-weight: 800; color: #134e4a; margin-bottom: 3px; }
   .lead { font-size: 12.5px; color: #64748b; margin-bottom: 16px; line-height: 1.6; }
   .section-tag { font-size: 10px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
-  .problem-box { background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
-  .problem-box h3 { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 6px; }
-  .problem-box ul { list-style: none; padding: 0; }
-  .problem-box li { font-size: 12px; color: #7f1d1d; line-height: 1.7; padding-left: 14px; position: relative; }
-  .problem-box li::before { content: "\2717"; position: absolute; left: 0; font-weight: 700; }
-  .solution-box { background: #f0fdfa; border-left: 4px solid #0f766e; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
-  .solution-box h3 { font-size: 13px; font-weight: 700; color: #134e4a; margin-bottom: 6px; }
-  .solution-box ul { list-style: none; padding: 0; }
-  .solution-box li { font-size: 12px; color: #334155; line-height: 1.7; padding-left: 14px; position: relative; }
-  .solution-box li::before { content: "\2713"; position: absolute; left: 0; font-weight: 700; color: #0f766e; }
   .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
   .compare-col { border-radius: 10px; padding: 12px 14px; }
   .compare-col.before { background: #fef2f2; border: 1px solid #fecaca; }
@@ -55,7 +45,7 @@
   .feat-card p { font-size: 10.5px; color: #64748b; line-height: 1.4; }
   .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
   .shot { text-align: center; }
-  .shot img { width: 100%; max-height: 105mm; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.06); }
+  .shot img { width: 100%; max-height: 88mm; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 3px 8px rgba(0,0,0,.06); }
   .shot .caption { font-size: 10px; color: #64748b; margin-top: 4px; font-weight: 600; }
   .shots-mobile { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 6px; }
   .shot-mobile { text-align: center; }
@@ -240,14 +230,18 @@
   <span class="pagenum">5</span>
 </div>
 
-<!-- PAGE 6 : CAPTURES — Planning & Routing -->
+<!-- PAGE 6 : CAPTURES — Planning, Routing & Visite -->
 <div class="page">
   <div class="section-tag">03 — Démo (suite)</div>
-  <h2>Captures &mdash; Planning &amp; Routing</h2>
-  <p class="lead">Organisation des tournées et optimisation d'itinéraires &mdash; fini le Google Maps manuel.</p>
+  <h2>Captures &mdash; Planning, Routing &amp; Visite</h2>
+  <p class="lead">Organisation des tournées, itinéraires optimisés et historique par magasin.</p>
   <div class="shots">
     <div class="shot"><img src="screenshots/desktop-planning.png" alt="Planning" /><div class="caption">Planning &mdash; visites par jour, import Excel, filtres, statuts</div></div>
     <div class="shot"><img src="screenshots/desktop-routing.png" alt="Routing" /><div class="caption">Routing &mdash; carte interactive, ordre optimisé, kilométrage total</div></div>
+  </div>
+  <div class="shots" style="margin-top:8px;">
+    <div class="shot"><img src="screenshots/desktop-visit-detail.png" alt="Visit Detail" /><div class="caption">Détail de visite &mdash; photos avant/après, notes, matériel, historique</div></div>
+    <div class="shot"><img src="screenshots/desktop-ai-assistant.png" alt="AI Assistant" /><div class="caption">Assistant IA &mdash; GPT-4o avec contexte Mars, questions en langage naturel</div></div>
   </div>
   <span class="pagenum">6</span>
 </div>
@@ -258,8 +252,8 @@
   <h2>Captures &mdash; Magasins &amp; Notes de frais</h2>
   <p class="lead">Fiches magasins avec historique et gestion des dépenses.</p>
   <div class="shots">
-    <div class="shot"><img src="screenshots/desktop-stores.png" alt="Magasins" /><div class="caption">Fiches magasins &mdash; recherche, tri, assortment, historique</div></div>
-    <div class="shot"><img src="screenshots/desktop-expenses.png" alt="Notes de frais" /><div class="caption">Notes de frais &mdash; photo du ticket, export Excel/ZIP</div></div>
+    <div class="shot"><img src="screenshots/desktop-stores.png" alt="Magasins" /><div class="caption">Fiches magasins &mdash; 68 magasins, recherche, tri, assortment, historique</div></div>
+    <div class="shot"><img src="screenshots/desktop-expenses.png" alt="Notes de frais" /><div class="caption">Notes de frais &mdash; photo du ticket, export Excel/ZIP, suivi des exports</div></div>
   </div>
   <span class="pagenum">7</span>
 </div>
@@ -310,31 +304,7 @@
   <span class="pagenum">10</span>
 </div>
 
-<!-- PAGE 11 : EXPORT PDF -->
-<div class="page">
-  <div class="section-tag">03 — Démo (suite)</div>
-  <h2>Export PDF &mdash; Rapport hebdomadaire</h2>
-  <p class="lead">Génération serveur d'un PDF A4 professionnel pour chaque semaine de visites &mdash; un clic, c'est fait.</p>
-  <div class="feat-section">
-    <div class="feat-title">Structure du rapport PDF</div>
-    <div class="feat-grid">
-      <div class="feat-card"><div class="icon">1</div><h3>Page de couverture</h3><p>Titre, semaine, statistiques (visites, photos, notes) et tableau récapitulatif avec numéro de page par magasin.</p></div>
-      <div class="feat-card"><div class="icon">2</div><h3>Une page par magasin</h3><p>Header coloré avec nom, date, type. Sections dédiées : matériel installé, remarques, matériel, notes, photos.</p></div>
-      <div class="feat-card"><div class="icon">3</div><h3>Photos en grille 2 colonnes</h3><p>Badges AVANT/APRÈS, taille optimisée, grille 2 colonnes pour réduire le nombre de pages.</p></div>
-      <div class="feat-card"><div class="icon">4</div><h3>Numérotation des pages</h3><p>Chaque page est numérotée. Le tableau récap indique la page de chaque visite pour navigation rapide.</p></div>
-    </div>
-  </div>
-  <div class="feat-section">
-    <div class="feat-title">Optimisations</div>
-    <div class="feat-grid">
-      <div class="feat-card"><h3>Une page par magasin</h3><p>Chaque magasin commence en haut d'une page, sans page blanche. Layout compact, remarques et matériel côte à côte.</p></div>
-      <div class="feat-card"><h3>Notes lisibles</h3><p>Notes avec tirets pour la lisibilité. Matériel installé dans une section dédiée bien visible.</p></div>
-    </div>
-  </div>
-  <span class="pagenum">11</span>
-</div>
-
-<!-- PAGE 12 : ARCHITECTURE -->
+<!-- PAGE 11 : ARCHITECTURE -->
 <div class="page">
   <div class="section-tag">04 — Architecture</div>
   <h2>Architecture technique</h2>
@@ -380,10 +350,10 @@
       <div class="arch-item"><span class="tech-name">Playwright</span><span class="tech-desc">Tests E2E automatisés</span></div>
     </div>
   </div>
-  <span class="pagenum">12</span>
+  <span class="pagenum">11</span>
 </div>
 
-<!-- PAGE 13 : SÉCURITÉ & CONFIGURATION -->
+<!-- PAGE 12 : SÉCURITÉ & CONFIGURATION -->
 <div class="page">
   <div class="section-tag">05 — Sécurité &amp; Configuration</div>
   <h2>Sécurité et configuration</h2>
@@ -406,10 +376,10 @@
       <tr><td class="label">Mot de passe</td><td>Changement sécurisé</td><td>Autonomie de l'utilisateur</td></tr>
     </table>
   </div>
-  <span class="pagenum">13</span>
+  <span class="pagenum">12</span>
 </div>
 
-<!-- PAGE 14 : ROADMAP & AVENIR -->
+<!-- PAGE 13 : ROADMAP & AVENIR -->
 <div class="page">
   <div class="section-tag">06 — Avenir</div>
   <h2>Roadmap &amp; évolutions</h2>
@@ -463,10 +433,10 @@
       <p>KPIs temps réel : taux de visite par zone, conformité merchandising, temps passé par magasin, heatmap d'activité.</p>
     </div>
   </div>
-  <span class="pagenum">14</span>
+  <span class="pagenum">13</span>
 </div>
 
-<!-- PAGE 15 : BÉNÉFICES & CONCLUSION -->
+<!-- PAGE 14 : BÉNÉFICES & CONCLUSION -->
 <div class="page">
   <div class="section-tag">07 — Conclusion</div>
   <h2>Ce que ça apporte concrètement</h2>
@@ -498,7 +468,7 @@
   <div class="closing">
     <p>Je l'utilise tous les jours en tournée.<br><strong>Je serais ravi de vous la montrer en 15 minutes.</strong></p>
   </div>
-  <span class="pagenum">15</span>
+  <span class="pagenum">14</span>
 </div>
 
 </body>
